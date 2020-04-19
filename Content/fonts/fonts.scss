@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../fonts/subset-SFProDisplay-Bold.eot');
+  src: url('../fonts/subset-SFProDisplay-Bold.eot?#iefix') format('embedded-opentype'),
+      url('../fonts/subset-SFProDisplay-Bold.woff2') format('woff2'),
+      url('../fonts/subset-SFProDisplay-Bold.woff') format('woff'),
+      url('../fonts/subset-SFProDisplay-Bold.ttf') format('truetype'),
+      url('../fonts/subset-SFProDisplay-Bold.svg#SFProDisplay-Bold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../fonts/subset-SFProDisplay-Black.eot');
+  src: url('../fonts/subset-SFProDisplay-Black.eot?#iefix') format('embedded-opentype'),
+      url('../fonts/subset-SFProDisplay-Black.woff') format('woff'),
+      url('../fonts/subset-SFProDisplay-Black.ttf') format('truetype'),
+      url('../fonts/subset-SFProDisplay-Black.svg#SFProDisplay-Black') format('svg');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('../fonts/subset-SFProDisplay-Medium.eot');
+  src: url('../fonts/subset-SFProDisplay-Medium.eot?#iefix') format('embedded-opentype'),
+      url('../fonts/subset-SFProDisplay-Medium.woff2') format('woff2'),
+      url('../fonts/subset-SFProDisplay-Medium.woff') format('woff'),
+      url('../fonts/subset-SFProDisplay-Medium.ttf') format('truetype'),
+      url('../fonts/subset-SFProDisplay-Medium.svg#SFProDisplay-Medium') format('svg');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF UI Text';
+  src: url('../fonts/subset-SFUIText-Semibold.eot');
+  src: url('../fonts/subset-SFUIText-Semibold.eot?#iefix') format('embedded-opentype'),
+      url('../fonts/subset-SFUIText-Semibold.woff2') format('woff2'),
+      url('../fonts/subset-SFUIText-Semibold.woff') format('woff'),
+      url('../fonts/subset-SFUIText-Semibold.ttf') format('truetype'),
+      url('../fonts/subset-SFUIText-Semibold.svg#SFUIText-Semibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SF UI Text';
+  src: url('../fonts/subset-SFUIText-Regular.eot');
+  src: url('../fonts/subset-SFUIText-Regular.eot?#iefix') format('embedded-opentype'),
+      url('../fonts/subset-SFUIText-Regular.woff2') format('woff2'),
+      url('../fonts/subset-SFUIText-Regular.woff') format('woff'),
+      url('../fonts/subset-SFUIText-Regular.ttf') format('truetype'),
+      url('../fonts/subset-SFUIText-Regular.svg#SFUIText-Regular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+

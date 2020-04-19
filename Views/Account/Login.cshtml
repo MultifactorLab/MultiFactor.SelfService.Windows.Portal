@@ -1,0 +1,39 @@
+﻿@model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
+
+@{
+    ViewBag.Title = "Вход на сайт двухфакторной аутентификации " + Configuration.Current.CompanyName;
+}
+<div action="#" class="login">
+    <div class="form-bg">
+        <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
+    </div>
+    <div class="form-column">
+        @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+        {
+        <fieldset>
+            @Html.AntiForgeryToken()
+            <p>Введите данные для входа</p>
+            <div class="form-row">
+                <div class="input">
+                    @Html.TextBoxFor(m => m.UserName, new { placeholder = "Имя пользователя" })
+                    @Html.ValidationMessageFor(m => m.UserName)
+                </div>
+                <div class="input">
+                    @Html.PasswordFor(m => m.Password, new { placeholder = "Пароль" })
+                    @Html.ValidationMessageFor(m => m.Password)
+                </div>
+                @Html.ValidationSummary(true)
+            </div>
+            <div class="form-row">
+                <input type="hidden" name="myUrl" id="myUrl" />
+                <input type="submit" class="btn" value="Войти" />
+            </div>
+        </fieldset>
+        }
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#myUrl').val(document.location);
+    });
+</script>
