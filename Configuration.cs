@@ -19,6 +19,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string Domain { get; set; }
 
         /// <summary>
+        /// Active Directory NetBIOS Name to add to login
+        /// </summary>
+        public string NetBiosName { get; set; }
+
+        /// <summary>
         /// Company Logo URL
         /// </summary>
         public string LogoUrl { get; set; }
@@ -49,6 +54,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             var companyNameSetting = appSettings["company-name"];
             var domainSetting = appSettings["company-domain"];
+            var domainNetBiosNameSetting = appSettings["company-domain-netbios-name"];
             var logoUrlSetting = appSettings["company-logo-url"];
             var apiUrlSetting = appSettings["multifactor-api-url"];
             var apiKeySetting = appSettings["multifactor-api-key"];
@@ -88,6 +94,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 CompanyName = companyNameSetting,
                 Domain = domainSetting,
+                NetBiosName = domainNetBiosNameSetting,
                 LogoUrl = logoUrlSetting,
                 MultiFactorApiUrl = apiUrlSetting,
                 MultiFactorApiKey = apiKeySetting,

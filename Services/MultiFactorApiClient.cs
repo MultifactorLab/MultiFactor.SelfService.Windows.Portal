@@ -18,6 +18,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 //make sure we can communicate securely
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
+                //add netbios domain name to login if specified
+                if (!string.IsNullOrEmpty(_settings.NetBiosName))
+                {
+                    login = _settings.NetBiosName + "\\" + login;
+                }
+
                 //payload
                 var json = JsonConvert.SerializeObject(new
                 {
