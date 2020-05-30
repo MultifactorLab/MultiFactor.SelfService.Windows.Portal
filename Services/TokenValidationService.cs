@@ -11,7 +11,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
     /// </summary>
     public class TokenValidationService
     {
-        const string _validIssuer = "https://access.multifactor.ru";
         private ILogger _logger = Log.Logger;
         private Configuration _configuration = Configuration.Current;
 
@@ -30,10 +29,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 var validationParameters = new TokenValidationParameters
                 {
-                    ValidIssuer = _validIssuer,
                     IssuerSigningKeys = _jsonWebKeySet.Keys,
-                    ValidateAudience = false,
-                    ValidateIssuer = true,
+                    ValidAudience = _configuration.MultiFactorApiKey,
+                    ValidateIssuer = false,
+                    ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
                     ValidateTokenReplay = true,

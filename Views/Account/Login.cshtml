@@ -8,7 +8,7 @@
         <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
     </div>
     <div class="form-column">
-        @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
         <fieldset>
             @Html.AntiForgeryToken()

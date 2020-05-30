@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         private ILogger _logger = Log.Logger;
         private readonly Configuration _settings = Configuration.Current;
         
-        public string CreateRequest(string login, string postbackUrl)
+        public string CreateRequest(string login, string postbackUrl, string samlSessionId = null)
         {
             try
             {
@@ -24,6 +25,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     login = _settings.NetBiosName + "\\" + login;
                 }
 
+                //extra params
+                var claims = new Dictionary<string, string>();
+                if (!string.IsNullOrEmpty(samlSessionId))
+                {
+                    claims.Add("samlSessionId", samlSessionId);
+                }
+
                 //payload
                 var json = JsonConvert.SerializeObject(new
                 {
@@ -32,7 +40,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     {
                         Action = postbackUrl,
                         Target = "_self"
-                    }
+                    },
+                    Claims = claims
                 });
 
                 var requestData = Encoding.UTF8.GetBytes(json);

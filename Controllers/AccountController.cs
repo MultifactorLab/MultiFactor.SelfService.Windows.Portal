@@ -2,6 +2,7 @@
 using MultiFactor.SelfService.Windows.Portal.Services;
 using Serilog;
 using System;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 
@@ -55,9 +56,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             noLastSegment = noLastSegment.Trim("/".ToCharArray()); // remove trailing /
 
             var postbackUrl = noLastSegment + "/PostbackFromMfa";
+            var samlSessionId = GetSamlSessionIdFromRedirectUrl(login);
 
             var client = new MultiFactorApiClient();
-            var url = client.CreateRequest(login, postbackUrl);
+            var url = client.CreateRequest(login, postbackUrl, samlSessionId);
 
             return RedirectPermanent(url);
         }
@@ -76,6 +78,22 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             //invalid token, see logs
             return RedirectToAction("Login");
+        }
+
+        private string GetSamlSessionIdFromRedirectUrl(string login)
+        {
+            var redirectUrl = FormsAuthentication.GetRedirectUrl(login, false);
+            if (!string.IsNullOrEmpty(redirectUrl))
+            {
+                var queryIndex = redirectUrl.IndexOf("?");
+                if (queryIndex >= 0)
+                {
+                    var query = HttpUtility.ParseQueryString(redirectUrl.Substring(queryIndex));
+                    return query["samlSessionId"];
+                }
+            }
+
+            return null;
         }
     }
 }

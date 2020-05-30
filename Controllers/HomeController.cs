@@ -1,4 +1,5 @@
 ﻿using System.Web.Mvc;
+using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -7,6 +8,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     {
         public ActionResult Index()
         {
+            if (Request.QueryString["samlSessionId"] != null)
+            {
+                //re-login for saml authentication
+                FormsAuthentication.SignOut();
+                FormsAuthentication.RedirectToLoginPage();
+            }
+            
             return View();
         }
     }
