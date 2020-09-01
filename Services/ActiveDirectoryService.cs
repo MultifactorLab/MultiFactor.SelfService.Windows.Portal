@@ -44,14 +44,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                             _logger.Debug($"Verifying user {userName} is member of {_configuration.ActiveDirectory2FaGroup} group");
 
                             var isMemberOf = user.IsMemberOf(ctx, IdentityType.Name, _configuration.ActiveDirectory2FaGroup);
-                            if (isMemberOf)
+                            if (!isMemberOf)
                             {
                                 _logger.Information($"User {userName} is NOT member of {_configuration.ActiveDirectory2FaGroup} group");
                                 _logger.Information($"Bypass second factor for user {userName}");
                                 return ActiveDirectoryCredentialValidationResult.ByPass();
                             }
-
-                            _logger.Information($"User {userName} is NOT member of {_configuration.ActiveDirectory2FaGroup} group");
+                            _logger.Information($"User {userName} is member of {_configuration.ActiveDirectory2FaGroup} group");
                         }
                     }
                 }
