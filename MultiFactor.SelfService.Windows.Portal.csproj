@@ -68,6 +68,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.DirectoryServices.Protocols" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -144,8 +145,10 @@
     </Compile>
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ActiveDirectoryCredentialValidationError.cs" />
     <Compile Include="Services\ActiveDirectoryService.cs" />
     <Compile Include="Services\MultiFactorApiClient.cs" />
+    <Compile Include="Services\MultiFactorClaims.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -207,6 +210,8 @@
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="README.md" />
+    <Content Include="Views\Home\ChangePassword.cshtml" />
+    <Content Include="Views\Account\ByPassSamlSession.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

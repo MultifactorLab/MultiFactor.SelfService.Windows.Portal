@@ -17,5 +17,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             
             return View();
         }
+
+        public ActionResult ChangePassword()
+        {
+            return View();
+        }
     }
 }

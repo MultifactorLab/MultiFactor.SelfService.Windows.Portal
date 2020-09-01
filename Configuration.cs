@@ -19,6 +19,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string Domain { get; set; }
 
         /// <summary>
+        /// Only members of this group required to pass 2fa to access (Optional)
+        /// </summary>
+        public string ActiveDirectory2FaGroup { get; set; }
+
+        /// <summary>
         /// Active Directory NetBIOS Name to add to login
         /// </summary>
         public string NetBiosName { get; set; }
@@ -54,6 +59,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             var companyNameSetting = appSettings["company-name"];
             var domainSetting = appSettings["company-domain"];
+            var activeDirectory2FaGroupSetting = appSettings["active-directory-2fa-group"];
             var domainNetBiosNameSetting = appSettings["company-domain-netbios-name"];
             var logoUrlSetting = appSettings["company-logo-url"];
             var apiUrlSetting = appSettings["multifactor-api-url"];
@@ -94,6 +100,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 CompanyName = companyNameSetting,
                 Domain = domainSetting,
+                ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting,
                 NetBiosName = domainNetBiosNameSetting,
                 LogoUrl = logoUrlSetting,
                 MultiFactorApiUrl = apiUrlSetting,

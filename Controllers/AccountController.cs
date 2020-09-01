@@ -2,6 +2,7 @@
 using MultiFactor.SelfService.Windows.Portal.Services;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
@@ -25,12 +26,31 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 var activeDirectoryService = new ActiveDirectoryService();
 
                 //AD credential check
-                if (activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim()))
+                var adValidationResult = activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
+                
+                //authenticated ok
+                if (adValidationResult.IsAuthenticated)
                 {
-                    return RedirectToMfa(model.UserName, model.MyUrl);
+                    var samlSessionId = GetSamlSessionIdFromRedirectUrl(model.UserName);
+
+                    if (!string.IsNullOrEmpty(samlSessionId) && adValidationResult.IsBypass)
+                    {
+                        return ByPassSamlSession(model.UserName, samlSessionId);
+                    }
+
+                    return RedirectToMfa(model.UserName, model.MyUrl, samlSessionId);
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Неверное имя пользователя или пароль");
                 }
 
-                ModelState.AddModelError(string.Empty, "Неверное имя пользователя или пароль");
+                //must change password
+                //in progress
+                //if (adValidationResult.UserMustChangePassword)
+                //{
+                //    return RedirectToMfa(model.UserName, model.MyUrl, mustResetPasword: true);
+                //}
             }
 
             return View(model);
@@ -42,7 +62,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return RedirectToAction("Login");
         }
 
-        private ActionResult RedirectToMfa(string login, string documentUrl)
+        private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, bool mustResetPasword = false)
         {
             //public url from browser if we behind nginx or other proxy
             var currentUri = new Uri(documentUrl);
@@ -56,23 +76,51 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             noLastSegment = noLastSegment.Trim("/".ToCharArray()); // remove trailing /
 
             var postbackUrl = noLastSegment + "/PostbackFromMfa";
-            var samlSessionId = GetSamlSessionIdFromRedirectUrl(login);
+
+            //exra params
+            var claims = new Dictionary<string, string>();
+            if (mustResetPasword)
+            {
+                claims.Add(MultiFactorClaims.ChangePassword, "true");
+            }
+            else
+            {
+                if (samlSessionId != null)
+                {
+                    claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
+                }
+            }
+
 
             var client = new MultiFactorApiClient();
-            var url = client.CreateRequest(login, postbackUrl, samlSessionId);
+            var accessPage = client.CreateAccessRequest(login, postbackUrl, claims);
 
-            return RedirectPermanent(url);
+            return RedirectPermanent(accessPage.Url);
+        }
+
+        private ActionResult ByPassSamlSession(string login, string samlSessionId)
+        {
+            var client = new MultiFactorApiClient();
+            var bypassPage = client.CreateSamlBypassRequest(login, samlSessionId);
+
+            return View("ByPassSamlSession", bypassPage);
         }
 
         [HttpPost]
         public ActionResult PostbackFromMfa(string accessToken)
         {
             var tokenValidationService = new TokenValidationService();
-            if (tokenValidationService.VerifyToken(accessToken, out var userName))
+            if (tokenValidationService.VerifyToken(accessToken, out var userName, out bool mustChangePassword))
             {
-                _logger.Information($"User {userName} registered");
+                _logger.Information($"User {userName} authenticated");
                 
                 FormsAuthentication.SetAuthCookie(userName, false);
+
+                if (mustChangePassword)
+                {
+                    return RedirectToAction("ChangePassword", "Home");
+                }
+
                 return RedirectToAction("Index", "Home");
             }
 

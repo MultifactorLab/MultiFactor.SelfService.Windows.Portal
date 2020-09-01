@@ -1,12 +1,12 @@
 ﻿using Serilog;
 using System;
 using System.DirectoryServices.Protocols;
+using System.DirectoryServices.AccountManagement;
 using System.Net;
-using System.Text.RegularExpressions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
-     /// <summary>
+    /// <summary>
     /// Service to interact with Active Directory
     /// </summary>
     public class ActiveDirectoryService
@@ -17,7 +17,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         /// <summary>
         /// Verify User Name, Password, User Status and Policy against Active Directory
         /// </summary>
-        public bool VerifyCredential(string userName, string password)
+        public ActiveDirectoryCredentialValidationResult VerifyCredential(string userName, string password)
         {
             try
             {
@@ -31,63 +31,44 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 _logger.Information($"User {userName} credential and status verified successfully at {_configuration.Domain}");
 
-                return true; //OK
-            }
-            catch (LdapException lex)
-            {
-                if (lex.ServerErrorMessage != null)
+                var checkGroupMembership = !string.IsNullOrEmpty(_configuration.ActiveDirectory2FaGroup);
+                if (checkGroupMembership)
                 {
-                    var dataReason = ExtractErrorReason(lex.ServerErrorMessage);
-                    if (dataReason != null)
+                    using (var ctx = new PrincipalContext(ContextType.Domain, _configuration.Domain, userName, password))
                     {
-                        _logger.Warning($"Verification user {userName} at {_configuration.Domain} failed: {dataReason}");
-                        return false;
+                        var user = UserPrincipal.FindByIdentity(ctx, userName);
+
+                        //user must be member of security group
+                        if (checkGroupMembership)
+                        {
+                            _logger.Debug($"Verifying user {userName} is member of {_configuration.ActiveDirectory2FaGroup} group");
+
+                            var isMemberOf = user.IsMemberOf(ctx, IdentityType.Name, _configuration.ActiveDirectory2FaGroup);
+                            if (isMemberOf)
+                            {
+                                _logger.Information($"User {userName} is NOT member of {_configuration.ActiveDirectory2FaGroup} group");
+                                _logger.Information($"Bypass second factor for user {userName}");
+                                return ActiveDirectoryCredentialValidationResult.ByPass();
+                            }
+
+                            _logger.Information($"User {userName} is NOT member of {_configuration.ActiveDirectory2FaGroup} group");
+                        }
                     }
                 }
 
-                _logger.Error(lex, $"Verification user {userName} at {_configuration.Domain} failed");
+                return ActiveDirectoryCredentialValidationResult.Ok(); //OK
+            }
+            catch (LdapException lex)
+            {
+                var result = ActiveDirectoryCredentialValidationResult.KnownError(lex.ServerErrorMessage);
+                _logger.Warning($"Verification user {userName} at {_configuration.Domain} failed: {result.Reason}");
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Verification user {userName} at {_configuration.Domain} failed");
+                _logger.Error(ex, $"Verification user {userName} at {_configuration.Domain} failed.");
+                return ActiveDirectoryCredentialValidationResult.UnknowError();
             }
-
-            return false;
-        }
-
-        private string ExtractErrorReason(string errorMessage)
-        {
-            var pattern = @"data ([0-9a-e]{3})";
-            var match = Regex.Match(errorMessage, pattern);
-
-            if (match.Success && match.Groups.Count == 2)
-            {
-                var data = match.Groups[1].Value;
-
-                switch (data)
-                {
-                    case "525":
-                        return "user not found";
-                    case "52e":
-                        return "invalid credentials";
-                    case "530":
-                        return "not permitted to logon at this time​";
-                    case "531":
-                        return "not permitted to logon at this workstation​";
-                    case "532":
-                        return "password expired";
-                    case "533":
-                        return "account disabled";
-                    case "701":
-                        return "account expired";
-                    case "773":
-                        return "user must change password";
-                    case "775":
-                        return "user account locked";
-                }
-            }
-
-            return null;
         }
     }
 }

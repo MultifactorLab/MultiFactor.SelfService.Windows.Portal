@@ -1,0 +1,18 @@
+﻿@model MultiFactor.SelfService.Windows.Portal.Services.MultiFactorBypassPage
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Пожалуйста, подождите</title>
+</head>
+<body>
+    <form method="post" action="@Model.CallbackUrl">
+        <input type="hidden" name="accessToken" value="@Model.AccessToken" />
+    </form>
+    <script type="text/javascript">
+        document.forms[0].submit();
+    </script>
+</body>
+</html>

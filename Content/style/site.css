@@ -598,41 +598,42 @@ p {
     .login h2 {
         text-align: left;
     }
+
     .login .input {
         margin-bottom: 14px;
     }
 
-    .login .input span {
-        color: #A3A9B2;
-        font-size: 12px;
-        line-height: 14px;
-        display: block;
-    }
-
-    .login .input input,
-    .login .input input[type=password],
-    .login .input input[type=text] {
-        background: #FFFFFF;
-        border: 1px solid #A3A9B2;
-        -webkit-box-sizing: border-box;
-        box-sizing: border-box;
-        border-radius: 4px;
-        height: 64px;
-        width: 100%;
-        line-height: 62px;
-        padding: 0 23px;
-        display: block;
-        font-weight: 700;
-    }
-
-        .login .input input.input-validation-error,
-        .login .input input[type=password].input-validation-error,
-        .login .input input[type=text].input-validation-error {
-            border-color: red;
+        .login .input span {
+            color: #A3A9B2;
+            font-size: 12px;
+            line-height: 14px;
+            display: block;
         }
 
+        .login .input input,
+        .login .input input[type=password],
+        .login .input input[type=text] {
+            background: #FFFFFF;
+            border: 1px solid #A3A9B2;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            border-radius: 4px;
+            height: 64px;
+            width: 100%;
+            line-height: 62px;
+            padding: 0 23px;
+            display: block;
+            font-weight: 700;
+        }
+
+            .login .input input.input-validation-error,
+            .login .input input[type=password].input-validation-error,
+            .login .input input[type=text].input-validation-error {
+                border-color: red;
+            }
+
     .login .form-column {
-        padding: 85px 0 0;
+        padding: 45px 0 0;
         width: 375px;
     }
 
@@ -669,6 +670,7 @@ p {
     .login form.active {
         display: block;
     }
+
     .login .validation-summary-errors {
         color: #b94a48;
     }
@@ -676,6 +678,18 @@ p {
     .login .validation-summary-valid {
         display: none;
     }
+
+.change-pwd .form-column {
+    padding: 5px 0 0;
+    width: 495px;
+}
+.change-pwd ul{
+    list-style-type: circle;
+}
+.change-pwd ul>li {
+    margin-left: 20px;
+    display: list-item;
+}
 
 .block {
     background: #FFFFFE;
