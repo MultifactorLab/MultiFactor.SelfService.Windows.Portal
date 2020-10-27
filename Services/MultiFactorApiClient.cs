@@ -39,10 +39,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"MultiFactor API host error: {_settings.MultiFactorApiUrl}");
+                _logger.Error(ex, $"Unable to connect API {_settings.MultiFactorApiUrl}: {ex.Message}");
+                throw;
             }
-
-            return null;
         }
 
         public MultiFactorBypassPage CreateSamlBypassRequest(string login, string samlSessionId)
@@ -62,10 +61,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"MultiFactor API host error: {_settings.MultiFactorApiUrl}");
+                _logger.Error(ex, $"Unable to connect API {_settings.MultiFactorApiUrl}: {ex.Message}");
+                throw;
             }
-
-            return null;
         }
 
         private TModel SendRequest<TModel>(string path, string payload)

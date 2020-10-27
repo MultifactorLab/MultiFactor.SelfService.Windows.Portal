@@ -59,7 +59,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public ActionResult Logout()
         {
             FormsAuthentication.SignOut();
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
 
         private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, bool mustResetPasword = false)

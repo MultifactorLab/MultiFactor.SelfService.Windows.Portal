@@ -10,6 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Models
 
         [Required(ErrorMessage = "Пожалуйста, заполните")]
         [DataType(DataType.Password)] 
+        [MinLength(7, ErrorMessage = "Не менее 7 символов")]
         public string NewPassword { get; set; }
 
         [Required(ErrorMessage = "Пожалуйста, заполните")]

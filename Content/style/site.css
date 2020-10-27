@@ -673,6 +673,7 @@ p {
 
     .login .validation-summary-errors {
         color: #b94a48;
+        padding-bottom: 10px;
     }
 
     .login .validation-summary-valid {
@@ -681,15 +682,17 @@ p {
 
 .change-pwd .form-column {
     padding: 5px 0 0;
-    width: 495px;
+    width: 465px;
 }
-.change-pwd ul{
+
+.change-pwd ul.pwd-policy {
     list-style-type: circle;
 }
-.change-pwd ul>li {
-    margin-left: 20px;
-    display: list-item;
-}
+
+    .change-pwd ul.pwd-policy > li {
+        margin-left: 20px;
+        display: list-item;
+    }
 
 .block {
     background: #FFFFFE;
@@ -787,7 +790,6 @@ p {
 
         .login .form-column {
             padding: 0;
-            width: 100%;
         }
 }
 
