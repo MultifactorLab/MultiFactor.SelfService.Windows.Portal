@@ -83,6 +83,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 web.Headers.Add("Content-Type", "application/json");
                 web.Headers.Add("Authorization", "Basic " + auth);
+
+                if (!string.IsNullOrEmpty(_settings.MultiFactorApiProxy))
+                {
+                    _logger.Debug("Using proxy " + _settings.MultiFactorApiProxy);
+                    web.Proxy = new WebProxy(_settings.MultiFactorApiProxy);
+                }
+
                 responseData = web.UploadData(_settings.MultiFactorApiUrl + path, "POST", requestData);
             }
 

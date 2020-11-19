@@ -37,7 +37,10 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Multifactor API URL
         /// </summary>
         public string MultiFactorApiUrl { get; set; }
-
+        /// <summary>
+        /// HTTP Proxy for API
+        /// </summary>
+        public string MultiFactorApiProxy { get; set; }
         /// <summary>
         /// Multifactor API KEY
         /// </summary>
@@ -64,6 +67,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var logoUrlSetting = appSettings["company-logo-url"];
             var apiUrlSetting = appSettings["multifactor-api-url"];
             var apiKeySetting = appSettings["multifactor-api-key"];
+            var apiProxySetting = appSettings["multifactor-api-proxy"];
             var apiSecretSetting = appSettings["multifactor-api-secret"];
             var logLevelSetting = appSettings["logging-level"];
 
@@ -106,6 +110,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiUrl = apiUrlSetting,
                 MultiFactorApiKey = apiKeySetting,
                 MultiFactorApiSecret = apiSecretSetting,
+                MultiFactorApiProxy = apiProxySetting,
                 LogLevel = logLevelSetting
             };
         }
