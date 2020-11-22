@@ -24,6 +24,16 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string ActiveDirectory2FaGroup { get; set; }
 
         /// <summary>
+        /// Use ActiveDirectory User general properties phone number (Optional)
+        /// </summary>
+        public bool UseActiveDirectoryUserPhone { get; set; }
+
+        /// <summary>
+        /// Use ActiveDirectory User general properties mobile phone number (Optional)
+        /// </summary>
+        public bool UseActiveDirectoryMobileUserPhone { get; set; }
+
+        /// <summary>
         /// Active Directory NetBIOS Name to add to login
         /// </summary>
         public string NetBiosName { get; set; }
@@ -70,6 +80,8 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiProxySetting = appSettings["multifactor-api-proxy"];
             var apiSecretSetting = appSettings["multifactor-api-secret"];
             var logLevelSetting = appSettings["logging-level"];
+            var useActiveDirectoryUserPhoneSetting = appSettings["use-active-directory-user-phone"];
+            var useActiveDirectoryMobileUserPhoneSetting = appSettings["use-active-directory-mobile-user-phone"];
 
             if (string.IsNullOrEmpty(companyNameSetting))
             {
@@ -100,7 +112,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 throw new Exception("Configuration error: 'logging-level' element not found");
             }
 
-            Current = new Configuration
+            var configuration = new Configuration
             {
                 CompanyName = companyNameSetting,
                 Domain = domainSetting,
@@ -113,6 +125,28 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiProxy = apiProxySetting,
                 LogLevel = logLevelSetting
             };
+
+            if (!string.IsNullOrEmpty(useActiveDirectoryUserPhoneSetting))
+            {
+                if (!bool.TryParse(useActiveDirectoryUserPhoneSetting, out var useActiveDirectoryUserPhone))
+                {
+                    throw new Exception("Configuration error: Can't parse 'use-active-directory-user-phone' value");
+                }
+
+                configuration.UseActiveDirectoryUserPhone = useActiveDirectoryUserPhone;
+            }
+
+            if (!string.IsNullOrEmpty(useActiveDirectoryMobileUserPhoneSetting))
+            {
+                if (!bool.TryParse(useActiveDirectoryMobileUserPhoneSetting, out var useActiveDirectoryMobileUserPhone))
+                {
+                    throw new Exception("Configuration error: Can't parse 'use-active-directory-mobile-user-phone' value");
+                }
+
+                configuration.UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhone;
+            }
+
+            Current = configuration;
         }
     }
 }

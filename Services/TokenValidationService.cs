@@ -43,8 +43,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 var handler = new JwtSecurityTokenHandler();
                 var claimsPrincipal = handler.ValidateToken(jwt, validationParameters, out var securityToken);
-                
-                userName = ((JwtSecurityToken)securityToken).Subject;
+
+                var jwtSecurityToken = (JwtSecurityToken)securityToken;
+
+                var identity = jwtSecurityToken.Subject;
+                var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
+
+                //use raw user name when possible couse multifactor may transfort identity depend by settings
+
+                userName = rawUserName ?? identity;
 
                 if (claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword))
                 {

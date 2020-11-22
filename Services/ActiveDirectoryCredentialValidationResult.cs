@@ -12,6 +12,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public bool UserMustChangePassword { get; set; }
         public string Reason { get; private set; }
 
+        public string Email { get; set; }
+        public string Phone { get; set; }
+
 
         public static ActiveDirectoryCredentialValidationResult Ok()
         {
