@@ -12,7 +12,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         private ILogger _logger = Log.Logger;
         private readonly Configuration _settings = Configuration.Current;
         
-        public MultiFactorAccessPage CreateAccessRequest(string login, string email, string phone, string postbackUrl, IDictionary<string, string> claims)
+        public MultiFactorAccessPage CreateAccessRequest(string login, string displayName, string email, string phone, string postbackUrl, IDictionary<string, string> claims)
         {
             try
             {
@@ -31,6 +31,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         Action = postbackUrl,
                         Target = "_self"
                     },
+                    Name = displayName,
                     Email = email,
                     Phone = phone,
                     Claims = claims

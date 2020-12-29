@@ -15,7 +15,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         
         public ActionResult Login()
         {
-            return View();
+            return View(new LoginModel());
         }
 
         [HttpPost]
@@ -38,7 +38,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                         return ByPassSamlSession(model.UserName, samlSessionId);
                     }
 
-                    return RedirectToMfa(model.UserName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId);
+                    return RedirectToMfa(model.UserName, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        private ActionResult RedirectToMfa(string login, string email, string phone, string documentUrl, string samlSessionId, bool mustResetPassword = false)
+        private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, bool mustResetPassword = false)
         {
             //public url from browser if we behind nginx or other proxy
             var currentUri = new Uri(documentUrl);
@@ -97,7 +97,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
 
             var client = new MultiFactorApiClient();
-            var accessPage = client.CreateAccessRequest(login, email, phone, postbackUrl, claims);
+            var accessPage = client.CreateAccessRequest(login, displayName, email, phone, postbackUrl, claims);
 
             return RedirectPermanent(accessPage.Url);
         }

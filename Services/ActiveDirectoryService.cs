@@ -78,7 +78,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     }
 
                     var result = ActiveDirectoryCredentialValidationResult.Ok();
+                    
+                    result.DisplayName = profile.DisplayName;
                     result.Email = profile.Email;
+
                     if (_configuration.UseActiveDirectoryUserPhone)
                     {
                         result.Phone = profile.Phone;
@@ -165,7 +168,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         {
             profile = null;
 
-            var attributes = new[] { "DistinguishedName", "mail", "telephoneNumber", "mobile" };
+            var attributes = new[] { "DistinguishedName", "displayName", "mail", "telephoneNumber", "mobile" };
             var searchFilter = $"(&(objectClass=user)({user.TypeName}={user.Name}))";
 
             var baseDn = SelectBestDomainToQuery(connection, user, domain);
@@ -186,6 +189,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 BaseDn = LdapIdentity.BaseDn(entry.DistinguishedName),
                 DistinguishedName = entry.DistinguishedName,
+                DisplayName = entry.Attributes["displayName"]?[0]?.ToString(),
                 Email = entry.Attributes["mail"]?[0]?.ToString(),
                 Phone = entry.Attributes["telephoneNumber"]?[0]?.ToString(),
                 Mobile = entry.Attributes["mobile"]?[0]?.ToString(),

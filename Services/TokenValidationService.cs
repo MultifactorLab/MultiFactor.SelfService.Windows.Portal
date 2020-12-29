@@ -49,7 +49,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 var identity = jwtSecurityToken.Subject;
                 var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
 
-                //use raw user name when possible couse multifactor may transfort identity depend by settings
+                //use raw user name when possible couse multifactor may transform identity depend by settings
 
                 userName = rawUserName ?? identity;
 
