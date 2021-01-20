@@ -117,7 +117,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             try
             {
-
                 LdapProfile userProfile;
 
                 using (var connection = new LdapConnection(_configuration.Domain))
@@ -130,7 +129,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     var isProfileLoaded = LoadProfile(connection, domain, identity, out var profile);
                     if (!isProfileLoaded)
                     {
-                        errorReason = "Невозможно сменить пароль";
+                        errorReason = Resources.AD.UnableToChangePassword;
                         return false;
                     }
                     userProfile = profile;
@@ -153,12 +152,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             catch(PasswordException pex)
             {
                 _logger.Warning($"Changing password for user '{identity.Name}' failed: {pex.Message}, {pex.HResult}");
-                errorReason = "Новый пароль не соответствует требованиям";
+                errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
             }
             catch (Exception ex)
             {
                 _logger.Warning($"Changing password for user {identity.Name} failed: {ex.Message}");
-                errorReason = "Невозможно сменить пароль";
+                errorReason = Resources.AD.UnableToChangePassword;
             }
 
             return false;

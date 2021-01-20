@@ -1,7 +1,7 @@
 ﻿@model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
 
 @{
-    ViewBag.Title = "Вход на сайт двухфакторной аутентификации " + Configuration.Current.CompanyName;
+    ViewBag.Title = string.Format(Resources.AccountLogin.Title, Configuration.Current.CompanyName);
 }
 <div action="#" class="login">
     <div class="form-bg">
@@ -12,21 +12,21 @@
         {
         <fieldset>
             @Html.AntiForgeryToken()
-            <p>Введите данные для входа</p>
+            <p>@Resources.AccountLogin.Invitation</p>
             <div class="form-row">
                 <div class="input">
-                    @Html.TextBoxFor(m => m.UserName, new { placeholder = "Имя пользователя" })
+                    @Html.TextBoxFor(m => m.UserName, new { placeholder = Resources.AccountLogin.UserName })
                     @Html.ValidationMessageFor(m => m.UserName)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = "Пароль" })
+                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password })
                     @Html.ValidationMessageFor(m => m.Password)
                 </div>
                 @Html.ValidationSummary(true)
             </div>
             <div class="form-row">
                 <input type="hidden" name="myUrl" id="myUrl" />
-                <input type="submit" class="btn" value="Войти" />
+                <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" />
             </div>
         </fieldset>
         }

@@ -1,5 +1,6 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
+using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private ILogger _logger = Log.Logger;
         
@@ -42,7 +43,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Неверное имя пользователя или пароль");
+                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
                 }
 
                 //must change password
@@ -58,8 +59,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Logout()
         {
-            FormsAuthentication.SignOut();
-            return RedirectToAction("Login", "Account");
+            return SignOut();
         }
 
         private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, bool mustResetPassword = false)
@@ -117,13 +117,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             _logger.Debug($"Received MFA token: {accessToken}");
 
-            if (tokenValidationService.VerifyToken(accessToken, out var userName, out bool mustChangePassword))
+            if (tokenValidationService.VerifyToken(accessToken, out var token))
             {
-                _logger.Information($"User {userName} authenticated");
-                
-                FormsAuthentication.SetAuthCookie(userName, false);
+                _logger.Information($"User {token.Identity} authenticated");
 
-                if (mustChangePassword)
+                //save token to cookie
+                var cookie = new HttpCookie(Constants.COOKIE_NAME)
+                {
+                    Value = accessToken,
+                    //Secure = true,
+                    Expires = token.ValidTo
+                };
+
+                Response.Cookies.Add(cookie);
+                
+                FormsAuthentication.SetAuthCookie(token.Identity, false);
+
+                if (token.MustChangePassword)
                 {
                     return RedirectToAction("ChangePassword", "Home");
                 }

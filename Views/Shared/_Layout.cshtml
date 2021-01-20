@@ -7,7 +7,8 @@
     @Styles.Render("~/content/css")
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/jqueryval")
-    <title>@ViewBag.Title - @Configuration.Current.CompanyName</title>
+    @RenderSection("head", false)
+    <title>@ViewBag.Title</title>
 </head>
 <body>
     <div id="wrapper">
@@ -21,7 +22,7 @@
             @RenderBody()
         </main>
         <footer id="footer">
-            <em class="copyright">&copy; @Configuration.Current.CompanyName @DateTime.UtcNow.Year</em>
+            <em class="copyright">&copy; @Configuration.Current.CompanyName @DateTime.Now.Year</em>
         </footer>
     </div>
 </body>

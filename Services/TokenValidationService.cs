@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,10 +19,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         //cached jwks
         private static JsonWebKeySet _jsonWebKeySet;
 
-        public bool VerifyToken(string jwt, out string userName, out bool mustChangePassword)
+        public bool VerifyToken(string jwt, out Token token)
         {
-            userName = null;
-            mustChangePassword = false;
+            token = null;
 
             try
             {
@@ -51,12 +51,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 //use raw user name when possible couse multifactor may transform identity depend by settings
 
-                userName = rawUserName ?? identity;
-
-                if (claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword))
+                token = new Token
                 {
-                    mustChangePassword = true;
-                }
+                    Id = jwtSecurityToken.Id,
+                    Identity = rawUserName ?? identity,
+                    MustChangePassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword),
+                    ValidTo = jwtSecurityToken.ValidTo
+                };
 
                 return true; //token valid
             }

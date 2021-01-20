@@ -296,6 +296,10 @@ a {
     -o-transition: all 0.3s linear;
     transition: all 0.3s linear;
 }
+    a[disabled] {
+        color: gray;
+        text-decoration:none;
+    }
 
     a img {
         border: none;
@@ -599,108 +603,133 @@ p {
         text-align: left;
     }
 
-    .login .input {
-        margin-bottom: 14px;
+.input {
+    margin-bottom: 14px;
+}
+
+    .input span {
+        color: #A3A9B2;
+        font-size: 12px;
+        line-height: 14px;
+        display: block;
     }
 
-        .login .input span {
-            color: #A3A9B2;
-            font-size: 12px;
-            line-height: 14px;
-            display: block;
-        }
-
-        .login .input input,
-        .login .input input[type=password],
-        .login .input input[type=text] {
-            background: #FFFFFF;
-            border: 1px solid #A3A9B2;
-            -webkit-box-sizing: border-box;
-            box-sizing: border-box;
-            border-radius: 4px;
-            height: 64px;
-            width: 100%;
-            line-height: 62px;
-            padding: 0 23px;
-            display: block;
-            font-weight: 700;
-        }
-
-            .login .input input.input-validation-error,
-            .login .input input[type=password].input-validation-error,
-            .login .input input[type=text].input-validation-error {
-                border-color: red;
-            }
-
-    .login .form-column {
-        padding: 45px 0 0;
-        width: 375px;
-    }
-
-    .login .form-row {
-        margin-bottom: 50px;
-    }
-
-        .login .form-row:last-child {
-            margin-bottom: 0;
-        }
-
-    .login input[type="submit"] {
-        background: #4082BC;
+    .input input,
+    .input input[type=password],
+    .input input[type=text] {
+        background: #FFFFFF;
+        border: 1px solid #A3A9B2;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
         border-radius: 4px;
-        display: block;
         height: 64px;
-        font-weight: bold;
-        color: #fff;
-        font-size: 18px;
-        line-height: 64px;
-        border: 0;
         width: 100%;
-        -webkit-transition: all 0.3s linear;
-        -moz-transition: all 0.3s linear;
-        -ms-transition: all 0.3s linear;
-        -o-transition: all 0.3s linear;
-        transition: all 0.3s linear;
+        line-height: 62px;
+        padding: 0 23px;
+        display: block;
+        font-weight: 700;
     }
 
-        .login input[type="submit"]:hover {
-            background-color: #336896 !important;
+        .input input.input-validation-error,
+        .input input[type=password].input-validation-error,
+        .input input[type=text].input-validation-error {
+            border-color: red;
         }
 
-    .login form.active {
-        display: block;
+.login .form-column {
+    padding: 45px 0 0;
+    width: 375px;
+}
+
+.login .form-row {
+    margin-bottom: 50px;
+}
+
+    .login .form-row:last-child {
+        margin-bottom: 0;
     }
 
-    .login .validation-summary-errors {
-        color: #b94a48;
-        padding-bottom: 10px;
+input[type="submit"] {
+    background: #4082BC;
+    border-radius: 4px;
+    display: block;
+    height: 64px;
+    font-weight: bold;
+    color: #fff;
+    font-size: 18px;
+    line-height: 64px;
+    border: 0;
+    width: 100%;
+    -webkit-transition: all 0.3s linear;
+    -moz-transition: all 0.3s linear;
+    -ms-transition: all 0.3s linear;
+    -o-transition: all 0.3s linear;
+    transition: all 0.3s linear;
+}
+
+    input[type="submit"]:hover {
+        background-color: #336896 !important;
     }
 
-    .login .validation-summary-valid {
-        display: none;
-    }
+.login form.active {
+    display: block;
+}
+
+.validation-summary-errors {
+    color: #b94a48;
+    padding-bottom: 10px;
+}
+
+.validation-summary-valid {
+    display: none;
+}
 
 .change-pwd .form-column {
     padding: 5px 0 0;
     width: 465px;
 }
 
-.change-pwd ul.pwd-policy {
-    list-style-type: circle;
+ul.list {
+    list-style-type: disc;
 }
 
-    .change-pwd ul.pwd-policy > li {
+    ul.list > li {
         margin-left: 20px;
         display: list-item;
     }
 
-.block {
-    background: #FFFFFE;
-    -webkit-box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.15);
-    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.15);
-    padding: 7vh 0;
-    text-align: center;
+div.info {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 500px;
 }
+
+div#qrcode {
+    margin-left: auto;
+    margin-right: auto;
+    width: 256px;
+}
+
+table.authenticators {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    border-collapse: collapse;
+}
+
+    table.authenticators td{
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+        text-align: left
+    }
+
+    .block {
+        background: #FFFFFE;
+        -webkit-box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.15);
+        box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.15);
+        padding: 7vh 0;
+        text-align: center;
+    }
 
     .block h2 {
         display: inline-block;

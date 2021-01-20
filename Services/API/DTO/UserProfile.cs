@@ -1,0 +1,34 @@
+﻿using System.Collections.Generic;
+
+namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
+{
+    /// <summary>
+    /// User profile
+    /// </summary>
+    public class UserProfile
+    {
+        public string Id { get; set; }
+        public string Identity { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+
+        public IList<UserProfileAuthenticator> TotpAuthenticators { get; set; }
+        public IList<UserProfileAuthenticator> TelegramAuthenticators { get; set; }
+        public IList<UserProfileAuthenticator> MobileAppAuthenticators { get; set; }
+        public IList<UserProfileAuthenticator> PhoneAuthenticators { get; set; }
+
+        public int Count
+        {
+            get
+            {
+                return
+                    TotpAuthenticators.Count +
+                    TelegramAuthenticators.Count +
+                    MobileAppAuthenticators.Count +
+                    PhoneAuthenticators.Count;
+            }
+        }
+
+        public UserProfilePolicy Policy { get; set; }
+    }
+}

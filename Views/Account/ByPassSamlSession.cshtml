@@ -1,11 +1,11 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Services.MultiFactorBypassPage
+﻿@model MultiFactor.SelfService.Windows.Portal.Services.API.DTO.BypassPage
 @{
     Layout = null;
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Пожалуйста, подождите</title>
+    <title>@Resources.Global.PleaseWait</title>
 </head>
 <body>
     <form method="post" action="@Model.CallbackUrl">
