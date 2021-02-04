@@ -121,7 +121,7 @@
     <value>To connect:</value>
   </data>
   <data name="Instruction1" xml:space="preserve">
-    <value>Install the Telegram app on your phone, turn on your camera and point it at the QR-code below or open &lt;a href="tg://resolve?domain=MultifactorBot&amp;start={0}"&gt;this link&lt;/a&gt; from your phone.</value>
+    <value>Install the Telegram app on your phone, turn on your camera and point it at the QR-code below or open &lt;a href="tg://resolve?domain={0}&amp;start={1}"&gt;this link&lt;/a&gt; from your phone.</value>
   </data>
   <data name="Instruction2" xml:space="preserve">
     <value>Once you've launched Telegram, click the &lt;b&gt;Start&lt;/b&gt; button in the app.</value>

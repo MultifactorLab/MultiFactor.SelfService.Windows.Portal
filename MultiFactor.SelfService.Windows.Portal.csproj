@@ -311,6 +311,7 @@
     <Content Include="Content\fonts\subset-SFUIText-Semibold.ttf" />
     <Content Include="Content\fonts\subset-SFUIText-Semibold.woff" />
     <Content Include="Content\fonts\subset-SFUIText-Semibold.woff2" />
+    <Content Include="LICENSE" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -380,11 +381,13 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Telegram.ru.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Telegram.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Telegram.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\MobileApp.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -428,7 +431,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="LICENSE" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="README.md" />
@@ -437,6 +439,7 @@
     <Content Include="Views\Totp\Index.cshtml" />
     <Content Include="Views\Telegram\Index.cshtml" />
     <Content Include="Views\MobileApp\Index.cshtml" />
+    <Content Include="README.ru.md" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
