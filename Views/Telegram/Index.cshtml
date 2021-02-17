@@ -4,12 +4,16 @@
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 }
 
+@{
+    var botName = "MultifactorBot";
+}
+
 <div class="block">
     <div class="container">
         <div class="info">
             <p>@Resources.Telegram.Header</p>
 
-            <p>@Html.Raw(string.Format(Resources.Telegram.Instruction1, Model.Id))</p>
+            <p>@Html.Raw(string.Format(Resources.Telegram.Instruction1, botName, Model.Id))</p>
             <p>@Html.Raw(Resources.Telegram.Instruction2)</p>
 
             <br />
@@ -27,7 +31,7 @@
 </div>
 
 <script type="text/javascript">
-    new QRCode(document.getElementById("qrcode"), "tg://resolve?domain=MultifactorBot&start=@Model.Id");
+    new QRCode(document.getElementById("qrcode"), "tg://resolve?domain=@botName&start=@Model.Id");
 </script>
 
 @section head

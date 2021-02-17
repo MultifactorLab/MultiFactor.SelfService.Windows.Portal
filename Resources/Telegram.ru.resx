@@ -121,7 +121,7 @@
     <value>Для подключения:</value>
   </data>
   <data name="Instruction1" xml:space="preserve">
-    <value>Установите приложение Telegram на телефон, включите камеру и наведите на картинку ниже или откройте &lt;a href="tg://resolve?domain=MultifactorBot&amp;start={0}"&gt;эту ссылку&lt;/a&gt; с телефона.</value>
+    <value>Установите приложение Telegram на телефон, включите камеру и наведите на картинку ниже или откройте &lt;a href="tg://resolve?domain={0}&amp;start={1}"&gt;эту ссылку&lt;/a&gt; с телефона.</value>
   </data>
   <data name="Instruction2" xml:space="preserve">
     <value>После запуска Telegram, &lt;b&gt;нажмите на кнопку Start&lt;/b&gt; в приложении.</value>
