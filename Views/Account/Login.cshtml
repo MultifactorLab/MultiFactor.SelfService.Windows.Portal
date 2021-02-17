@@ -19,7 +19,7 @@
                     @Html.ValidationMessageFor(m => m.UserName)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password })
+                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.Password)
                 </div>
                 @Html.ValidationSummary(true)

@@ -22,15 +22,15 @@
             </div>
             <div class="form-row">
                 <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword })
+                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.Password)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword })
+                    @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.NewPassword)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword })
+                    @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.NewPasswordAgain)
                 </div>
             </div>
