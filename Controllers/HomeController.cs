@@ -1,6 +1,5 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Services.API;
 using System.Web.Mvc;
-using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {

@@ -123,11 +123,14 @@
   <data name="Password" xml:space="preserve">
     <value>Пароль</value>
   </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Пожалуйста, подождите...</value>
+  </data>
   <data name="Submit" xml:space="preserve">
     <value>Войти</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Вход на сайт двухфакторной аутентификации {0}</value>
+    <value>Вход на сайт</value>
   </data>
   <data name="UserName" xml:space="preserve">
     <value>Имя пользователя</value>

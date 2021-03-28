@@ -464,7 +464,6 @@ h1 {
     font-weight: 800;
     font-size: 24px;
     line-height: 31px;
-    margin-bottom: 31px;
     text-align: center;
 }
 
@@ -637,7 +636,7 @@ p {
         }
 
 .login .form-column {
-    padding: 45px 0 0;
+    padding: 85px 0 0;
     width: 375px;
 }
 
@@ -763,20 +762,20 @@ table.authenticators {
         margin-bottom: 19px;
     }
 
-    .block .action {
+    ul.action {
         margin: 0 auto;
         max-width: 353px;
     }
 
-        .block .action li {
+        ul.action li {
             margin-bottom: 24px;
         }
 
-            .block .action li:last-child {
+            ul.action li:last-child {
                 margin-bottom: 0;
             }
 
-    .block .btn {
+    a.btn {
         display: block;
         border: 2px solid #4082BC;
         border-radius: 4px;
@@ -786,19 +785,20 @@ table.authenticators {
         font-weight: bold;
         font-size: 16px;
         text-decoration: none;
+        text-align: center;
     }
 
-        .block .btn:hover {
+        a.btn:hover {
             color: #fff;
             background: #4082BC;
         }
 
-    .block .active .btn {
+    a.active .btn {
         color: #fff;
         background: #4082BC;
     }
 
-        .block .active .btn:hover {
+        a.active .btn:hover {
             background: #fff;
             color: #4082BC;
         }

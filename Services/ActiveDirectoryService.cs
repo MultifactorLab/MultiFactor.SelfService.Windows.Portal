@@ -110,7 +110,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         /// <summary>
         /// Change user password
         /// </summary>
-        public bool ChangePassword(string userName, string currentPassword, string newPassword, out string errorReason)
+        public bool ChangePassword(string userName, string currentPassword, string newPassword, bool bindWithCredentials, out string errorReason)
         {
             var identity = LdapIdentity.ParseUser(userName);
             errorReason = null;
@@ -121,7 +121,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
-                    connection.Credential = new NetworkCredential(identity.Name, currentPassword);
+                    if (bindWithCredentials)
+                    {
+                        connection.Credential = new NetworkCredential(identity.Name, currentPassword);
+                    }
+
                     connection.Bind();
 
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
@@ -137,7 +141,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 _logger.Debug($"Changing password for user '{identity.Name}' in {userProfile.BaseDn.DnToFqdn()}");
 
-                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null, ContextOptions.Negotiate, identity.Name, currentPassword))
+                using (var ctx = CreateContext(userProfile.BaseDn.DnToFqdn(), bindWithCredentials, identity.Name, currentPassword))
                 {
                     using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName, userProfile.DistinguishedName))
                     {
@@ -146,7 +150,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     }
                 }
 
-                _logger.Debug($"Password changed for user '{identity.Name}'");
+                _logger.Information($"Password changed for user '{identity.Name}'");
                 return true;
             }
             catch(PasswordException pex)
@@ -377,6 +381,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 _logger.Error(ex, "Unable to load forest schema");
                 return null;
             }
+        }
+
+        private PrincipalContext CreateContext(string basedn, bool bindWithCredentials, string username = null, string password = null)
+        {
+            if (bindWithCredentials)
+            {
+                return new PrincipalContext(ContextType.Domain, basedn, null, ContextOptions.Negotiate, username, password);
+            }
+
+            return new PrincipalContext(ContextType.Domain, basedn, null, ContextOptions.Negotiate);
         }
     }
 }

@@ -76,6 +76,7 @@
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=6.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\System.IdentityModel.Tokens.Jwt.6.5.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -143,12 +144,14 @@
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MobileAppController.cs" />
+    <Compile Include="Controllers\ExpiredPasswordController.cs" />
     <Compile Include="Controllers\PasswordController.cs" />
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
     <Compile Include="Models\LoginModel.cs" />
@@ -170,6 +173,16 @@
     </Compile>
     <Compile Include="Resources\AD.Designer.cs">
       <DependentUpon>AD.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\ExpiredPasswordChange.ru.Designer.cs">
+      <DependentUpon>ExpiredPasswordChange.ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\ExpiredPasswordChange.Designer.cs">
+      <DependentUpon>ExpiredPasswordChange.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -264,6 +277,7 @@
     <Compile Include="Services\API\DTO\UserProfilePolicy.cs" />
     <Compile Include="Services\API\MultiFactorSelfServiceApiClient.cs" />
     <Compile Include="Services\API\UnauthorizedException.cs" />
+    <Compile Include="Services\DataProtectionService.cs" />
     <Compile Include="Services\Ldap\LdapIdentity.cs" />
     <Compile Include="Services\Ldap\LdapProfile.cs" />
     <Compile Include="Services\API\MultiFactorApiClient.cs" />
@@ -345,6 +359,16 @@
     <EmbeddedResource Include="Resources\AD.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AD.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ExpiredPasswordChange.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExpiredPasswordChange.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ExpiredPasswordChange.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExpiredPasswordChange.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\PasswordChange.ru.resx">
@@ -440,6 +464,8 @@
     <Content Include="Views\Telegram\Index.cshtml" />
     <Content Include="Views\MobileApp\Index.cshtml" />
     <Content Include="README.ru.md" />
+    <Content Include="Views\ExpiredPassword\Change.cshtml" />
+    <Content Include="Views\ExpiredPassword\Done.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

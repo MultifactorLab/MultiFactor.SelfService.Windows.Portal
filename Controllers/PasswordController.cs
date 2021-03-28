@@ -24,6 +24,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Change(ChangePasswordModel model)
         {
             var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
@@ -35,7 +36,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     if (ModelState.IsValid)
                     {
                         var activeDirectoryService = new ActiveDirectoryService();
-                        if (activeDirectoryService.ChangePassword(User.Identity.Name, model.Password, model.NewPassword, out string errorReason))
+                        if (activeDirectoryService.ChangePassword(User.Identity.Name, model.Password, model.NewPassword, true, out string errorReason))
                         {
                             return RedirectToAction("Index", "Home");
                         }
@@ -46,7 +47,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, "Неверное имя пользователя или пароль");
+                        ModelState.AddModelError(string.Empty, Resources.PasswordChange.WrongUserNameOrPassword);
                     }
                     return View(model);
                 }

@@ -1,39 +1,46 @@
 ﻿@model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
 
 @{
-    ViewBag.Title = string.Format(Resources.AccountLogin.Title, Configuration.Current.CompanyName);
+    ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 }
 <div action="#" class="login">
     <div class="form-bg">
         <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
     </div>
     <div class="form-column">
+        <h2>@Resources.AccountLogin.Title</h2>
         @using (Html.BeginForm("Login", "Account", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
-        <fieldset>
-            @Html.AntiForgeryToken()
-            <p>@Resources.AccountLogin.Invitation</p>
-            <div class="form-row">
-                <div class="input">
-                    @Html.TextBoxFor(m => m.UserName, new { placeholder = Resources.AccountLogin.UserName })
-                    @Html.ValidationMessageFor(m => m.UserName)
+            <fieldset>
+                @Html.AntiForgeryToken()
+                <p>@Resources.AccountLogin.Invitation</p>
+                <div class="form-row">
+                    <div class="input">
+                        @Html.TextBoxFor(m => m.UserName, new { placeholder = Resources.AccountLogin.UserName })
+                        @Html.ValidationMessageFor(m => m.UserName)
+                    </div>
+                    <div class="input">
+                        @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
+                    @Html.ValidationSummary(true)
                 </div>
-                <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.Password)
+                <div class="form-row">
+                    <input type="hidden" name="myUrl" id="myUrl" />
+                    <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" id="submit" />
                 </div>
-                @Html.ValidationSummary(true)
-            </div>
-            <div class="form-row">
-                <input type="hidden" name="myUrl" id="myUrl" />
-                <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" />
-            </div>
-        </fieldset>
+            </fieldset>
         }
     </div>
 </div>
 <script type="text/javascript">
     $(document).ready(function(){
         $('#myUrl').val(document.location);
+
+        $("form").submit(function () {
+            if ($(this).valid()) {
+                $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
+            }
+        });
     });
 </script>

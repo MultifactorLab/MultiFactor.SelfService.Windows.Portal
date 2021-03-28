@@ -4,6 +4,7 @@ using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
@@ -20,7 +21,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpPost]
-        public ActionResult Login(LoginModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
@@ -43,15 +45,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
-                }
+                    if (adValidationResult.UserMustChangePassword)
+                    {
+                        var dataProtectionService = new DataProtectionService();
+                        var encryptedPassword = dataProtectionService.Protect(model.Password.Trim());
+                        Session[Constants.SESSION_EXPIRED_PASSWORD_USER_KEY] = model.UserName.Trim();
+                        Session[Constants.SESSION_EXPIRED_PASSWORD_CIPHER_KEY] = encryptedPassword;
 
-                //must change password
-                //in progress
-                //if (adValidationResult.UserMustChangePassword)
-                //{
-                //    return RedirectToMfa(model.UserName, model.MyUrl, mustResetPasword: true);
-                //}
+                        return RedirectToAction("Change", "ExpiredPassword");
+                    }
+                    
+                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
+
+                    //invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
+                    var rnd = new Random();
+                    int delay = rnd.Next(2, 6);
+                    await Task.Delay(TimeSpan.FromSeconds(delay));
+                }
             }
 
             return View(model);
@@ -122,10 +132,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 _logger.Information($"User {token.Identity} authenticated");
 
                 //save token to cookie
+                //secure flag managed by web.config settings
                 var cookie = new HttpCookie(Constants.COOKIE_NAME)
                 {
                     Value = accessToken,
-                    //Secure = true,
                     Expires = token.ValidTo
                 };
 

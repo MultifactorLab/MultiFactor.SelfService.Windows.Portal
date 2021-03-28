@@ -1,0 +1,21 @@
+﻿
+@{
+    ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+}
+
+<div class="block">
+    <div class="container">
+        <div class="info">
+            <h2>@Resources.ExpiredPasswordChange.Title</h2>
+
+            <p>
+                @Resources.ExpiredPasswordChange.Info
+            </p>
+
+            <ul class="action">
+                <li><a href="~/" class="btn">@Resources.ExpiredPasswordChange.Ok</a></li>
+            </ul>
+        </div>
+
+    </div>
+</div>
