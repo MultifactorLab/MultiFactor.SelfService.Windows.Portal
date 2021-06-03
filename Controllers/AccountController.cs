@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 using System.Web.Security;
 
@@ -17,6 +18,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         
         public ActionResult Login()
         {
+            if (Request.LogonUserIdentity?.IsAuthenticated == true) //integrated windows authentication
+            {
+                var userName = Request.LogonUserIdentity.Name;
+
+                _logger.Information($"User '{userName}' authenticated by NTLM/Kerberos");
+
+                var samlSessionId = GetSamlSessionIdFromRedirectUrl(userName);
+                return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId);
+            }
+
             return View(new LoginModel());
         }
 
@@ -69,7 +80,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Logout()
         {
-            return SignOut();
+            var authenticationSection = (AuthenticationSection)WebConfigurationManager.GetSection("system.web/authentication");
+            if (authenticationSection.Mode == AuthenticationMode.Forms)
+            {
+                return SignOut();
+            }
+
+            SignOut();
+            return View();
         }
 
         private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, bool mustResetPassword = false)
@@ -168,7 +186,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
             }
 
-            return null;
+            return Request.QueryString["samlSessionId"];
         }
     }
 }

@@ -466,6 +466,7 @@
     <Content Include="README.ru.md" />
     <Content Include="Views\ExpiredPassword\Change.cshtml" />
     <Content Include="Views\ExpiredPassword\Done.cshtml" />
+    <Content Include="Views\Account\Logout.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -17,7 +17,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 Response.Cookies[Constants.COOKIE_NAME].Expires = DateTime.Now.AddDays(-1);
             }
 
-            return Redirect(FormsAuthentication.LoginUrl);
+            var returnUrl = FormsAuthentication.LoginUrl;
+            var samlSessionId = Request.QueryString["samlSessionId"];
+            if (samlSessionId != null)
+            {
+                returnUrl += "?samlSessionId=" + samlSessionId;
+            }
+
+            return Redirect(returnUrl);
         }
     }
 }
