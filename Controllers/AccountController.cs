@@ -56,7 +56,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
                 else
                 {
-                    if (adValidationResult.UserMustChangePassword)
+                    if (adValidationResult.UserMustChangePassword && Configuration.Current.EnablePasswordManagement)
                     {
                         var dataProtectionService = new DataProtectionService();
                         var encryptedPassword = dataProtectionService.Protect(model.Password.Trim());

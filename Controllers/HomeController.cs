@@ -24,6 +24,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 var api = new MultiFactorSelfServiceApiClient(tokenCookie.Value);
                 var userProfile = api.LoadProfile();
+                userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
+                userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
 
                 return View(userProfile);
             }

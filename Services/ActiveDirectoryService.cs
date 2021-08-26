@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.Caching;
 using System.Collections.Generic;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
+using MultiFactor.SelfService.Windows.Portal.Models;
+using System.Globalization;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -70,7 +72,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                         if (!isMemberOf)
                         {
-                            _logger.Information($"User '{user.Name}' is NOT member of {_configuration.ActiveDirectory2FaGroup} group");
+                            _logger.Information($"User '{user.Name}' is not member of {_configuration.ActiveDirectory2FaGroup} group");
                             _logger.Information($"Bypass second factor for user '{user.Name}'");
                             return ActiveDirectoryCredentialValidationResult.ByPass();
                         }
@@ -104,6 +106,175 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 _logger.Error(ex, $"Verification user '{user.Name}' at {_configuration.Domain} failed.");
                 return ActiveDirectoryCredentialValidationResult.UnknowError();
+            }
+        }
+
+        public IList<ExchangeActiveSyncDevice> SearchExchangeActiveSyncDevices(string userName)
+        {
+            var ret = new List<ExchangeActiveSyncDevice>();
+            var user = LdapIdentity.ParseUser(userName);
+
+            try
+            {
+                LdapProfile userProfile;
+
+                using (var connection = new LdapConnection(_configuration.Domain))
+                {
+                    //as app pool identity
+                    connection.Bind();
+
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                    var isProfileLoaded = LoadProfile(connection, domain, user, out var profile);
+
+                    if (!isProfileLoaded)
+                    {
+                        var errText = $"Unable to load profile for user {userName}";
+                        _logger.Error(errText);
+                        throw new Exception(errText);
+                    }
+
+                    userProfile = profile;
+
+                    _logger.Debug($"Searching Exchange ActiveSync devices for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()}");
+
+                    var filter = $"(objectclass=msexchactivesyncdevice)";
+
+                    var attrs = new[] 
+                    {
+                        "msExchDeviceID",
+                        "msExchDeviceAccessState",
+                        "msExchDeviceAccessStateReason",
+                        "msExchDeviceFriendlyName", 
+                        "msExchDeviceModel",
+                        "msExchDeviceType",
+                        "whenCreated" 
+                    };
+
+                    //active sync devices inside user dn container
+                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree, attrs);
+
+                    _logger.Debug($"Found {searchResponse.Entries.Count} devices");
+
+                    for (var i=0; i < searchResponse.Entries.Count; i++)
+                    {
+                        var entry = searchResponse.Entries[i];
+                        ret.Add(new ExchangeActiveSyncDevice
+                        {
+                            MsExchDeviceId = entry.Attributes["msExchDeviceID"][0].ToString(),
+                            AccessState = (ExchangeActiveSyncDeviceAccessState)Convert.ToInt32(entry.Attributes["msExchDeviceAccessState"][0]),
+                            AccessStateReason = entry.Attributes["msExchDeviceAccessStateReason"]?[0]?.ToString(),
+                            FriendlyName = entry.Attributes["msExchDeviceFriendlyName"]?[0]?.ToString(),
+                            Model = entry.Attributes["msExchDeviceModel"]?[0]?.ToString(),
+                            Type = entry.Attributes["msExchDeviceType"]?[0]?.ToString(),
+                            WhenCreated = ParseLdapDate(entry.Attributes["whenCreated"][0].ToString()),
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Search for user '{user.Name}' failed: {ex}");
+            }
+
+            return ret;
+        }
+
+        public void UpdateExchangeActiveSyncDeviceState(string userName, string deviceId, ExchangeActiveSyncDeviceAccessState state)
+        {
+            var user = LdapIdentity.ParseUser(userName);
+
+            try
+            {
+                LdapProfile userProfile;
+
+                using (var connection = new LdapConnection(_configuration.Domain))
+                {
+                    //as app pool identity
+                    //must be member of exchange trusted subsystem or equal permissions
+                    connection.Bind();
+
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                    var isProfileLoaded = LoadProfile(connection, domain, user, out var profile);
+
+                    if (!isProfileLoaded)
+                    {
+                        var errText = $"Unable to load profile for user {userName}";
+                        _logger.Error(errText);
+                        throw new Exception(errText);
+                    }
+
+                    userProfile = profile;
+
+                    _logger.Debug($"Updating Exchange ActiveSync device {deviceId} for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()} with status {state}");
+
+                    var filter = $"(&(objectclass=msexchactivesyncdevice)(msExchDeviceID={deviceId}))";
+
+                    //active sync device inside user dn container
+                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree);
+                    if (searchResponse.Entries.Count == 0)
+                    {
+                        _logger.Warning($"Exchange ActiveSync device {deviceId} not found for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()}");
+                        return;
+                    }
+
+
+                    //first, we need to update device state and state reason.
+                    //modify attributes msExchDeviceAccessState and msExchDeviceAccessStateReason
+
+                    var deviceDn = searchResponse.Entries[0].DistinguishedName;
+
+                    var stateModificator = new DirectoryAttributeModification
+                    {
+                        Name = "msExchDeviceAccessState",
+                        Operation = DirectoryAttributeOperation.Replace,
+                    };
+                    stateModificator.Add(state.ToString("d"));
+                    
+                    var stateReasonModificator = new DirectoryAttributeModification
+                    {
+                        Name = "msExchDeviceAccessStateReason",
+                        Operation = DirectoryAttributeOperation.Replace,
+                    };
+                    stateReasonModificator.Add("2");    //individual
+
+                    connection.SendRequest(new ModifyRequest(deviceDn, new[]
+                    {
+                        stateModificator,
+                        stateReasonModificator
+                    }));
+
+                    //then update user msExchMobileAllowedDeviceIDs and msExchMobileBlockedDeviceIDs attributes
+                    var allowedModificator = new DirectoryAttributeModification
+                    {
+                        Name = "msExchMobileAllowedDeviceIDs",
+                        Operation = state == ExchangeActiveSyncDeviceAccessState.Allowed ? DirectoryAttributeOperation.Add : DirectoryAttributeOperation.Delete
+                    };
+                    allowedModificator.Add(deviceId);
+
+                    var blockedModificator = new DirectoryAttributeModification
+                    {
+                        Name = "msExchMobileBlockedDeviceIDs",
+                        Operation = state == ExchangeActiveSyncDeviceAccessState.Blocked ? DirectoryAttributeOperation.Add : DirectoryAttributeOperation.Delete
+                    };
+                    blockedModificator.Add(deviceId);
+
+                    var modifyRequest = new ModifyRequest(userProfile.DistinguishedName, new[]
+                    {
+                        allowedModificator,
+                        blockedModificator
+                    });
+
+                    //ignore if it attempts to add an attribute that already exists or if it attempts to delete an attribute that does not exist
+                    modifyRequest.Controls.Add(new PermissiveModifyControl());
+
+                    connection.SendRequest(modifyRequest);
+
+                    _logger.Information($"Exchange ActiveSync device {deviceId} {state.ToString().ToLower()} for user '{user.Name}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Update Exchange ActiveSync device {deviceId} for user '{user.Name}' failed: {ex.Message}");
             }
         }
 
@@ -391,6 +562,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
 
             return new PrincipalContext(ContextType.Domain, basedn, null, ContextOptions.Negotiate);
+        }
+        
+        private DateTime ParseLdapDate(string dateString)
+        {
+            return DateTime
+                .ParseExact(dateString, "yyyyMMddHHmmss.f'Z'", CultureInfo.InvariantCulture)
+                .ToLocalTime();
         }
     }
 }

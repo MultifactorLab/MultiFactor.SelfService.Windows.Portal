@@ -17,6 +17,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            if (!Configuration.Current.EnablePasswordManagement)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             return View();
         }
 
@@ -24,6 +29,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Change(ChangeExpiredPasswordModel model)
         {
+            if (!Configuration.Current.EnablePasswordManagement)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (ModelState.IsValid)
             {
                 var userName = Session[Constants.SESSION_EXPIRED_PASSWORD_USER_KEY] as string;

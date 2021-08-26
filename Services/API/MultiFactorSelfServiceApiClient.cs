@@ -4,7 +4,6 @@ using Serilog;
 using System;
 using System.Collections.Specialized;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -77,8 +76,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
         public ApiResponse AddTotpAuthenticator(string key, string otp)
         {
-            if (string.IsNullOrEmpty(key)) throw new NotImplementedException(nameof(key));
-            if (string.IsNullOrEmpty(otp)) throw new NotImplementedException(nameof(otp));
+            if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+            if (string.IsNullOrEmpty(otp)) throw new ArgumentNullException(nameof(otp));
 
             try
             {
@@ -112,8 +111,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
         public ApiResponse RemoveAuthenticator(string authenticator, string id)
         {
-            if (string.IsNullOrEmpty(authenticator)) throw new NotImplementedException(nameof(authenticator));
-            if (string.IsNullOrEmpty(id)) throw new NotImplementedException(nameof(id));
+            if (string.IsNullOrEmpty(authenticator)) throw new ArgumentNullException(nameof(authenticator));
+            if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
 
             try
             {

@@ -22,14 +22,14 @@ namespace Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Home {
+    public class ExchangeActiveSyncDevices {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Home() {
+        internal ExchangeActiveSyncDevices() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MultiFactor.SelfService.Windows.Portal.Resources.Home", typeof(Home).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MultiFactor.SelfService.Windows.Portal.Resources.ExchangeActiveSyncDevices", typeof(ExchangeActiveSyncDevices).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,110 +61,128 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Change password.
+        ///   Looks up a localized string similar to Allow.
         /// </summary>
-        public static string ChangePassword {
+        public static string Allow {
             get {
-                return ResourceManager.GetString("ChangePassword", resourceCulture);
+                return ResourceManager.GetString("Allow", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have these authentication methods connected:.
+        ///   Looks up a localized string similar to Allow this device?.
         /// </summary>
-        public static string ConfiguredMethods {
+        public static string AllowConfirm {
             get {
-                return ResourceManager.GetString("ConfiguredMethods", resourceCulture);
+                return ResourceManager.GetString("AllowConfirm", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove method?.
+        ///   Looks up a localized string similar to Allowed.
         /// </summary>
-        public static string ConfirmRemoving {
+        public static string AllowedState {
             get {
-                return ResourceManager.GetString("ConfirmRemoving", resourceCulture);
+                return ResourceManager.GetString("AllowedState", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exit.
+        ///   Looks up a localized string similar to Block.
         /// </summary>
-        public static string Exit {
+        public static string Block {
             get {
-                return ResourceManager.GetString("Exit", resourceCulture);
+                return ResourceManager.GetString("Block", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hello.
+        ///   Looks up a localized string similar to Block this device?.
         /// </summary>
-        public static string Greetings {
+        public static string BlockConfirm {
             get {
-                return ResourceManager.GetString("Greetings", resourceCulture);
+                return ResourceManager.GetString("BlockConfirm", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manage ActiveSync devices.
+        ///   Looks up a localized string similar to Blocked.
         /// </summary>
-        public static string ManageActiveSyncDevices {
+        public static string BlockedState {
             get {
-                return ResourceManager.GetString("ManageActiveSyncDevices", resourceCulture);
+                return ResourceManager.GetString("BlockedState", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mobile app.
+        ///   Looks up a localized string similar to Device / ID.
         /// </summary>
-        public static string MobileApp {
+        public static string DeviceAndId {
             get {
-                return ResourceManager.GetString("MobileApp", resourceCulture);
+                return ResourceManager.GetString("DeviceAndId", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Phone.
+        ///   Looks up a localized string similar to ActiveSync devices.
         /// </summary>
-        public static string Phone {
+        public static string Header {
             get {
-                return ResourceManager.GetString("Phone", resourceCulture);
+                return ResourceManager.GetString("Header", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to remove.
+        ///   Looks up a localized string similar to The list contains mobile devices with your mail.&lt;br/&gt;If you have received an email that your device is in quarantine, check the ID before turning it on..
         /// </summary>
-        public static string Remove {
+        public static string Instruction1 {
             get {
-                return ResourceManager.GetString("Remove", resourceCulture);
+                return ResourceManager.GetString("Instruction1", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect Google Authenticator.
+        ///   Looks up a localized string similar to Nothing found.
         /// </summary>
-        public static string SetupGoogleAuthenticator {
+        public static string NothingFound {
             get {
-                return ResourceManager.GetString("SetupGoogleAuthenticator", resourceCulture);
+                return ResourceManager.GetString("NothingFound", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect mobile app.
+        ///   Looks up a localized string similar to Ok.
         /// </summary>
-        public static string SetupMobileApp {
+        public static string Ok {
             get {
-                return ResourceManager.GetString("SetupMobileApp", resourceCulture);
+                return ResourceManager.GetString("Ok", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect Telegram.
+        ///   Looks up a localized string similar to Quarantined.
         /// </summary>
-        public static string SetupTelegram {
+        public static string QuarantinedState {
             get {
-                return ResourceManager.GetString("SetupTelegram", resourceCulture);
+                return ResourceManager.GetString("QuarantinedState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State.
+        /// </summary>
+        public static string State {
+            get {
+                return ResourceManager.GetString("State", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When created.
+        /// </summary>
+        public static string WhenCreated {
+            get {
+                return ResourceManager.GetString("WhenCreated", resourceCulture);
             }
         }
     }

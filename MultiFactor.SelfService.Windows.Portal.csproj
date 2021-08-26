@@ -145,12 +145,14 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MobileAppController.cs" />
     <Compile Include="Controllers\ExpiredPasswordController.cs" />
+    <Compile Include="Controllers\ExchangeActiveSyncDevicesController.cs" />
     <Compile Include="Controllers\PasswordController.cs" />
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
@@ -176,6 +178,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Resources\ExchangeActiveSyncDevices.ru.Designer.cs">
+      <DependentUpon>ExchangeActiveSyncDevices.ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Resources\ExpiredPasswordChange.ru.Designer.cs">
       <DependentUpon>ExpiredPasswordChange.ru.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -193,6 +200,11 @@
     </Compile>
     <Compile Include="Resources\PasswordChange.Designer.cs">
       <DependentUpon>PasswordChange.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\ExchangeActiveSyncDevices.Designer.cs">
+      <DependentUpon>ExchangeActiveSyncDevices.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -361,6 +373,12 @@
       <LastGenOutput>AD.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ExchangeActiveSyncDevices.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExchangeActiveSyncDevices.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\ExpiredPasswordChange.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ExpiredPasswordChange.ru.Designer.cs</LastGenOutput>
@@ -380,6 +398,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PasswordChange.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\ExchangeActiveSyncDevices.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExchangeActiveSyncDevices.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Validation.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -467,6 +491,7 @@
     <Content Include="Views\ExpiredPassword\Change.cshtml" />
     <Content Include="Views\ExpiredPassword\Done.cshtml" />
     <Content Include="Views\Account\Logout.cshtml" />
+    <Content Include="Views\ExchangeActiveSyncDevices\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

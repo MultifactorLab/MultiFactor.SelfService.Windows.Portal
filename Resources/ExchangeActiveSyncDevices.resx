@@ -117,40 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChangePassword" xml:space="preserve">
-    <value>Change password</value>
+  <data name="Allow" xml:space="preserve">
+    <value>Allow</value>
   </data>
-  <data name="ConfiguredMethods" xml:space="preserve">
-    <value>You have these authentication methods connected:</value>
+  <data name="AllowConfirm" xml:space="preserve">
+    <value>Allow this device?</value>
   </data>
-  <data name="ConfirmRemoving" xml:space="preserve">
-    <value>Remove method?</value>
+  <data name="AllowedState" xml:space="preserve">
+    <value>Allowed</value>
   </data>
-  <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
+  <data name="Block" xml:space="preserve">
+    <value>Block</value>
   </data>
-  <data name="Greetings" xml:space="preserve">
-    <value>Hello</value>
+  <data name="BlockConfirm" xml:space="preserve">
+    <value>Block this device?</value>
   </data>
-  <data name="ManageActiveSyncDevices" xml:space="preserve">
-    <value>Manage ActiveSync devices</value>
+  <data name="BlockedState" xml:space="preserve">
+    <value>Blocked</value>
   </data>
-  <data name="MobileApp" xml:space="preserve">
-    <value>Mobile app</value>
+  <data name="DeviceAndId" xml:space="preserve">
+    <value>Device / ID</value>
   </data>
-  <data name="Phone" xml:space="preserve">
-    <value>Phone</value>
+  <data name="Header" xml:space="preserve">
+    <value>ActiveSync devices</value>
   </data>
-  <data name="Remove" xml:space="preserve">
-    <value>remove</value>
+  <data name="Instruction1" xml:space="preserve">
+    <value>The list contains mobile devices with your mail.&lt;br/&gt;If you have received an email that your device is in quarantine, check the ID before turning it on.</value>
   </data>
-  <data name="SetupGoogleAuthenticator" xml:space="preserve">
-    <value>Connect Google Authenticator</value>
+  <data name="NothingFound" xml:space="preserve">
+    <value>Nothing found</value>
   </data>
-  <data name="SetupMobileApp" xml:space="preserve">
-    <value>Connect mobile app</value>
+  <data name="Ok" xml:space="preserve">
+    <value>Ok</value>
   </data>
-  <data name="SetupTelegram" xml:space="preserve">
-    <value>Connect Telegram</value>
+  <data name="QuarantinedState" xml:space="preserve">
+    <value>Quarantined</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="WhenCreated" xml:space="preserve">
+    <value>When created</value>
   </data>
 </root>

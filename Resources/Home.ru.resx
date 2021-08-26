@@ -132,6 +132,9 @@
   <data name="Greetings" xml:space="preserve">
     <value>Здравствуйте,</value>
   </data>
+  <data name="ManageActiveSyncDevices" xml:space="preserve">
+    <value>Проверить устройства с почтой</value>
+  </data>
   <data name="MobileApp" xml:space="preserve">
     <value>Мобильное приложение</value>
   </data>

@@ -1,0 +1,86 @@
+﻿@model IList<MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDevice>
+
+@{
+    ViewBag.Title = Resources.ExchangeActiveSyncDevices.Header;
+}
+
+<div class="block">
+    <div class="container">
+        <div class="info">
+            @Html.Raw(@Resources.ExchangeActiveSyncDevices.Instruction1)
+        </div>
+        <br />
+        @if (Model.Count == 0)
+        {
+            <p>@Resources.ExchangeActiveSyncDevices.NothingFound</p>
+        }
+        else
+        {
+            <table class="authenticators">
+                <thead>
+                    <tr>
+                        <th>@Resources.ExchangeActiveSyncDevices.DeviceAndId</th>
+                        <th>@Resources.ExchangeActiveSyncDevices.WhenCreated</th>
+                        <th>@Resources.ExchangeActiveSyncDevices.State</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                @foreach (var device in Model)
+                {
+                    <tr>
+                        <td>@device.DisplayName<br /><small>@device.MsExchDeviceId</small></td>
+                        <td>@device.WhenCreated.ToShortDateString()</td>
+                        <td>@device.AccessStateName</td>
+                        <td>
+                            @{
+                                switch (device.AccessState)
+                                {
+                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Allowed:
+                                        <a href="#" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
+                                        break;
+                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Blocked:
+                                        <a href="#" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
+                                        break;
+                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Quarantined:
+                                        <a href="#" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
+                                        <a href="#" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
+                                        break;
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </table>
+        }
+        <br />
+        <br />
+        <ul class="action">
+            <li><a href="~/" class="btn">@Resources.ExchangeActiveSyncDevices.Ok</a></li>
+        </ul>
+    </div>
+</div>
+@using (Html.BeginForm("Approve", "ExchangeActiveSyncDevices", FormMethod.Post, new { Id = "approve-form" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="approve-form-deviceId" name="deviceId" />
+}
+@using (Html.BeginForm("Reject", "ExchangeActiveSyncDevices", FormMethod.Post, new { Id = "reject-form" }))
+{
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="reject-form-deviceId" name="deviceId" />
+}
+<script type="text/javascript">
+    function approve(deviceId) {
+        if (confirm('@Resources.ExchangeActiveSyncDevices.AllowConfirm')) {
+            $('#approve-form-deviceId').val(deviceId);
+            $('#approve-form').submit();
+        }
+    }
+    function reject(deviceId) {
+        if (confirm('@Resources.ExchangeActiveSyncDevices.BlockConfirm')) {
+            $('#reject-form-deviceId').val(deviceId);
+            $('#reject-form').submit();
+        }
+    }
+</script>
+

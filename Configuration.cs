@@ -47,10 +47,12 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Multifactor API URL
         /// </summary>
         public string MultiFactorApiUrl { get; set; }
+
         /// <summary>
         /// HTTP Proxy for API
         /// </summary>
         public string MultiFactorApiProxy { get; set; }
+
         /// <summary>
         /// Multifactor API KEY
         /// </summary>
@@ -65,6 +67,9 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Logging level
         /// </summary>
         public string LogLevel { get; set; }
+
+        public bool EnablePasswordManagement { get; set; }
+        public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
 
         public static void Load()
         {
@@ -82,6 +87,8 @@ namespace MultiFactor.SelfService.Windows.Portal
             var logLevelSetting = appSettings["logging-level"];
             var useActiveDirectoryUserPhoneSetting = appSettings["use-active-directory-user-phone"];
             var useActiveDirectoryMobileUserPhoneSetting = appSettings["use-active-directory-mobile-user-phone"];
+            var enablePasswordManagementSetting = appSettings["enable-password-management"];
+            var enableExchangeActiveSyncSevicesManagementSetting = appSettings["enable-exchange-active-sync-devices-management"];
 
             if (string.IsNullOrEmpty(companyNameSetting))
             {
@@ -123,7 +130,9 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiKey = apiKeySetting,
                 MultiFactorApiSecret = apiSecretSetting,
                 MultiFactorApiProxy = apiProxySetting,
-                LogLevel = logLevelSetting
+                LogLevel = logLevelSetting,
+                EnableExchangeActiveSyncDevicesManagement = false,
+                EnablePasswordManagement = true
             };
 
             if (!string.IsNullOrEmpty(useActiveDirectoryUserPhoneSetting))
@@ -144,6 +153,24 @@ namespace MultiFactor.SelfService.Windows.Portal
                 }
 
                 configuration.UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhone;
+            }
+
+            if (!string.IsNullOrEmpty(enablePasswordManagementSetting))
+            {
+                if (!bool.TryParse(enablePasswordManagementSetting, out var enablePasswordManagement))
+                {
+                    throw new Exception("Configuration error: Can't parse 'enable-password-management' value");
+                }
+                configuration.EnablePasswordManagement = enablePasswordManagement;
+            }
+
+            if (!string.IsNullOrEmpty(enableExchangeActiveSyncSevicesManagementSetting))
+            {
+                if (!bool.TryParse(enableExchangeActiveSyncSevicesManagementSetting, out var enableExchangeActiveSyncSevicesManagement))
+                {
+                    throw new Exception("Configuration error: Can't parse 'enable-exchange-active-sync-devices-management' value");
+                }
+                configuration.EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncSevicesManagement;
             }
 
             Current = configuration;

@@ -10,13 +10,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [HttpGet]
         public ActionResult Change()
         {
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie != null)
+            if (Configuration.Current.EnablePasswordManagement)
             {
-                var tokenValidationService = new TokenValidationService();
-                if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
+                var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
+                if (tokenCookie != null)
                 {
-                    return View();
+                    var tokenValidationService = new TokenValidationService();
+                    if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
+                    {
+                        return View();
+                    }
                 }
             }
 
@@ -27,29 +30,32 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Change(ChangePasswordModel model)
         {
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie != null)
+            if (Configuration.Current.EnablePasswordManagement)
             {
-                var tokenValidationService = new TokenValidationService();
-                if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
+                var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
+                if (tokenCookie != null)
                 {
-                    if (ModelState.IsValid)
+                    var tokenValidationService = new TokenValidationService();
+                    if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
                     {
-                        var activeDirectoryService = new ActiveDirectoryService();
-                        if (activeDirectoryService.ChangePassword(User.Identity.Name, model.Password, model.NewPassword, true, out string errorReason))
+                        if (ModelState.IsValid)
                         {
-                            return RedirectToAction("Index", "Home");
+                            var activeDirectoryService = new ActiveDirectoryService();
+                            if (activeDirectoryService.ChangePassword(User.Identity.Name, model.Password, model.NewPassword, true, out string errorReason))
+                            {
+                                return RedirectToAction("Index", "Home");
+                            }
+                            else
+                            {
+                                ModelState.AddModelError(string.Empty, errorReason);
+                            }
                         }
                         else
                         {
-                            ModelState.AddModelError(string.Empty, errorReason);
+                            ModelState.AddModelError(string.Empty, Resources.PasswordChange.WrongUserNameOrPassword);
                         }
+                        return View(model);
                     }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, Resources.PasswordChange.WrongUserNameOrPassword);
-                    }
-                    return View(model);
                 }
             }
 

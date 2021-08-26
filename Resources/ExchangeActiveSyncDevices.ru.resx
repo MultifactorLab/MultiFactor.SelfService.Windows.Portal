@@ -117,40 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChangePassword" xml:space="preserve">
-    <value>Change password</value>
+  <data name="Allow" xml:space="preserve">
+    <value>включить</value>
   </data>
-  <data name="ConfiguredMethods" xml:space="preserve">
-    <value>You have these authentication methods connected:</value>
+  <data name="AllowConfirm" xml:space="preserve">
+    <value>Включить почту на устройстве?</value>
   </data>
-  <data name="ConfirmRemoving" xml:space="preserve">
-    <value>Remove method?</value>
+  <data name="AllowedState" xml:space="preserve">
+    <value>Работает</value>
   </data>
-  <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
+  <data name="Block" xml:space="preserve">
+    <value>отключить</value>
   </data>
-  <data name="Greetings" xml:space="preserve">
-    <value>Hello</value>
+  <data name="BlockConfirm" xml:space="preserve">
+    <value>Отключить почту на устройстве?</value>
   </data>
-  <data name="ManageActiveSyncDevices" xml:space="preserve">
-    <value>Manage ActiveSync devices</value>
+  <data name="BlockedState" xml:space="preserve">
+    <value>Отключен</value>
   </data>
-  <data name="MobileApp" xml:space="preserve">
-    <value>Mobile app</value>
+  <data name="DeviceAndId" xml:space="preserve">
+    <value>Устройство / ID</value>
   </data>
-  <data name="Phone" xml:space="preserve">
-    <value>Phone</value>
+  <data name="Header" xml:space="preserve">
+    <value>Почта на мобильном</value>
   </data>
-  <data name="Remove" xml:space="preserve">
-    <value>remove</value>
+  <data name="Instruction1" xml:space="preserve">
+    <value>В списке представлены мобильные устройства с вашей почтой. Если вам пришло письмо, что устройство на карантине, сверьте ID перед включением.</value>
   </data>
-  <data name="SetupGoogleAuthenticator" xml:space="preserve">
-    <value>Connect Google Authenticator</value>
+  <data name="NothingFound" xml:space="preserve">
+    <value>Устройства не найдены</value>
   </data>
-  <data name="SetupMobileApp" xml:space="preserve">
-    <value>Connect mobile app</value>
+  <data name="Ok" xml:space="preserve">
+    <value>Готово</value>
   </data>
-  <data name="SetupTelegram" xml:space="preserve">
-    <value>Connect Telegram</value>
+  <data name="QuarantinedState" xml:space="preserve">
+    <value>Ожидает подтверждения</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="WhenCreated" xml:space="preserve">
+    <value>Дата подключения</value>
   </data>
 </root>

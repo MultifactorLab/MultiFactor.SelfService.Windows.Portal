@@ -709,8 +709,11 @@ div#qrcode {
     width: 256px;
 }
 
-table.authenticators {
+table.max600 {
     max-width: 600px;
+}
+
+table.authenticators {
     margin-left: auto;
     margin-right: auto;
     border-collapse: collapse;

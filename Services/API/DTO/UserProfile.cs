@@ -30,5 +30,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
         }
 
         public UserProfilePolicy Policy { get; set; }
+
+        public bool EnablePasswordManagement { get; set; }
+        public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
     }
 }

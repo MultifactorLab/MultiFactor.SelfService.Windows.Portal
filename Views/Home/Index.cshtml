@@ -12,7 +12,7 @@
     <div class="container">
         <p>@Resources.Home.Greetings @(Model.Name ?? Model.Identity).</p>
         <p>@Resources.Home.ConfiguredMethods</p>
-        <table class="authenticators">
+        <table class="authenticators max600">
             <tbody>
                 @foreach (var app in Model.MobileAppAuthenticators)
                 {
@@ -67,7 +67,14 @@
             {
                 <li><a href="~/totp" class="btn">@Resources.Home.SetupGoogleAuthenticator</a></li>
             }
-            <li><a href="~/password/change" class="btn">@Resources.Home.ChangePassword</a></li>
+            @if (Model.EnablePasswordManagement)
+            {
+                <li><a href="~/password/change" class="btn">@Resources.Home.ChangePassword</a></li>
+            }
+            @if (Model.EnableExchangeActiveSyncDevicesManagement)
+            {
+                <li><a href="~/ExchangeActiveSyncDevices" class="btn">@Resources.Home.ManageActiveSyncDevices</a></li>
+            }
             <li><a href="~/account/logout" class="btn">@Resources.Home.Exit</a></li>
         </ul>
     </div>
