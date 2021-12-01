@@ -8,9 +8,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     {
         public ActionResult Index()
         {
-            if (Request.QueryString["samlSessionId"] != null)
+            if (Request.QueryString[MultiFactorClaims.SamlSessionId] != null)
             {
                 //re-login for saml authentication
+                return SignOut();
+            }
+            if (Request.QueryString[MultiFactorClaims.OidcSessionId] != null)
+            {
+                //re-login for oidc authentication
                 return SignOut();
             }
 

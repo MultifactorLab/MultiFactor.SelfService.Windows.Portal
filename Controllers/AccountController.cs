@@ -24,8 +24,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
                 _logger.Information($"User '{userName}' authenticated by NTLM/Kerberos");
 
-                var samlSessionId = GetSamlSessionIdFromRedirectUrl(userName);
-                return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId);
+                var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
+                var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
+                return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
             }
 
             return View(new LoginModel());
@@ -45,14 +46,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 //authenticated ok
                 if (adValidationResult.IsAuthenticated)
                 {
-                    var samlSessionId = GetSamlSessionIdFromRedirectUrl(model.UserName);
+                    var samlSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.SamlSessionId);
+                    var oidcSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.OidcSessionId);
 
                     if (!string.IsNullOrEmpty(samlSessionId) && adValidationResult.IsBypass)
                     {
                         return ByPassSamlSession(model.UserName, samlSessionId);
                     }
 
-                    return RedirectToMfa(model.UserName, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId);
+                    return RedirectToMfa(model.UserName, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId, oidcSessionId);
                 }
                 else
                 {
@@ -90,7 +92,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return View();
         }
 
-        private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, bool mustResetPassword = false)
+        private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, string oidcSessionId, bool mustResetPassword = false)
         {
             //public url from browser if we behind nginx or other proxy
             var currentUri = new Uri(documentUrl);
@@ -120,6 +122,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (samlSessionId != null)
                 {
                     claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
+                }
+                if (oidcSessionId != null)
+                {
+                    claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
                 }
             }
 
@@ -173,7 +179,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return RedirectToAction("Login");
         }
 
-        private string GetSamlSessionIdFromRedirectUrl(string login)
+        private string GetMultifactorClaimFromRedirectUrl(string login, string claim)
         {
             var redirectUrl = FormsAuthentication.GetRedirectUrl(login, false);
             if (!string.IsNullOrEmpty(redirectUrl))
@@ -182,11 +188,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (queryIndex >= 0)
                 {
                     var query = HttpUtility.ParseQueryString(redirectUrl.Substring(queryIndex));
-                    return query["samlSessionId"];
+                    return query[claim];
                 }
             }
 
-            return Request.QueryString["samlSessionId"];
+            return Request.QueryString[claim];
         }
     }
 }

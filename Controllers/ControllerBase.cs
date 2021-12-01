@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiFactor.SelfService.Windows.Portal.Services.API;
+using System;
 using System.Web.Mvc;
 using System.Web.Security;
 
@@ -18,10 +19,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             var returnUrl = FormsAuthentication.LoginUrl;
-            var samlSessionId = Request.QueryString["samlSessionId"];
+            var samlSessionId = Request.QueryString[MultiFactorClaims.SamlSessionId];
             if (samlSessionId != null)
             {
-                returnUrl += "?samlSessionId=" + samlSessionId;
+                returnUrl += $"?{MultiFactorClaims.SamlSessionId}={samlSessionId}";
+            }
+            
+            var oidcSessionId = Request.QueryString[MultiFactorClaims.OidcSessionId];
+            if (oidcSessionId != null)
+            {
+                returnUrl += $"?{MultiFactorClaims.OidcSessionId}={oidcSessionId}";
             }
 
             return Redirect(returnUrl);
