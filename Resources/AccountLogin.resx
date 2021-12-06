@@ -135,6 +135,12 @@
   <data name="UserName" xml:space="preserve">
     <value>User name</value>
   </data>
+  <data name="UserNameUpn" xml:space="preserve">
+    <value>user@domain.loc</value>
+  </data>
+  <data name="UserNameUpnRequired" xml:space="preserve">
+    <value>Please enter user name as user@domain.loc format</value>
+  </data>
   <data name="WrongUserNameOrPassword" xml:space="preserve">
     <value>Wrong user name or password</value>
   </data>

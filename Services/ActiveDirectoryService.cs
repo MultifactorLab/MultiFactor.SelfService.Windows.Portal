@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using MultiFactor.SelfService.Windows.Portal.Models;
 using System.Globalization;
+using System.Diagnostics;
+using System.Linq;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -40,22 +42,42 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             if (string.IsNullOrEmpty(password))
             {
-                _logger.Error($"Empty password provided for user '{userName}'");
+                _logger.Error("Empty password provided for user '{user:l}'", userName);
                 return ActiveDirectoryCredentialValidationResult.UnknowError("Invalid credentials");
             }
 
             var user = LdapIdentity.ParseUser(userName);
+            //check UPN requirements
+            if (user.Type == IdentityType.UserPrincipalName)
+            {
+                var suffix = user.UpnToSuffix();
+                if (!_configuration.IsPermittedDomain(suffix))
+                {
+                    _logger.Warning($"User domain {suffix} not permitted");
+                    return ActiveDirectoryCredentialValidationResult.UnknowError("Domain not permitted");
+                }
+            }
+            else
+            {
+                if (_configuration.RequiresUpn)
+                {
+                    _logger.Warning("Only UserPrincipalName format permitted, see configuration");
+                    return ActiveDirectoryCredentialValidationResult.UnknowError("Invalid username format");
+                }
+            }
 
             try
             {
-                _logger.Debug($"Verifying user '{user.Name}' credential and status at {_configuration.Domain}");
-
+                _logger.Debug($"Verifying user '{{user:l}}' credential and status at {_configuration.Domain}", user.Name);
+                
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
                     connection.Credential = new NetworkCredential(user.Name, password);
+                    connection.AuthType = AuthType.Ntlm;
+
                     connection.Bind();
 
-                    _logger.Information($"User '{user.Name}' credential and status verified successfully at {_configuration.Domain}");
+                    _logger.Information($"User '{{user:l}}' credential and status verified successfully at {_configuration.Domain}", user.Name);
 
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
 
@@ -68,15 +90,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     var checkGroupMembership = !string.IsNullOrEmpty(_configuration.ActiveDirectory2FaGroup);
                     if (checkGroupMembership)
                     {
-                        var isMemberOf = IsMemberOf(connection, profile.BaseDn, user, _configuration.ActiveDirectory2FaGroup);
+                        var isMemberOf = IsMemberOf(connection, profile, user, _configuration.ActiveDirectory2FaGroup);
 
                         if (!isMemberOf)
                         {
-                            _logger.Information($"User '{user.Name}' is not member of {_configuration.ActiveDirectory2FaGroup} group");
-                            _logger.Information($"Bypass second factor for user '{user.Name}'");
+                            _logger.Information($"User '{{user:l}}' is not member of {_configuration.ActiveDirectory2FaGroup} group", user.Name);
+                            _logger.Information("Bypass second factor for user '{user:l}'", user.Name);
                             return ActiveDirectoryCredentialValidationResult.ByPass();
                         }
-                        _logger.Information($"User '{user.Name}' is member of {_configuration.ActiveDirectory2FaGroup} group");
+                        _logger.Information($"User '{{user:l}}' is member of {_configuration.ActiveDirectory2FaGroup} group", user.Name);
                     }
 
                     var result = ActiveDirectoryCredentialValidationResult.Ok();
@@ -98,14 +120,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             catch (LdapException lex)
             {
-                var result = ActiveDirectoryCredentialValidationResult.KnownError(lex.ServerErrorMessage);
-                _logger.Warning($"Verification user '{user.Name}' at {_configuration.Domain} failed: {result.Reason}");
-                return result;
+                if (lex.ServerErrorMessage != null)
+                {
+                    var result = ActiveDirectoryCredentialValidationResult.KnownError(lex.ServerErrorMessage);
+                    _logger.Warning($"Verification user '{{user:l}}' at {_configuration.Domain} failed: {result.Reason}", user.Name);
+                    return result;
+                }
+                _logger.Error(lex, $"Verification user '{{user:l}}' at {_configuration.Domain} failed", user.Name);
+                return ActiveDirectoryCredentialValidationResult.UnknowError(lex.Message);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Verification user '{user.Name}' at {_configuration.Domain} failed.");
-                return ActiveDirectoryCredentialValidationResult.UnknowError();
+                _logger.Error(ex, $"Verification user '{{user:l}}' at {_configuration.Domain} failed.", user.Name);
+                return ActiveDirectoryCredentialValidationResult.UnknowError(ex.Message);
             }
         }
 
@@ -128,14 +155,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                     if (!isProfileLoaded)
                     {
-                        var errText = $"Unable to load profile for user {userName}";
-                        _logger.Error(errText);
-                        throw new Exception(errText);
+                        _logger.Error("Unable to load profile for user '{user:l}'", userName);
+                        throw new Exception($"Unable to load profile for user '{userName}'");
                     }
 
                     userProfile = profile;
 
-                    _logger.Debug($"Searching Exchange ActiveSync devices for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()}");
+                    _logger.Debug($"Searching Exchange ActiveSync devices for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()}", user.Name);
 
                     var filter = $"(objectclass=msexchactivesyncdevice)";
 
@@ -151,9 +177,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     };
 
                     //active sync devices inside user dn container
-                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree, attrs);
+                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree, true, attrs);
 
-                    _logger.Debug($"Found {searchResponse.Entries.Count} devices");
+                    _logger.Debug($"Found {searchResponse.Entries.Count} devices for user '{{user:l}}'", userName);
 
                     for (var i=0; i < searchResponse.Entries.Count; i++)
                     {
@@ -173,7 +199,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning($"Search for user '{user.Name}' failed: {ex}");
+                _logger.Warning($"Search for user '{{user:l}}' failed: {ex}", user.Name);
             }
 
             return ret;
@@ -205,15 +231,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                     userProfile = profile;
 
-                    _logger.Debug($"Updating Exchange ActiveSync device {deviceId} for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()} with status {state}");
+                    _logger.Debug($"Updating Exchange ActiveSync device {deviceId} for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()} with status {state}", user.Name);
 
                     var filter = $"(&(objectclass=msexchactivesyncdevice)(msExchDeviceID={deviceId}))";
 
                     //active sync device inside user dn container
-                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree);
+                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree, true);
                     if (searchResponse.Entries.Count == 0)
                     {
-                        _logger.Warning($"Exchange ActiveSync device {deviceId} not found for user '{user.Name}' in {userProfile.BaseDn.DnToFqdn()}");
+                        _logger.Warning($"Exchange ActiveSync device {deviceId} not found for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()}", user.Name);
                         return;
                     }
 
@@ -269,12 +295,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                     connection.SendRequest(modifyRequest);
 
-                    _logger.Information($"Exchange ActiveSync device {deviceId} {state.ToString().ToLower()} for user '{user.Name}'");
+                    _logger.Information($"Exchange ActiveSync device {deviceId} {state.ToString().ToLower()} for user '{{user:l}}'", user.Name);
                 }
             }
             catch (Exception ex)
             {
-                _logger.Warning($"Update Exchange ActiveSync device {deviceId} for user '{user.Name}' failed: {ex.Message}");
+                _logger.Warning($"Update Exchange ActiveSync device {deviceId} for user '{{user:l}}' failed: {ex.Message}", user.Name);
             }
         }
 
@@ -295,6 +321,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     if (bindWithCredentials)
                     {
                         connection.Credential = new NetworkCredential(identity.Name, currentPassword);
+                        connection.AuthType = AuthType.Ntlm;
                     }
 
                     connection.Bind();
@@ -310,7 +337,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     userProfile = profile;
                 }
 
-                _logger.Debug($"Changing password for user '{identity.Name}' in {userProfile.BaseDn.DnToFqdn()}");
+                _logger.Debug($"Changing password for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()}", identity.Name);
 
                 using (var ctx = CreateContext(userProfile.BaseDn.DnToFqdn(), bindWithCredentials, identity.Name, currentPassword))
                 {
@@ -321,17 +348,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     }
                 }
 
-                _logger.Information($"Password changed for user '{identity.Name}'");
+                _logger.Information("Password changed for user '{user:l}'", identity.Name);
                 return true;
             }
             catch(PasswordException pex)
             {
-                _logger.Warning($"Changing password for user '{identity.Name}' failed: {pex.Message}, {pex.HResult}");
+                _logger.Warning($"Changing password for user '{{user:l}}' failed: {pex.Message}, {pex.HResult}", identity.Name);
                 errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
             }
             catch (Exception ex)
             {
-                _logger.Warning($"Changing password for user {identity.Name} failed: {ex.Message}");
+                _logger.Warning($"Changing password for user '{{user:l}}' failed: {ex.Message}", identity.Name);
                 errorReason = Resources.AD.UnableToChangePassword;
             }
 
@@ -347,13 +374,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             var baseDn = SelectBestDomainToQuery(connection, user, domain);
 
-            _logger.Debug($"Querying user '{user.Name}' in {baseDn.Name}");
+            _logger.Debug($"Querying user '{{user:l}}' in {baseDn.Name}", user.Name);
 
-            var response = Query(connection, baseDn.Name, searchFilter, SearchScope.Subtree, attributes);
+            //only this domain
+            var response = Query(connection, baseDn.Name, searchFilter, SearchScope.Subtree, false, attributes);
+            if (response.Entries.Count == 0)
+            {
+                //with ReferralChasing 
+                response = Query(connection, baseDn.Name, searchFilter, SearchScope.Subtree, true, attributes);
+            }
 
             if (response.Entries.Count == 0)
             {
-                _logger.Error($"Unable to find user '{user.Name}' in {baseDn.Name}");
+                _logger.Error($"Unable to find user '{{user:l}}' in {baseDn.Name}", user.Name);
                 return false;
             }
 
@@ -369,23 +402,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 Mobile = entry.Attributes["mobile"]?[0]?.ToString(),
             };
 
-            _logger.Debug($"User '{user.Name}' profile loaded: {profile.DistinguishedName}");
+            _logger.Debug($"User '{{user:l}}' profile loaded: {profile.DistinguishedName}", user.Name);
 
             return true;
         }
 
-        private bool IsMemberOf(LdapConnection connection, LdapIdentity domain, LdapIdentity user, string groupName)
+        private bool IsMemberOf(LdapConnection connection, LdapProfile profile, LdapIdentity user, string groupName)
         {
-            var isValidGroup = IsValidGroup(connection, domain, groupName, out var group);
+            var baseDn = SelectBestDomainToQuery(connection, user, profile.BaseDn);
+            var isValidGroup = IsValidGroup(connection, baseDn, groupName, out var group);
 
             if (!isValidGroup)
             {
-                _logger.Warning($"Security group '{groupName}' not exists in {domain.Name}");
+                _logger.Warning($"Security group '{groupName}' not exists in {profile.BaseDn.Name}");
                 return false;
             }
 
             var searchFilter = $"(&({user.TypeName}={user.Name})(memberOf:1.2.840.113556.1.4.1941:={group.Name}))";
-            var response = Query(connection, domain.Name, searchFilter, SearchScope.Subtree);
+            var response = Query(connection, profile.DistinguishedName, searchFilter, SearchScope.Subtree, true, "DistinguishedName");
 
             return response.Entries.Count > 0;
         }
@@ -396,7 +430,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             var group = LdapIdentity.ParseGroup(groupName);
             var searchFilter = $"(&(objectCategory=group)({group.TypeName}={group.Name}))";
-            var response = Query(connection, domain.Name, searchFilter, SearchScope.Subtree);
+
+            var response = Query(connection, domain.Name, searchFilter, SearchScope.Subtree, false, "DistinguishedName");
+            if (response.Entries.Count == 0)
+            {
+                response = Query(connection, domain.Name, searchFilter, SearchScope.Subtree, true, "DistinguishedName");
+            }
 
             for (var i = 0; i < response.Entries.Count; i++)
             {
@@ -417,7 +456,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return false;
         }
 
-        private SearchResponse Query(LdapConnection connection, string baseDn, string filter, SearchScope scope, params string[] attributes)
+        private SearchResponse Query(LdapConnection connection, string baseDn, string filter, SearchScope scope, bool chaseRefs, params string[] attributes)
         {
             var searchRequest = new SearchRequest
                 (baseDn,
@@ -425,7 +464,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                  scope,
                  attributes);
 
+            if (chaseRefs)
+            {
+                connection.SessionOptions.ReferralChasing = ReferralChasingOptions.All;
+            }
+            else
+            {
+                connection.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
+            }
+
+            var sw = Stopwatch.StartNew();
+
             var response = (SearchResponse)connection.SendRequest(searchRequest);
+
+            if (sw.Elapsed.TotalSeconds > 2)
+            {
+                _logger.Warning($"Slow response while querying {baseDn}. Time elapsed {sw.Elapsed}");
+            }
+
             return response;
         }
 
@@ -443,9 +499,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 return defaultDomain;
             }
 
+            var userDomainSuffix = user.UpnToSuffix().ToLower();
+
+            //best match
             foreach (var key in domainNameSuffixes.Keys)
             {
-                if (user.Name.ToLower().EndsWith(key.ToLower()))
+                if (userDomainSuffix == key.ToLower())
+                {
+                    return domainNameSuffixes[key];
+                }
+            }
+
+            //approximately match
+            foreach (var key in domainNameSuffixes.Keys)
+            {
+                if (userDomainSuffix.EndsWith(key.ToLower()))
                 {
                     return domainNameSuffixes[key];
                 }
@@ -480,6 +548,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     "CN=System," + root.Name,
                     "objectClass=trustedDomain",
                     SearchScope.OneLevel,
+                    true,
                     "cn");
 
                 var schema = new List<LdapIdentity>
@@ -493,13 +562,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     var attribute = entry.Attributes["cn"];
                     if (attribute != null)
                     {
-                        var trustPartner = LdapIdentity.FqdnToDn(attribute[0].ToString());
-
-                        _logger.Debug($"Found trusted domain {trustPartner.Name}");
-
-                        if (!trustPartner.IsChildOf(root))
+                        var domain = attribute[0].ToString();
+                        if (_configuration.IsPermittedDomain(domain))
                         {
-                            schema.Add(trustPartner);
+                            var trustPartner = LdapIdentity.FqdnToDn(domain);
+
+                            _logger.Debug($"Found trusted domain {trustPartner.Name}");
+
+                            if (!schema.Contains(trustPartner))
+                            {
+                                schema.Add(trustPartner);
+                            }
                         }
                     }
                 }
@@ -512,36 +585,41 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         domainNameSuffixes.Add(domainSuffix, domain);
                     }
 
-                    try
+                    var isChild = schema.Any(parent => domain.IsChildOf(parent));
+                    if (!isChild)
                     {
-                        var uPNSuffixesResult = Query(connection,
-                            "CN=Partitions,CN=Configuration," + domain.Name,
-                            "objectClass=*",
-                            SearchScope.Base,
-                            "uPNSuffixes");
-
-                        for (var i = 0; i < uPNSuffixesResult.Entries.Count; i++)
+                        try
                         {
-                            var entry = uPNSuffixesResult.Entries[i];
-                            var attribute = entry.Attributes["uPNSuffixes"];
-                            if (attribute != null)
-                            {
-                                for (var j = 0; j < attribute.Count; j++)
-                                {
-                                    var suffix = attribute[j].ToString();
+                            var uPNSuffixesResult = Query(connection,
+                                "CN=Partitions,CN=Configuration," + domain.Name,
+                                "objectClass=*",
+                                SearchScope.Base,
+                                true,
+                                "uPNSuffixes");
 
-                                    if (!domainNameSuffixes.ContainsKey(suffix))
+                            for (var i = 0; i < uPNSuffixesResult.Entries.Count; i++)
+                            {
+                                var entry = uPNSuffixesResult.Entries[i];
+                                var attribute = entry.Attributes["uPNSuffixes"];
+                                if (attribute != null)
+                                {
+                                    for (var j = 0; j < attribute.Count; j++)
                                     {
-                                        domainNameSuffixes.Add(suffix, domain);
-                                        _logger.Debug($"Found alternative UPN suffix {suffix} for domain {domain.Name}");
+                                        var suffix = attribute[j].ToString();
+
+                                        if (!domainNameSuffixes.ContainsKey(suffix))
+                                        {
+                                            domainNameSuffixes.Add(suffix, domain);
+                                            _logger.Debug($"Found alternative UPN suffix {suffix} for domain {domain.Name}");
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Warning($"Unable to query {domain.Name}: {ex.Message}");
+                        catch (Exception ex)
+                        {
+                            _logger.Warning($"Unable to query {domain.Name}: {ex.Message}");
+                        }
                     }
                 }
 

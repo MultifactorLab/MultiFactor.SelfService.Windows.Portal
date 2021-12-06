@@ -1,9 +1,11 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
+using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Configuration;
@@ -20,13 +22,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             if (Request.LogonUserIdentity?.IsAuthenticated == true) //integrated windows authentication
             {
-                var userName = Request.LogonUserIdentity.Name;
+                if (Configuration.AuthenticationMode == AuthenticationMode.Windows)
+                {
+                    var userName = Request.LogonUserIdentity.Name;
 
-                _logger.Information($"User '{userName}' authenticated by NTLM/Kerberos");
+                    _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
 
-                var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
-                var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
-                return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
+                    var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
+                    var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
+                    return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
+                }
             }
 
             return View(new LoginModel());
@@ -38,6 +43,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (Configuration.Current.RequiresUpn)
+                {
+                    //AD requires UPN check
+                    var userName = LdapIdentity.ParseUser(model.UserName);
+                    if (userName.Type != IdentityType.UserPrincipalName)
+                    {
+                        ModelState.AddModelError(string.Empty, Resources.AccountLogin.UserNameUpnRequired);
+                        return View(model);
+                    }
+                }
+                
                 var activeDirectoryService = new ActiveDirectoryService();
 
                 //AD credential check
@@ -82,8 +98,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Logout()
         {
-            var authenticationSection = (AuthenticationSection)WebConfigurationManager.GetSection("system.web/authentication");
-            if (authenticationSection.Mode == AuthenticationMode.Forms)
+            if (Configuration.AuthenticationMode == AuthenticationMode.Forms)
             {
                 return SignOut();
             }
@@ -153,7 +168,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (tokenValidationService.VerifyToken(accessToken, out var token))
             {
-                _logger.Information($"User {token.Identity} authenticated");
+                _logger.Information("Second factor for user '{user:l}' verified successfully", token.Identity);
 
                 //save token to cookie
                 //secure flag managed by web.config settings

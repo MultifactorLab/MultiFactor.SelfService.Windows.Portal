@@ -16,7 +16,7 @@
                 <p>@Resources.AccountLogin.Invitation</p>
                 <div class="form-row">
                     <div class="input">
-                        @Html.TextBoxFor(m => m.UserName, new { placeholder = Resources.AccountLogin.UserName })
+                        @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName })
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
                     <div class="input">

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
+using System.Web.Configuration;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
@@ -39,6 +42,40 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string NetBiosName { get; set; }
 
         /// <summary>
+        /// Only UPN user name format permitted
+        /// </summary>
+        public bool RequiresUpn { get; set; }
+
+        /// <summary>
+        /// Use only these domains within forest(s)
+        /// </summary>
+        public IList<string> IncludedDomains { get; set; }
+
+        /// <summary>
+        /// Use all but not these domains within forest(s)
+        /// </summary>
+        public IList<string> ExcludedDomains { get; set; }
+
+        /// <summary>
+        /// Check if any included domains or exclude domains specified and contains required domain
+        /// </summary>
+        public bool IsPermittedDomain(string domain)
+        {
+            if (string.IsNullOrEmpty(domain)) throw new ArgumentNullException(nameof(domain));
+
+            if (IncludedDomains?.Count > 0)
+            {
+                return IncludedDomains.Any(included => included.ToLower() == domain.ToLower());
+            }
+            if (ExcludedDomains?.Count > 0)
+            {
+                return !ExcludedDomains.Any(excluded => excluded.ToLower() == domain.ToLower());
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Company Logo URL
         /// </summary>
         public string LogoUrl { get; set; }
@@ -73,7 +110,12 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public static void Load()
         {
-            var appSettings = ConfigurationManager.GetSection("portalSettings") as NameValueCollection;
+            var appSettings = PortalSettings;
+
+            if (appSettings == null)
+            {
+                throw new ConfigurationErrorsException("Can't find <portalSettings> element in web.config");
+            }
 
             var companyNameSetting = appSettings["company-name"];
             var domainSetting = appSettings["company-domain"];
@@ -173,7 +215,91 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncSevicesManagement;
             }
 
+            var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
+            if (activeDirectorySection != null)
+            {
+                var includedDomains = (from object value in activeDirectorySection.IncludedDomains
+                                       select ((ValueElement)value).Name).ToList();
+                var excludeddDomains = (from object value in activeDirectorySection.ExcludedDomains
+                                        select ((ValueElement)value).Name).ToList();
+
+                if (includedDomains.Count > 0 && excludeddDomains.Count > 0)
+                {
+                    throw new Exception("Both IncludedDomains and ExcludedDomains configured.");
+                }
+
+                configuration.IncludedDomains = includedDomains;
+                configuration.ExcludedDomains = excludeddDomains;
+                configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
+            }
+
             Current = configuration;
+        }
+
+        public static NameValueCollection PortalSettings
+        {
+            get
+            {
+                return ConfigurationManager.GetSection("portalSettings") as NameValueCollection;
+            }
+        }
+
+        public static AuthenticationMode AuthenticationMode
+        {
+            get
+            {
+                var authenticationSection = WebConfigurationManager.GetSection("system.web/authentication") as AuthenticationSection;
+                return authenticationSection?.Mode ?? AuthenticationMode.Forms;
+            }
+        }
+        
+        public static string GetLogFormat()
+        {
+            return PortalSettings?["logging-format"];
+        }
+    }
+
+    public class ValueElement : ConfigurationElement
+    {
+        [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+        public string Name
+        {
+            get { return (string)this["name"]; }
+        }
+    }
+
+    public class ValueElementCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new ValueElement();
+        }
+
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((ValueElement)element).Name;
+        }
+    }
+
+    public class ActiveDirectorySection : ConfigurationSection
+    {
+        [ConfigurationProperty("ExcludedDomains", IsRequired = false)]
+        public ValueElementCollection ExcludedDomains
+        {
+            get { return (ValueElementCollection)this["ExcludedDomains"]; }
+        }
+
+        [ConfigurationProperty("IncludedDomains", IsRequired = false)]
+        public ValueElementCollection IncludedDomains
+        {
+            get { return (ValueElementCollection)this["IncludedDomains"]; }
+        }
+
+        [ConfigurationProperty("requiresUserPrincipalName", IsKey = false, IsRequired = false)]
+        public bool RequiresUpn
+        {
+            get { return (bool)this["requiresUserPrincipalName"]; }
         }
     }
 }
