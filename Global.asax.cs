@@ -57,7 +57,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
                 if (syslogInfoMessage != null)
                 {
-                    Log.Logger.Information(syslogInfoMessage);
+                    Log.Logger.Debug(syslogInfoMessage);
                 }
             }
             catch(Exception ex)
@@ -100,7 +100,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var sysLogFormatSetting = appSettings["syslog-format"];
             var sysLogFramerSetting = appSettings["syslog-framer"];
             var sysLogFacilitySetting = appSettings["syslog-facility"];
-            var sysLogAppName = appSettings["syslog-app-name"] ?? "multifactor-radius";
+            var sysLogAppName = appSettings["syslog-app-name"] ?? "multifactor-portal";
 
             var isJson = Configuration.GetLogFormat() == "json";
 
