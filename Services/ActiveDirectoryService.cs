@@ -407,7 +407,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 if (displayNameValue is byte[])
                 {
-                    profile.DisplayName = Encoding.Unicode.GetString((byte[])displayNameValue);
+                    profile.DisplayName = Encoding.UTF8.GetString((byte[])displayNameValue);
                 }
                 else
                 {
