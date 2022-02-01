@@ -73,6 +73,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
+                    connection.SessionOptions.ProtocolVersion = 3;
                     connection.Credential = new NetworkCredential(user.Name, password);
                     connection.AuthType = AuthType.Ntlm;
 
