@@ -11,6 +11,7 @@ using MultiFactor.SelfService.Windows.Portal.Models;
 using System.Globalization;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -396,11 +397,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 BaseDn = LdapIdentity.BaseDn(entry.DistinguishedName),
                 DistinguishedName = entry.DistinguishedName,
-                DisplayName = entry.Attributes["displayName"]?[0]?.ToString(),
                 Email = entry.Attributes["mail"]?[0]?.ToString(),
                 Phone = entry.Attributes["telephoneNumber"]?[0]?.ToString(),
                 Mobile = entry.Attributes["mobile"]?[0]?.ToString(),
             };
+
+            var displayNameValue = entry.Attributes["displayName"]?[0];
+            if (displayNameValue != null)
+            {
+                if (displayNameValue is byte[])
+                {
+                    profile.DisplayName = Encoding.Unicode.GetString((byte[])displayNameValue);
+                }
+                else
+                {
+                    profile.DisplayName = displayNameValue.ToString();
+                }
+            }
 
             _logger.Debug($"User '{{user:l}}' profile loaded: {profile.DistinguishedName}", user.Name);
 
