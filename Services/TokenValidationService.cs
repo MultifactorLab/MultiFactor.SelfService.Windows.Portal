@@ -81,6 +81,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 using (var web = new WebClient())
                 {
                     _logger.Debug($"Fetching jwks from {jwksUrl}");
+
+                    if (!string.IsNullOrEmpty(_configuration.MultiFactorApiProxy))
+                    {
+                        _logger.Debug("Using proxy " + _configuration.MultiFactorApiProxy);
+                        web.Proxy = new WebProxy(_configuration.MultiFactorApiProxy);
+                    }
+
                     var json = web.DownloadString(jwksUrl);
                     _logger.Debug($"Fetched jwks\n{json}");
 
