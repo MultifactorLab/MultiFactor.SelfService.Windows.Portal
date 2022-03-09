@@ -20,17 +20,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         
         public ActionResult Login()
         {
-            if (Request.LogonUserIdentity?.IsAuthenticated == true) //integrated windows authentication
+            if (Request.IsAuthenticated)
             {
-                if (Configuration.AuthenticationMode == AuthenticationMode.Windows)
+                if (Configuration.AuthenticationMode == AuthenticationMode.Windows && User.Identity != null)
                 {
-                    var userName = Request.LogonUserIdentity.Name;
+                    //integrated windows authentication
+                    if (!string.IsNullOrEmpty(User.Identity.Name) && User.Identity.AuthenticationType == "Negotiate")
+                    {
+                        var userName = User.Identity.Name;
 
-                    _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
+                        _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
 
-                    var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
-                    var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
-                    return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
+                        var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
+                        var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
+                        return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
+                    }
                 }
             }
 
