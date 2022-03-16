@@ -320,6 +320,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
+                    connection.SessionOptions.ProtocolVersion = 3;
                     if (bindWithCredentials)
                     {
                         connection.Credential = new NetworkCredential(identity.Name, currentPassword);
