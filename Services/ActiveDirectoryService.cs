@@ -150,6 +150,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
                     //as app pool identity
+                    connection.SessionOptions.ProtocolVersion = 3;
                     connection.Bind();
 
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
@@ -186,7 +187,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     for (var i=0; i < searchResponse.Entries.Count; i++)
                     {
                         var entry = searchResponse.Entries[i];
-                        ret.Add(new ExchangeActiveSyncDevice
+                        var device = new ExchangeActiveSyncDevice
                         {
                             MsExchDeviceId = entry.Attributes["msExchDeviceID"][0].ToString(),
                             AccessState = (ExchangeActiveSyncDeviceAccessState)Convert.ToInt32(entry.Attributes["msExchDeviceAccessState"][0]),
@@ -195,7 +196,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                             Model = entry.Attributes["msExchDeviceModel"]?[0]?.ToString(),
                             Type = entry.Attributes["msExchDeviceType"]?[0]?.ToString(),
                             WhenCreated = ParseLdapDate(entry.Attributes["whenCreated"][0].ToString()),
-                        });
+                        };
+
+                        if (device.AccessState != ExchangeActiveSyncDeviceAccessState.TestActiveSyncConnectivity)
+                        {
+                            ret.Add(device);
+                        }
                     }
                 }
             }

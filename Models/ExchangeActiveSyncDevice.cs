@@ -23,6 +23,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Models
                         return Resources.ExchangeActiveSyncDevices.BlockedState;
                     case ExchangeActiveSyncDeviceAccessState.Quarantined:
                         return Resources.ExchangeActiveSyncDevices.QuarantinedState;
+                    case ExchangeActiveSyncDeviceAccessState.TestActiveSyncConnectivity:
+                        return "TestActiveSyncConnectivity";
                     default:
                         throw new NotImplementedException(AccessState.ToString());
                 }
@@ -53,6 +55,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Models
     {
         Allowed = 1,
         Blocked = 2,
-        Quarantined = 3
+        Quarantined = 3,
+        TestActiveSyncConnectivity = 4
     }
 }
