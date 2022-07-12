@@ -85,7 +85,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     if (!string.IsNullOrEmpty(_configuration.MultiFactorApiProxy))
                     {
                         _logger.Debug("Using proxy " + _configuration.MultiFactorApiProxy);
-                        web.Proxy = new WebProxy(_configuration.MultiFactorApiProxy);
+                        var proxyUri = new Uri(_configuration.MultiFactorApiProxy);
+                        web.Proxy = new WebProxy(proxyUri);
+
+                        if (!string.IsNullOrEmpty(proxyUri.UserInfo))
+                        {
+                            var credentials = proxyUri.UserInfo.Split(new[] { ':' }, 2);
+                            web.Proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
+                        }
                     }
 
                     var json = web.DownloadString(jwksUrl);
