@@ -24,16 +24,52 @@
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     @Html.ValidationSummary(true)
+
+                    @if (Configuration.Current.EnableGoogleReCaptcha)
+                    {
+                        <div class="g-recaptcha"
+                             data-sitekey="@Configuration.Current.GoogleReCaptchaKey"
+                             data-callback="captchaCallback"
+                             data-size="normal">
+                        </div>
+                    }
+
                 </div>
                 <div class="form-row">
                     <input type="hidden" name="myUrl" id="myUrl" />
-                    <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" id="submit" />
+
+                    @if (Configuration.Current.EnableGoogleReCaptcha)
+                    {
+                        <input type="hidden" name="responseToken" id="responseToken" />
+                        <input type="submit" class="btn" disabled="disabled" value="@Resources.AccountLogin.Submit" id="submit" />
+                    }
+                    else
+                    {
+                        <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" id="submit" />
+                    }
                 </div>
             </fieldset>
         }
     </div>
 </div>
+
+@section head {
+    @if (Configuration.Current.EnableGoogleReCaptcha)
+    {
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    }
+}
+
 <script type="text/javascript">
+    function enableSubmit() {
+        $("form").find(':submit').removeAttr('disabled');
+    }
+
+    function captchaCallback(token) {
+        $('#responseToken').val(token);
+        enableSubmit();
+    }
+
     $(document).ready(function(){
         $('#myUrl').val(document.location);
 

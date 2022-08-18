@@ -233,7 +233,46 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
             }
 
+            ReadCaptchaSettings(appSettings, configuration);
+
             Current = configuration;
+        }
+
+        private static void ReadCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
+        {
+            const string enabledCaptchaToken = "enable-google-re-captcha";
+            const string captchaKeyToken = "google-re-captcha-key";
+            const string captchaSecretToken = "google-re-captcha-secret";
+
+            var enableGoogleReCaptchaSettings = appSettings[enabledCaptchaToken];
+            if (string.IsNullOrEmpty(enableGoogleReCaptchaSettings))
+            {
+                configuration.EnableGoogleReCaptcha = false;
+                return;
+            }
+
+            if (!bool.TryParse(enableGoogleReCaptchaSettings, out var enableGoogleReCaptcha))
+            {
+                throw new Exception($"Configuration error: Can't parse '{enabledCaptchaToken}' value");
+            }
+
+            configuration.EnableGoogleReCaptcha = enableGoogleReCaptcha;
+            if (!enableGoogleReCaptcha) return;
+
+            var googleReCaptchaKeySettings = appSettings["google-re-captcha-key"];
+            var googleReCaptchaSecretSettings = appSettings["google-re-captcha-secret"];
+
+            if (string.IsNullOrEmpty(googleReCaptchaKeySettings)) throw new Exception(GetCaptchaError(captchaKeyToken));
+            if (string.IsNullOrEmpty(googleReCaptchaSecretSettings)) throw new Exception(GetCaptchaError(captchaSecretToken));
+
+            configuration.GoogleReCaptchaKey = googleReCaptchaKeySettings;
+            configuration.GoogleReCaptchaSecret = googleReCaptchaSecretSettings;
+        }
+
+        private static string GetCaptchaError(string elementName)
+        {
+            return $"Configuration error: '{elementName}' element not found or empty.\n" +
+                $"Please check configuration file and define this property or disable captcha";
         }
 
         public static NameValueCollection PortalSettings
@@ -252,7 +291,11 @@ namespace MultiFactor.SelfService.Windows.Portal
                 return authenticationSection?.Mode ?? AuthenticationMode.Forms;
             }
         }
-        
+
+        public bool EnableGoogleReCaptcha { get; private set; }
+        public string GoogleReCaptchaKey { get; private set; }
+        public string GoogleReCaptchaSecret { get; private set; }
+
         public static string GetLogFormat()
         {
             return PortalSettings?["logging-format"];

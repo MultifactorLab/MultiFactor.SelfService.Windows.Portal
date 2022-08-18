@@ -1,4 +1,7 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Syslog;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MultiFactor.SelfService.Windows.Portal.App_Start;
+using MultiFactor.SelfService.Windows.Portal.Core;
+using MultiFactor.SelfService.Windows.Portal.Syslog;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -65,6 +68,20 @@ namespace MultiFactor.SelfService.Windows.Portal
                 Log.Logger.Error(ex, "Unable to start");
                 throw;
             }
+
+            var services = new ServiceCollection();
+
+            ServicesConfig.RegisterControllers(services);
+            ServicesConfig.RegisterServices(services);
+
+            var provider = services.BuildServiceProvider(new ServiceProviderOptions
+            {
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            });
+
+            DependencyResolver.SetResolver(new CustomDependencyResolver(provider));
+            ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory(provider));
         }
 
         private void SetLogLevel(string level, LoggingLevelSwitch levelSwitch)
