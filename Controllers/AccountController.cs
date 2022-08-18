@@ -1,4 +1,5 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Models;
+﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
@@ -42,6 +43,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpPost]
+        [VerifyCaptcha]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginModel model)
         {
