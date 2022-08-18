@@ -79,6 +79,13 @@ MultiFactor SelfService Portal &mdash; веб-сайт, портал самоо�
 
   <!-- Уровень логирования: 'Debug', 'Info', 'Warn', 'Error' -->
   <add key="logging-level" value="Info" />
+
+  <!-- Включить проверку капчи -->
+  <add key="enable-google-re-captcha" value="false"/>
+  <!-- Site Key из личного кабинета https://www.google.com/recaptcha/admin -->
+  <add key="google-re-captcha-key" value="key"/>
+  <!-- Secret Key из личного кабинета https://www.google.com/recaptcha/admin -->
+  <add key="google-re-captcha-secret" value="secret"/>
 </portalSettings>
 ```
 
