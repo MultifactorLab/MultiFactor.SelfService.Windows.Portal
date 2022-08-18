@@ -81,6 +81,13 @@ Portal settings are stored in the ```web.config``` file in XML format.
 
   <!-- Logging level: 'Debug', 'Info', 'Warn', 'Error' -->
   <add key="logging-level" value="Info" />
+
+  <!-- Enbale captcha validation -->
+  <add key="enable-google-re-captcha" value="false"/>
+  <!-- Site Key from https://www.google.com/recaptcha/admin -->
+  <add key="google-re-captcha-key" value="key"/>
+  <!-- Secret Key from https://www.google.com/recaptcha/admin -->
+  <add key="google-re-captcha-secret" value="secret"/>
 </portalSettings>
 ```
 

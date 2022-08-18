@@ -460,7 +460,6 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
-    <None Include="Properties\PublishProfiles\dc1.multifactor.dev.pubxml" />
     <None Include="Properties\PublishProfiles\Publish to Folder.pubxml" />
   </ItemGroup>
   <ItemGroup>
