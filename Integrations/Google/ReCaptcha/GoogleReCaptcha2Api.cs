@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha.Dto;
+﻿using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha.Dto;
 using System;
-using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
@@ -26,19 +25,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             if (secret is null) throw new ArgumentNullException(nameof(secret));
             if (responseToken is null) throw new ArgumentNullException(nameof(responseToken));
 
-            var param = new Dictionary<string, string>
-            {
-                { "secret", secret },
-                { "response", responseToken }
-            };
+            var action = new StringBuilder("siteverify");
+            action.Append($"?secret={secret}");
+            action.Append($"&response={responseToken}");
+
             if (!string.IsNullOrEmpty(remoteIp))
             {
-                param.Add("remoteip", remoteIp);
+                action.Append($"&remoteip={remoteIp}");
             }
 
-            var newAction = QueryHelpers.AddQueryString("siteverify", param);
-
-            var resp = await _client.PostAsync<VerifyCaptchaResponseDto>(newAction) ?? throw new Exception("Response is null");
+            var resp = await _client.PostAsync<VerifyCaptchaResponseDto>(action.ToString()) ?? throw new Exception("Response is null");
             return resp;
         }
     }
