@@ -46,6 +46,9 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// </summary>
         public bool RequiresUpn { get; set; }
 
+        //Lookup for UPN and use it instead of uid
+        public bool UseUpnAsIdentity { get; set; }
+
         /// <summary>
         /// Use only these domains within forest(s)
         /// </summary>
@@ -131,6 +134,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var useActiveDirectoryMobileUserPhoneSetting = appSettings["use-active-directory-mobile-user-phone"];
             var enablePasswordManagementSetting = appSettings["enable-password-management"];
             var enableExchangeActiveSyncSevicesManagementSetting = appSettings["enable-exchange-active-sync-devices-management"];
+            var useUpnAsIdentitySetting = appSettings["use-upn-as-identity"];
 
             if (string.IsNullOrEmpty(companyNameSetting))
             {
@@ -231,6 +235,11 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.IncludedDomains = includedDomains;
                 configuration.ExcludedDomains = excludeddDomains;
                 configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
+            }
+
+            if (bool.TryParse(useUpnAsIdentitySetting, out var useUpnAsIdentity))
+            {
+                configuration.UseUpnAsIdentity = useUpnAsIdentity;
             }
 
             ReadCaptchaSettings(appSettings, configuration);

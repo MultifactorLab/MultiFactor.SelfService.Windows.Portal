@@ -14,6 +14,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public string DisplayName { get; set; }
         public string Email { get; set; }
+        public string Upn { get; set; }
         public string Phone { get; set; }
 
 

@@ -76,7 +76,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                         return ByPassSamlSession(model.UserName, samlSessionId);
                     }
 
-                    return RedirectToMfa(model.UserName, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId, oidcSessionId);
+                    var identity = model.UserName;
+                    if (Configuration.Current.UseUpnAsIdentity)
+                    {
+                        if (string.IsNullOrEmpty(adValidationResult.Upn))
+                        {
+                            throw new InvalidOperationException($"Null UPN for user {model.UserName}");
+                        }
+                        identity = adValidationResult.Upn;
+                    }
+
+                    return RedirectToMfa(identity, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId, oidcSessionId);
                 }
                 else
                 {

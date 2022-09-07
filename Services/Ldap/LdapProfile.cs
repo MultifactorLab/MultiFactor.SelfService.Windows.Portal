@@ -1,12 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-
-namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
+﻿namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 {
     public class LdapProfile
     {
         public string DistinguishedName { get; set; }
+        public string Upn { get; set; }
         public string DisplayName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
