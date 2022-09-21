@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Models
 {
@@ -9,6 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Models
 
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Resources.Validation))]
         [DataType(DataType.Password)]
+        [AllowHtml]
         public string Password { get; set; }
 
         /// <summary>

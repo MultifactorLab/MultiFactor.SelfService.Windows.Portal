@@ -2,10 +2,11 @@
 using System;
 using System.Web.Mvc;
 using System.Web.Security;
+using System.Web.UI;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    [OutputCache(NoStore = true, Duration = 0)]
+    [OutputCache(NoStore = true, Duration = 0, Location = OutputCacheLocation.None)]
     public abstract class ControllerBase : Controller
     {
         protected ActionResult SignOut()
