@@ -40,7 +40,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                     Email = email,
                     Phone = phone,
                     Claims = claims,
-                    Language = Thread.CurrentThread.CurrentCulture?.TwoLetterISOLanguageName
+                    Language = Thread.CurrentThread.CurrentCulture?.TwoLetterISOLanguageName,
+                    GroupPolicyPreset = new
+                    {
+                        SignUpGroups = _settings.SignUpGroups
+                    }
                 });
 
                 var result = SendRequest<AccessPage>("/access/requests", json);
