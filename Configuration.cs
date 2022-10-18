@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.Configuration;
 
 namespace MultiFactor.SelfService.Windows.Portal
@@ -243,6 +244,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
 
             ReadCaptchaSettings(appSettings, configuration);
+            ReadSignUpGroupsSettings(appSettings, configuration);
 
             Current = configuration;
         }
@@ -284,6 +286,26 @@ namespace MultiFactor.SelfService.Windows.Portal
                 $"Please check configuration file and define this property or disable captcha";
         }
 
+        private static void ReadSignUpGroupsSettings(NameValueCollection appSettings, Configuration configuration)
+        {
+            const string signUpGroupsRegex = @"([\wа-я\s\-]+)(\s*;\s*([\wа-я\s\-]+)*)*";
+            const string signUpGroupsToken = "sign-up-groups";
+
+            var signUpGroupsSettings = appSettings[signUpGroupsToken];
+            if (string.IsNullOrWhiteSpace(signUpGroupsToken))
+            {
+                configuration.SignUpGroups = string.Empty;
+                return;
+            }
+
+            if (!Regex.IsMatch(signUpGroupsSettings, signUpGroupsRegex, RegexOptions.IgnoreCase))
+            {
+                throw new Exception($"Invalid group names. Please check 'sign-up-groups' settings property and fix syntax errors.");
+            }
+
+            configuration.SignUpGroups = signUpGroupsSettings;
+        }
+
         public static NameValueCollection PortalSettings
         {
             get
@@ -304,6 +326,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         public bool EnableGoogleReCaptcha { get; private set; }
         public string GoogleReCaptchaKey { get; private set; }
         public string GoogleReCaptchaSecret { get; private set; }
+
+        public string SignUpGroups { get; private set; }
 
         public static string GetLogFormat()
         {
