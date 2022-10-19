@@ -292,7 +292,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             const string signUpGroupsToken = "sign-up-groups";
 
             var signUpGroupsSettings = appSettings[signUpGroupsToken];
-            if (string.IsNullOrWhiteSpace(signUpGroupsToken))
+            if (string.IsNullOrWhiteSpace(signUpGroupsSettings))
             {
                 configuration.SignUpGroups = string.Empty;
                 return;
