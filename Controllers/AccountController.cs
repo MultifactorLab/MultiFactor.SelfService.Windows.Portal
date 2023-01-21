@@ -1,7 +1,9 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
+using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Serilog;
 using System;
@@ -17,8 +19,28 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
     public class AccountController : ControllerBase
     {
-        private ILogger _logger = Log.Logger;
-        
+        private readonly ApplicationCache _applicationCache;
+        private readonly AuthService _authService;
+        private readonly MultiFactorApiClient _apiClient;
+        private readonly ActiveDirectoryService _activeDirectoryService;
+        private readonly DataProtectionService _dataProtectionService;
+        private readonly ILogger _logger;
+
+        public AccountController(ApplicationCache applicationCache, 
+            AuthService authService, 
+            MultiFactorApiClient apiClient,
+            ActiveDirectoryService activeDirectoryService,
+            DataProtectionService dataProtectionService,
+            ILogger logger)
+        {
+            _applicationCache = applicationCache ?? throw new ArgumentNullException(nameof(applicationCache));
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _activeDirectoryService = activeDirectoryService ?? throw new ArgumentNullException(nameof(activeDirectoryService));
+            _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public ActionResult Login()
         {
             if (Request.IsAuthenticated)
@@ -34,7 +56,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
                         var samlSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.SamlSessionId);
                         var oidcSessionId = GetMultifactorClaimFromRedirectUrl(userName, MultiFactorClaims.OidcSessionId);
-                        return RedirectToMfa(userName, null, null, null, Request.Url.ToString(), samlSessionId, oidcSessionId);
+                        return RedirectToMfa(userName, Request.Url.ToString(), samlSessionId, oidcSessionId);
                     }
                 }
             }
@@ -47,69 +69,78 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (Configuration.Current.RequiresUpn)
+                return View(model);
+            }
+
+            if (Configuration.Current.RequiresUpn)
+            {
+                //AD requires UPN check
+                var userName = LdapIdentity.ParseUser(model.UserName);
+                if (userName.Type != IdentityType.UserPrincipalName)
                 {
-                    //AD requires UPN check
-                    var userName = LdapIdentity.ParseUser(model.UserName);
-                    if (userName.Type != IdentityType.UserPrincipalName)
-                    {
-                        ModelState.AddModelError(string.Empty, Resources.AccountLogin.UserNameUpnRequired);
-                        return View(model);
-                    }
-                }
-                
-                var activeDirectoryService = new ActiveDirectoryService();
-
-                //AD credential check
-                var adValidationResult = activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
-                
-                //authenticated ok
-                if (adValidationResult.IsAuthenticated)
-                {
-                    var samlSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.SamlSessionId);
-                    var oidcSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.OidcSessionId);
-
-                    if (!string.IsNullOrEmpty(samlSessionId) && adValidationResult.IsBypass)
-                    {
-                        return ByPassSamlSession(model.UserName, samlSessionId);
-                    }
-
-                    var identity = model.UserName;
-                    if (Configuration.Current.UseUpnAsIdentity)
-                    {
-                        if (string.IsNullOrEmpty(adValidationResult.Upn))
-                        {
-                            throw new InvalidOperationException($"Null UPN for user {model.UserName}");
-                        }
-                        identity = adValidationResult.Upn;
-                    }
-
-                    return RedirectToMfa(identity, adValidationResult.DisplayName, adValidationResult.Email, adValidationResult.Phone, model.MyUrl, samlSessionId, oidcSessionId);
-                }
-                else
-                {
-                    if (adValidationResult.UserMustChangePassword && Configuration.Current.EnablePasswordManagement)
-                    {
-                        var dataProtectionService = new DataProtectionService();
-                        var encryptedPassword = dataProtectionService.Protect(model.Password.Trim());
-                        Session[Constants.SESSION_EXPIRED_PASSWORD_USER_KEY] = model.UserName.Trim();
-                        Session[Constants.SESSION_EXPIRED_PASSWORD_CIPHER_KEY] = encryptedPassword;
-
-                        return RedirectToAction("Change", "ExpiredPassword");
-                    }
-                    
-                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
-
-                    //invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
-                    var rnd = new Random();
-                    int delay = rnd.Next(2, 6);
-                    await Task.Delay(TimeSpan.FromSeconds(delay));
+                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.UserNameUpnRequired);
+                    return View(model);
                 }
             }
 
+            //AD credential check
+            var adValidationResult = _activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
+            // credential is VALID
+            if (adValidationResult.IsAuthenticated)
+            {
+                var samlSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.SamlSessionId);
+                var oidcSessionId = GetMultifactorClaimFromRedirectUrl(model.UserName, MultiFactorClaims.OidcSessionId);
+                if (!string.IsNullOrEmpty(samlSessionId) && adValidationResult.IsBypass)
+                {
+                    return ByPassSamlSession(model.UserName, samlSessionId);
+                }
+
+                var identity = GetIdentity(model, adValidationResult);
+                return RedirectToMfa(identity, model.MyUrl, samlSessionId, oidcSessionId, adValidationResult);
+            }
+
+            if (adValidationResult.UserMustChangePassword)
+            {
+                var identity = GetIdentity(model, adValidationResult);
+                _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
+
+                if (Configuration.Current.EnablePasswordManagement)
+                {
+                    var encryptedPassword = _dataProtectionService.Protect(model.Password.Trim());
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(identity), model.UserName.Trim());
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(identity), encryptedPassword);
+
+                    return RedirectToMfa(identity, model.MyUrl, null, null, adValidationResult);
+                }
+                
+                _logger.Warning("User '{u:l}' must change password but password management is not enabled", identity);
+            }
+            
+            ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
+
+            // invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
+            var rnd = new Random();
+            int delay = rnd.Next(2, 6);
+            await Task.Delay(TimeSpan.FromSeconds(delay));
+  
             return View(model);
+        }
+
+        private static string GetIdentity(LoginModel model, ActiveDirectoryCredentialValidationResult adValidationResult)
+        {
+            var identity = model.UserName;
+            if (Configuration.Current.UseUpnAsIdentity)
+            {
+                if (string.IsNullOrEmpty(adValidationResult.Upn))
+                {
+                    throw new InvalidOperationException($"Null UPN for user {model.UserName}");
+                }
+                identity = adValidationResult.Upn;
+            }
+
+            return identity;
         }
 
         public ActionResult Logout()
@@ -123,9 +154,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return View();
         }
 
-        private ActionResult RedirectToMfa(string login, string displayName, string email, string phone, string documentUrl, string samlSessionId, string oidcSessionId, bool mustResetPassword = false)
+        private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, string oidcSessionId, 
+            ActiveDirectoryCredentialValidationResult validationResult = null)
         {
-            //public url from browser if we behind nginx or other proxy
+            // public url from browser if we behind nginx or other proxy
             var currentUri = new Uri(documentUrl);
             var noLastSegment = string.Format("{0}://{1}", currentUri.Scheme, currentUri.Authority);
 
@@ -134,80 +166,47 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 noLastSegment += currentUri.Segments[i];
             }
 
-            noLastSegment = noLastSegment.Trim("/".ToCharArray()); // remove trailing /
-
-            var postbackUrl = noLastSegment + "/PostbackFromMfa";
+            // remove trailing
+            var postbackUrl = $"{noLastSegment.Trim("/".ToCharArray())}/PostbackFromMfa";
 
             //exra params
             var claims = new Dictionary<string, string>
             {
-                { MultiFactorClaims.RawUserName, login }    //as specifyed by user
+                // as specifyed by user
+                { MultiFactorClaims.RawUserName, login }
             };
 
-            if (mustResetPassword)
+            if (validationResult != null && validationResult.UserMustChangePassword)
             {
                 claims.Add(MultiFactorClaims.ChangePassword, "true");
             }
             else
             {
-                if (samlSessionId != null)
-                {
-                    claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
-                }
-                if (oidcSessionId != null)
-                {
-                    claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
-                }
+                if (samlSessionId != null) claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);             
+                if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);              
             }
 
-
-            var client = new MultiFactorApiClient();
-            var accessPage = client.CreateAccessRequest(login, displayName, email, phone, postbackUrl, claims);
+            var accessPage = _apiClient.CreateAccessRequest(login, 
+                validationResult?.DisplayName, 
+                validationResult?.Email, 
+                validationResult?.Phone, 
+                postbackUrl, claims);
 
             return RedirectPermanent(accessPage.Url);
         }
 
         private ActionResult ByPassSamlSession(string login, string samlSessionId)
         {
-            var client = new MultiFactorApiClient();
-            var bypassPage = client.CreateSamlBypassRequest(login, samlSessionId);
-
+            var bypassPage = _apiClient.CreateSamlBypassRequest(login, samlSessionId);
             return View("ByPassSamlSession", bypassPage);
         }
 
         [HttpPost]
         public ActionResult PostbackFromMfa(string accessToken)
         {
-            var tokenValidationService = new TokenValidationService();
-
             _logger.Debug($"Received MFA token: {accessToken}");
-
-            if (tokenValidationService.VerifyToken(accessToken, out var token))
-            {
-                _logger.Information("Second factor for user '{user:l}' verified successfully", token.Identity);
-
-                //save token to cookie
-                //secure flag managed by web.config settings
-                var cookie = new HttpCookie(Constants.COOKIE_NAME)
-                {
-                    Value = accessToken,
-                    Expires = token.ValidTo
-                };
-
-                Response.Cookies.Add(cookie);
-                
-                FormsAuthentication.SetAuthCookie(token.Identity, false);
-
-                if (token.MustChangePassword)
-                {
-                    return RedirectToAction("ChangePassword", "Home");
-                }
-
-                return RedirectToAction("Index", "Home");
-            }
-
-            //invalid token, see logs
-            return RedirectToAction("Login");
+            _authService.SignIn(accessToken);     
+            return RedirectToAction("Index", "Home");
         }
 
         private string GetMultifactorClaimFromRedirectUrl(string login, string claim)

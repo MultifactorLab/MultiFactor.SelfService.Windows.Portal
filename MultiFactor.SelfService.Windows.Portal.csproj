@@ -55,6 +55,12 @@
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.Caching.Abstractions.6.0.0\lib\net461\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.Caching.Memory.6.0.0\lib\net461\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.Configuration, Version=6.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Extensions.Configuration.6.0.0\lib\net461\Microsoft.Extensions.Configuration.dll</HintPath>
     </Reference>
@@ -224,6 +230,8 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\ServicesConfig.cs" />
+    <Compile Include="Attributes\IsAuthorizedAttribute.cs" />
+    <Compile Include="Attributes\RequiredFeatureAttribute.cs" />
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Constants.cs" />
@@ -236,7 +244,13 @@
     <Compile Include="Controllers\PasswordController.cs" />
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
+    <Compile Include="Core\AppAuthentication.cs" />
+    <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CustomControllerFactory.cs" />
+    <Compile Include="Core\EnumExtensions.cs" />
+    <Compile Include="Core\Exceptions\FeatureNotEnabledException.cs" />
+    <Compile Include="Core\Exceptions\PasswordChangingSessionExpired.cs" />
+    <Compile Include="Core\Exceptions\UnauthorizedException.cs" />
     <Compile Include="Core\HttpContextExtensions.cs" />
     <Compile Include="Core\Http\GoogleCaptchaHttpClientAdapterFactory.cs" />
     <Compile Include="Core\Http\HttpClientUtils.cs" />
@@ -386,8 +400,13 @@
     <Compile Include="Services\API\DTO\UserProfile.cs" />
     <Compile Include="Services\API\DTO\UserProfileAuthenticator.cs" />
     <Compile Include="Services\API\DTO\UserProfilePolicy.cs" />
+    <Compile Include="Core\JwtTokenProvider.cs" />
     <Compile Include="Services\API\MultiFactorSelfServiceApiClient.cs" />
-    <Compile Include="Services\API\UnauthorizedException.cs" />
+    <Compile Include="Services\AuthService.cs" />
+    <Compile Include="Services\Caching\ApplicationCache.cs" />
+    <Compile Include="Services\Caching\ApplicationCacheConfig.cs" />
+    <Compile Include="Services\Caching\CachedItem.cs" />
+    <Compile Include="Services\Caching\ServiceCollectionExtensions.cs" />
     <Compile Include="Services\DataProtectionService.cs" />
     <Compile Include="Services\Ldap\LdapIdentity.cs" />
     <Compile Include="Services\Ldap\LdapProfile.cs" />

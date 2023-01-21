@@ -1,11 +1,19 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Services.API;
+﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Services.API;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    [Authorize]
+    [IsAuthorized]
     public class HomeController : ControllerBase
     {
+        private readonly MultiFactorSelfServiceApiClient _api;
+
+        public HomeController(MultiFactorSelfServiceApiClient api)
+        {
+            _api = api ?? throw new System.ArgumentNullException(nameof(api));
+        }
+
         public ActionResult Index()
         {
             if (Request.QueryString[MultiFactorClaims.SamlSessionId] != null)
@@ -19,52 +27,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return SignOut();
             }
 
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie == null)
-            {
-                return SignOut();
-            }
+            var userProfile = _api.LoadUserProfile();
+            userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
+            userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
 
-            try
-            {
-                var api = new MultiFactorSelfServiceApiClient(tokenCookie.Value);
-                var userProfile = api.LoadProfile();
-                userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
-                userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
-
-                return View(userProfile);
-            }
-            catch (UnauthorizedException)
-            {
-                return SignOut();
-            }
+            return View(userProfile);        
         }
 
         [HttpPost]
         public ActionResult RemoveAuthenticator(string authenticator, string id)
         {
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie == null)
+            var userProfile = _api.LoadUserProfile();
+            if (userProfile.Count > 1) //do not remove last
             {
-                return SignOut();
+                _api.RemoveAuthenticator(authenticator, id);
             }
 
-            var api = new MultiFactorSelfServiceApiClient(tokenCookie.Value);
-
-            try
-            {
-                var userProfile = api.LoadProfile();
-                if (userProfile.Count > 1) //do not remove last
-                {
-                    api.RemoveAuthenticator(authenticator, id);
-                }
-
-                return RedirectToAction("Index");
-            }
-            catch (UnauthorizedException)
-            {
-                return SignOut();
-            }
+            return RedirectToAction("Index");
         }
     }
 }

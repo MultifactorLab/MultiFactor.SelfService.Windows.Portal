@@ -1,66 +1,44 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Models;
+﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    [Authorize]
+    [IsAuthorized]
+    [RequiredFeature(ApplicationFeature.ExchangeActiveSyncDevicesManagement)]
     public class ExchangeActiveSyncDevicesController : ControllerBase
     {
+        private readonly ActiveDirectoryService _activeDirectoryService;
+
+        public ExchangeActiveSyncDevicesController(ActiveDirectoryService activeDirectoryService)
+        {
+            _activeDirectoryService = activeDirectoryService ?? throw new System.ArgumentNullException(nameof(activeDirectoryService));
+        }
+
         public ActionResult Index()
         {
-            if (Configuration.Current.EnableExchangeActiveSyncDevicesManagement)
-            {
-                var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-                if (tokenCookie != null)
-                {
-                    var tokenValidationService = new TokenValidationService();
-                    if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
-                    {
-                        var service = new ActiveDirectoryService();
-                        var devices = service.SearchExchangeActiveSyncDevices(token.Identity);
-
-                        return View(devices);
-                    }
-                }
-            }
-
-            return SignOut();
+            var devices = _activeDirectoryService.SearchExchangeActiveSyncDevices(User.Identity.Name);
+            return View(devices);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Approve(string deviceId)
-        {
-            return ChangeState(deviceId, ExchangeActiveSyncDeviceAccessState.Allowed);
-        }
-
+        public ActionResult Approve(string deviceId) => ChangeState(deviceId, ExchangeActiveSyncDeviceAccessState.Allowed);
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Reject(string deviceId)
-        {
-            return ChangeState(deviceId, ExchangeActiveSyncDeviceAccessState.Blocked);
-        }
-
+        public ActionResult Reject(string deviceId) => ChangeState(deviceId, ExchangeActiveSyncDeviceAccessState.Blocked);
+        
         private ActionResult ChangeState(string cn, ExchangeActiveSyncDeviceAccessState state)
         {
-            if (ModelState.IsValid && Configuration.Current.EnableExchangeActiveSyncDevicesManagement)
+            if (!ModelState.IsValid)
             {
-                var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-                if (tokenCookie != null)
-                {
-                    var tokenValidationService = new TokenValidationService();
-                    if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
-                    {
-                        var service = new ActiveDirectoryService();
-                        service.UpdateExchangeActiveSyncDeviceState(token.Identity, cn, state);
-
-                        return RedirectToAction("Index");
-                    }
-                }
+                return SignOut();
             }
-            
-            return SignOut();
+
+            _activeDirectoryService.UpdateExchangeActiveSyncDeviceState(User.Identity.Name, cn, state);
+            return RedirectToAction("Index");
         }
     }
 }
