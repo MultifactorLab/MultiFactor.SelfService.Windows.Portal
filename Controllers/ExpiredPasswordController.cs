@@ -102,6 +102,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return RedirectToAction("Done");
         }
 
-        public ActionResult Done() => new HttpUnauthorizedResult();      
+        public ActionResult Done()
+        {
+            AppAuthentication.SignOut();
+            return View();
+        }
     }
 }
