@@ -1,5 +1,5 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
-using MultiFactor.SelfService.Windows.Portal.Services.API;
+using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
 using Serilog;
 using System;
 using System.Collections.Generic;

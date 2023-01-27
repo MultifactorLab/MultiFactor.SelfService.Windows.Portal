@@ -20,17 +20,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
     /// </summary>
     public class ActiveDirectoryService
     {
-        private ILogger _logger;
-        private Configuration _configuration;
-        private Cache _cache;
+        private readonly Configuration _configuration;
+        private readonly ILogger _logger;
 
-        public ActiveDirectoryService()
+        public ActiveDirectoryService(Configuration configuration, ILogger logger)
         {
-            _logger = Log.Logger;
-            _configuration = Configuration.Current;
-            _cache = HttpContext.Current.Cache;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
 
         /// <summary>
         /// Verify User Name, Password, User Status and Policy against Active Directory
@@ -549,11 +546,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         {
             var key = "domainNameSuffixes";
 
-            var domainNameSuffixes = _cache.Get(key) as IDictionary<string, LdapIdentity>;
+            var domainNameSuffixes = HttpContext.Current.Cache.Get(key) as IDictionary<string, LdapIdentity>;
             if (domainNameSuffixes == null)
             {
                 domainNameSuffixes = LoadForestSchema(connection, root);
-                _cache.Add(key, domainNameSuffixes, null, DateTime.MaxValue, Cache.NoSlidingExpiration, CacheItemPriority.Default, null);
+                HttpContext.Current.Cache.Add(key, domainNameSuffixes, null, DateTime.MaxValue, Cache.NoSlidingExpiration, CacheItemPriority.Default, null);
             }
 
             return domainNameSuffixes;

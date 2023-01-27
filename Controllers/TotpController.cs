@@ -1,68 +1,47 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Models;
+﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    [Authorize]
+    [IsAuthorized]
     public class TotpController : ControllerBase
     {
+        private readonly MultiFactorSelfServiceApiClient _api;
+
+        public TotpController(MultiFactorSelfServiceApiClient api)
+        {
+            _api = api ?? throw new System.ArgumentNullException(nameof(api));
+        }
+
         [HttpGet]
         public ActionResult Index()
-        {
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie == null)
+        {            
+            var totpKey = _api.CreateTotpKey();
+            return View(new GoogleAuthenticatorModel
             {
-                return SignOut();
-            }
-
-            var api = new MultiFactorSelfServiceApiClient(tokenCookie.Value);
-
-            try
-            {
-                var totpKey = api.CreateTotpKey();
-
-                return View(new GoogleAuthenticatorModel
-                {
-                    Link = totpKey.Link,
-                    Key = totpKey.Key
-                });
-            }
-            catch (UnauthorizedException)
-            {
-                return SignOut();
-            }
+                Link = totpKey.Link,
+                Key = totpKey.Key
+            });
         }
 
         [HttpPost]
         public ActionResult Add(GoogleAuthenticatorModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-                if (tokenCookie == null)
-                {
-                    return SignOut();
-                }
-
-                var api = new MultiFactorSelfServiceApiClient(tokenCookie.Value);
-
-                try
-                {
-                    var result = api.AddTotpAuthenticator(model.Key, model.Otp);
-                    if (result.Success)
-                    {
-                        return RedirectToAction("Index", "Home");
-                    }
-                    ModelState.AddModelError("Otp", Resources.Totp.WrongOtp);
-                }
-                catch (UnauthorizedException)
-                {
-                    return SignOut();
-                }
+                return View("Index", model);
+            }
+     
+            var result = _api.AddTotpAuthenticator(model.Key, model.Otp);
+            if (!result.Success)
+            {
+                ModelState.AddModelError("Otp", Resources.Totp.WrongOtp);
+                return View("Index", model);
             }
 
-            return View("Index", model);
+            return RedirectToAction("Index", "Home");
         }
     }
 }

@@ -13,11 +13,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
     /// </summary>
     public class TokenValidationService
     {
-        private ILogger _logger = Log.Logger;
-        private Configuration _configuration = Configuration.Current;
-
         //cached jwks
         private static JsonWebKeySet _jsonWebKeySet;
+        private readonly Configuration _configuration;
+        private readonly ILogger _logger;
+
+        public TokenValidationService(Configuration configuration, ILogger logger)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         public bool VerifyToken(string jwt, out Token token)
         {

@@ -1,24 +1,19 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Services;
+﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
-    [Authorize]
+    [IsAuthorized]
     public class MobileAppController : ControllerBase
     {
-        public ActionResult Index()
-        {
-            var tokenCookie = Request.Cookies[Constants.COOKIE_NAME];
-            if (tokenCookie != null)
-            {
-                var tokenValidationService = new TokenValidationService();
-                if (tokenValidationService.VerifyToken(tokenCookie.Value, out var token))
-                {
-                    return View(token);
-                }
-            }
+        private readonly JwtTokenProvider _tokenProvider;
 
-            return SignOut();
+        public MobileAppController(JwtTokenProvider tokenProvider)
+        {
+            _tokenProvider = tokenProvider ?? throw new System.ArgumentNullException(nameof(tokenProvider));
         }
+
+        public ActionResult Index() => View(_tokenProvider.GetToken());       
     }
 }

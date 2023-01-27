@@ -245,6 +245,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             ReadCaptchaSettings(appSettings, configuration);
             ReadSignUpGroupsSettings(appSettings, configuration);
+            ReadAppCacheSettings(appSettings, configuration);
 
             Current = configuration;
         }
@@ -300,10 +301,38 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (!Regex.IsMatch(signUpGroupsSettings, signUpGroupsRegex, RegexOptions.IgnoreCase))
             {
-                throw new Exception($"Invalid group names. Please check 'sign-up-groups' settings property and fix syntax errors.");
+                throw new Exception($"Invalid group names. Please check '{signUpGroupsToken}' settings property and fix syntax errors.");
             }
 
             configuration.SignUpGroups = signUpGroupsSettings;
+        }
+
+        private static void ReadAppCacheSettings(NameValueCollection appSettings, Configuration configuration)
+        {
+            const string pwdChangingSessionLifetimeToken = "pwd-changing-session-lifetime";
+            const string pwdChangingSessionCacheSizeToken = "pwd-changing-session-cache-size";
+
+            var pwdChangingSessionLifetimeSetting = appSettings[pwdChangingSessionLifetimeToken];
+            if (!string.IsNullOrEmpty(pwdChangingSessionLifetimeSetting))
+            {
+                if (!TimeSpan.TryParseExact(pwdChangingSessionLifetimeSetting, @"hh\:mm\:ss", null, System.Globalization.TimeSpanStyles.None, out var timeSpan))
+                {
+                    throw new Exception($"Configuration error: Can't parse '{pwdChangingSessionLifetimeToken}' value");
+                }
+
+                configuration.PwdChangingSessionLifetime = timeSpan;
+            }
+
+            var pwdChangingSessionCacheSizeSettings = appSettings[pwdChangingSessionCacheSizeToken];
+            if (!string.IsNullOrEmpty(pwdChangingSessionCacheSizeSettings))
+            {
+                if (!long.TryParse(pwdChangingSessionCacheSizeSettings, out var bytes))
+                {
+                    throw new Exception($"Configuration error: Can't parse '{pwdChangingSessionCacheSizeToken}' value");
+                }
+
+                configuration.PwdChangingSessionCacheSize = bytes;
+            }
         }
 
         public static NameValueCollection PortalSettings
@@ -328,6 +357,9 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string GoogleReCaptchaSecret { get; private set; }
 
         public string SignUpGroups { get; private set; }
+
+        public TimeSpan? PwdChangingSessionLifetime { get; private set; }
+        public long? PwdChangingSessionCacheSize { get; private set; }
 
         public static string GetLogFormat()
         {
