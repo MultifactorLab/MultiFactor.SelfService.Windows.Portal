@@ -17,11 +17,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpGet]
-        public ActionResult Change()
-        {
-            return View();
-        }
-
+        public ActionResult Change() => View();
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Change(ChangePasswordModel model)

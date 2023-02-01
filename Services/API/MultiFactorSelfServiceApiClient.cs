@@ -141,6 +141,41 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
         }
 
+        public ApiResponse<AccessPage> StartResetPassword(string identity, string callbackUrl)
+        {
+            if (identity is null) throw new ArgumentNullException(nameof(identity));
+            if (callbackUrl is null) throw new ArgumentNullException(nameof(callbackUrl));         
+
+            try
+            {
+                //payload
+                var json = JsonConvert.SerializeObject(new
+                {
+                    Identity = identity,
+                    CallbackUrl = callbackUrl
+                });
+
+                var result = SendRequest<ApiResponse<AccessPage>>("/self-service/start-reset-passwor", "POST", json);
+                return result;
+            }
+            catch (WebException webEx)
+            {
+                if ((webEx.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    //invalid or expired token
+                    throw new UnauthorizedException();
+                }
+
+                _logger.Error(webEx, $"Unable to connect API {_settings.MultiFactorApiUrl}: {webEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Unable to connect API {_settings.MultiFactorApiUrl}: {ex.Message}");
+                throw;
+            }
+        }
+
         private TReponse SendRequest<TReponse>(string path, string method, string payload = null) where TReponse : ApiResponse
         {
             //make sure we can communicate securely

@@ -237,6 +237,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
+    <Compile Include="Controllers\ForgottenPasswordController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MobileAppController.cs" />
     <Compile Include="Controllers\ExpiredPasswordController.cs" />
@@ -270,6 +271,8 @@
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
     <Compile Include="Models\LoginModel.cs" />
+    <Compile Include="Models\PasswordRecovery\ConfirmPasswordRecoveryForm.cs" />
+    <Compile Include="Models\PasswordRecovery\EnterIdentityForm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\AccountLogin.ru.Designer.cs">
       <DependentUpon>AccountLogin.ru.resx</DependentUpon>
@@ -303,6 +306,16 @@
     </Compile>
     <Compile Include="Resources\ExpiredPasswordChange.Designer.cs">
       <DependentUpon>ExpiredPasswordChange.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\PasswordReset.ru.Designer.cs">
+      <DependentUpon>PasswordReset.ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\PasswordReset.Designer.cs">
+      <DependentUpon>PasswordReset.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -480,6 +493,9 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
     <None Include="Properties\PublishProfiles\Publish to Folder.pubxml" />
+    <Content Include="Views\ForgottenPassword\Index.cshtml" />
+    <Content Include="Views\ForgottenPassword\Reset.cshtml" />
+    <Content Include="Views\ForgottenPassword\Wrong.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AccountLogin.ru.resx">
@@ -516,6 +532,16 @@
     <EmbeddedResource Include="Resources\ExpiredPasswordChange.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ExpiredPasswordChange.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\PasswordReset.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PasswordReset.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\PasswordReset.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PasswordReset.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\PasswordChange.ru.resx">

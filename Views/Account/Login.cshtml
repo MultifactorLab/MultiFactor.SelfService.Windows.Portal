@@ -25,7 +25,7 @@
                     </div>
                     @Html.ValidationSummary(true)
 
-                    @if (Configuration.Current.EnableGoogleReCaptcha)
+                    @if (Configuration.Current.RequireCaptchaOnLogin)
                     {
                         <div class="g-recaptcha"
                              data-sitekey="@Configuration.Current.GoogleReCaptchaKey"
@@ -38,7 +38,7 @@
                 <div class="form-row">
                     <input type="hidden" name="myUrl" id="myUrl" />
 
-                    @if (Configuration.Current.EnableGoogleReCaptcha)
+                    @if (Configuration.Current.RequireCaptchaOnLogin)
                     {
                         <input type="hidden" name="responseToken" id="responseToken" />
                         <input type="submit" class="btn" disabled="disabled" value="@Resources.AccountLogin.Submit" id="submit" />
@@ -54,7 +54,7 @@
 </div>
 
 @section head {
-    @if (Configuration.Current.EnableGoogleReCaptcha)
+    @if (Configuration.Current.RequireCaptchaOnLogin)
     {
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     }
