@@ -126,6 +126,9 @@
   <data name="PleaseWait" xml:space="preserve">
     <value>Пожалуйста, подождите...</value>
   </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Забыли пароль?</value>
+  </data>
   <data name="Submit" xml:space="preserve">
     <value>Войти</value>
   </data>

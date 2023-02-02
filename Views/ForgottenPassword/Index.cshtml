@@ -9,7 +9,7 @@
         {
             <fieldset>
                 @Html.AntiForgeryToken()
-                <p>@Resources.PasswordReset.Invitation</p>
+                <p>@Resources.PasswordReset.EnterLogin</p>
                 <div class="form-row">
                     <div class="input">
                         @Html.TextBoxFor(m => m.Identity, new { placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName })
@@ -17,7 +17,7 @@
                     </div>
                     @Html.ValidationSummary(true)
 
-                    @if (Configuration.Current.RequireCaptchaOnLogin)
+                    @if (Configuration.Current.CaptchaConfigured)
                     {
                         <div class="g-recaptcha"
                              data-sitekey="@Configuration.Current.GoogleReCaptchaKey"
@@ -27,7 +27,7 @@
                     }
                 </div>
                 <div class="form-row">
-                    @if (Configuration.Current.RequireCaptchaOnLogin)
+                    @if (Configuration.Current.CaptchaConfigured)
                     {
                         <input type="hidden" name="responseToken" id="responseToken" />
                         <input type="submit" class="btn" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit" />
@@ -41,3 +41,21 @@
         }
     </div>
 </div>
+
+@section head {
+    @if (Configuration.Current.CaptchaConfigured)
+    {
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    }
+}
+
+<script type="text/javascript">
+    function enableSubmit() {
+        $("form").find(':submit').removeAttr('disabled');
+    }
+
+    function captchaCallback(token) {
+        $('#responseToken').val(token);
+        enableSubmit();
+    }
+</script>

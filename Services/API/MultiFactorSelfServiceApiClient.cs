@@ -155,7 +155,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                     CallbackUrl = callbackUrl
                 });
 
-                var result = SendRequest<ApiResponse<AccessPage>>("/self-service/start-reset-passwor", "POST", json);
+                var result = SendRequest<ApiResponse<AccessPage>>("/self-service/start-reset-passwor", "POST", json, anonymous: true);
                 return result;
             }
             catch (WebException webEx)
@@ -176,7 +176,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
         }
 
-        private TReponse SendRequest<TReponse>(string path, string method, string payload = null) where TReponse : ApiResponse
+        private TReponse SendRequest<TReponse>(string path, string method, string payload = null, bool anonymous = false) where TReponse : ApiResponse
         {
             //make sure we can communicate securely
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -185,7 +185,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
             using (var web = new WebClient())
             {
-                web.Headers.Add("Authorization", $"Bearer {_tokenProvider.GetToken()}");
+                if (!anonymous)
+                {
+                    web.Headers.Add("Authorization", $"Bearer {_tokenProvider.GetToken()}");
+                }
 
                 if (!string.IsNullOrEmpty(_settings.MultiFactorApiProxy))
                 {

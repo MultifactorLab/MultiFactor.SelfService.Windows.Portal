@@ -4,11 +4,11 @@ using MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
-using System.Reflection;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
+    [AllowAnonymous]
     [RequiredFeature(ApplicationFeature.PasswordManagement | ApplicationFeature.Captcha)]
     public class ForgottenPasswordController : ControllerBase
     {
@@ -33,12 +33,22 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public ActionResult Index(EnterIdentityForm form)
         {
             var callback = HttpContext.BuildCallbackUrl($"reset?identity={form.Identity}");
-            var response = _apiClient.StartResetPassword(form.Identity, callback);
-            if (response.Success) return RedirectPermanent(response.Model.Url);
+            try
+            {
+                var response = _apiClient.StartResetPassword(form.Identity, callback);
+                if (response.Success) return RedirectPermanent(response.Model.Url);
 
-            _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
-            TempData["reset-password-error"] = response.Message;
-            return RedirectToAction("Wrong");
+                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
+                TempData["reset-password-error"] = response.Message;
+                return RedirectToAction("Wrong");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Unable to recover password for user '{u:l}': {m:l}", form.Identity, ex.Message);
+                TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
+                return RedirectToAction("Wrong");
+            }
+
         }
 
         [HttpGet]
@@ -69,7 +79,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Wrong()
         {
-            var error = TempData["reset-password-error"];
+            var error = TempData["reset-password-error"] ?? Resources.PasswordReset.ErrorMessage;
             return View(error);
         }
     }

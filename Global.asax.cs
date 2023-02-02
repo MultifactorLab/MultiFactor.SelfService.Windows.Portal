@@ -113,7 +113,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 var action = rd.GetRequiredString("action");
                 var controller = rd.GetRequiredString("controller");
                 var route = $"/{controller}/{action}".ToLower();
-                logger.Warning(ex, "Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
+                logger.Warning("Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
 
                 HttpContext.Current.Server.ClearError();
                 HttpContext.Current.Response.Clear();

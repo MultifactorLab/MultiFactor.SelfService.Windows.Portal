@@ -70,7 +70,25 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please enter new password to continue. Kindly note, the new password:.
+        ///   Looks up a localized string similar to Please enter name to continue password recovery.
+        /// </summary>
+        public static string EnterLogin {
+            get {
+                return ResourceManager.GetString("EnterLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please contact Administrator.
+        /// </summary>
+        public static string ErrorMessage {
+            get {
+                return ResourceManager.GetString("ErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please set new password. Kindly note, the new password:.
         /// </summary>
         public static string Invitation {
             get {
@@ -79,7 +97,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Next.
+        ///   Looks up a localized string similar to Reset password.
         /// </summary>
         public static string Next {
             get {
@@ -97,7 +115,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reset Password.
+        ///   Looks up a localized string similar to Password Recovery.
         /// </summary>
         public static string Title {
             get {

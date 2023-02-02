@@ -247,6 +247,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             ReadCaptchaSettings(appSettings, configuration);
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
+            ReadPasswordRecoverySettings(appSettings, configuration);
 
             Current = configuration;
         }
