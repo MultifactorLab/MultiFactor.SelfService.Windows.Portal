@@ -4,6 +4,7 @@ using MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
+using System.Text;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
@@ -26,20 +27,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             return View();
         }
-        
+
         [HttpPost]
         [VerifyCaptcha]
         [ValidateAntiForgeryToken]
         public ActionResult Index(EnterIdentityForm form)
         {
-            var callback = HttpContext.BuildCallbackUrl($"reset?identity={form.Identity}");
+            var identity = Convert.ToBase64String(Encoding.ASCII.GetBytes(form.Identity));
+            var callback = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, $"reset/{identity}");
             try
             {
                 var response = _apiClient.StartResetPassword(form.Identity, callback);
                 if (response.Success) return RedirectPermanent(response.Model.Url);
 
                 _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
-                TempData["reset-password-error"] = response.Message;
+                TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
             catch (Exception ex)
@@ -51,18 +53,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         }
 
-        [HttpGet]
-        public ActionResult Reset(string identity)
+        [HttpPost]
+        [Route("reset/{id}")]
+        public ActionResult Reset(string id)
         {
             return View(new ResetPasswordForm 
             { 
-                Identity = identity
+                Identity = Encoding.UTF8.GetString(Convert.FromBase64String(id))
             });
         }
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Reset(ResetPasswordForm form)
+        public ActionResult ConfirmReset(ResetPasswordForm form)
         {
             if (string.IsNullOrWhiteSpace(form.Identity))
             {
@@ -71,7 +74,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(form);
+                return View("Reset", form);
             }
 
             return View(form);

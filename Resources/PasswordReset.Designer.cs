@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please contact Administrator.
+        ///   Looks up a localized string similar to Contact Administrator for password recovery.
         /// </summary>
         public static string ErrorMessage {
             get {

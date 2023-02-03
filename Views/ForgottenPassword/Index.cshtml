@@ -12,7 +12,11 @@
                 <p>@Resources.PasswordReset.EnterLogin</p>
                 <div class="form-row">
                     <div class="input">
-                        @Html.TextBoxFor(m => m.Identity, new { placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName })
+                        @Html.TextBoxFor(m => m.Identity, 
+                            new { 
+                                placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName ,
+                                autocomplete = "off"
+                            })
                         @Html.ValidationMessageFor(m => m.Identity)
                     </div>
                     @Html.ValidationSummary(true)
@@ -27,6 +31,7 @@
                     }
                 </div>
                 <div class="form-row">
+                    <input type="hidden" name="myUrl" id="myUrl" />
                     @if (Configuration.Current.CaptchaConfigured)
                     {
                         <input type="hidden" name="responseToken" id="responseToken" />
@@ -58,4 +63,14 @@
         $('#responseToken').val(token);
         enableSubmit();
     }
+
+        $(document).ready(function(){
+        $('#myUrl').val(document.location);
+
+        $("form").submit(function () {
+            if ($(this).valid()) {
+                $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
+            }
+        });
+    });
 </script>

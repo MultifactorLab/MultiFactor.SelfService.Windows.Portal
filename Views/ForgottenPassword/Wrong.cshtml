@@ -1,11 +1,10 @@
 ﻿@model string
 
 @{
-    ViewBag.Title = Resources.PasswordReset.CommonErrorTitle;
+    ViewBag.Title = Resources.PasswordReset.Title;
 }
 <div class="login change-pwd">
     <hgroup>
-        <h1>@Resources.Error.SomethingWentWrong</h1>
         <h2>@Html.Raw(Model)</h2>
     </hgroup>
 </div>

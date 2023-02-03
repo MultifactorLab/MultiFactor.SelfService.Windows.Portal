@@ -5,7 +5,7 @@
 }
 <div class="login change-pwd">
     <div class="form-column">
-        @using (Html.BeginForm("Reset", "ForgottenPassword", FormMethod.Post))
+        @using (Html.BeginForm("ConfirmReset", "ForgottenPassword", FormMethod.Post))
         {
             <fieldset>
                 @Html.AntiForgeryToken()

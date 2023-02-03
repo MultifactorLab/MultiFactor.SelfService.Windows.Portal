@@ -247,6 +247,7 @@
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
+    <Compile Include="Core\CallbackUrlFactory.cs" />
     <Compile Include="Core\CustomControllerFactory.cs" />
     <Compile Include="Core\EnumExtensions.cs" />
     <Compile Include="Core\Exceptions\FeatureNotEnabledException.cs" />
@@ -406,6 +407,7 @@
     </Compile>
     <Compile Include="Services\ActiveDirectoryCredentialValidationResult.cs" />
     <Compile Include="Services\ActiveDirectoryService.cs" />
+    <Compile Include="Services\API\ApiClient.cs" />
     <Compile Include="Services\API\DTO\AccessPage.cs" />
     <Compile Include="Services\API\DTO\BypassPage.cs" />
     <Compile Include="Services\API\DTO\ApiResponse.cs" />
