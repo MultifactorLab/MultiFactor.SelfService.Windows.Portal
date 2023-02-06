@@ -109,9 +109,11 @@ namespace MultiFactor.SelfService.Windows.Portal
             
             if (ex is FeatureNotEnabledException featureEx)
             {
+                logger.Warning(ex, "Unable to navigate to route because required feature is not enabled.");
+
                 var rd = HttpContext.Current.Request.RequestContext.RouteData;
-                var action = rd.GetRequiredString("action");
-                var controller = rd.GetRequiredString("controller");
+                var action = rd.Values["action"] ?? "action";
+                var controller = rd.Values["controller"] ?? "controller";
                 var route = $"/{controller}/{action}".ToLower();
                 logger.Warning(ex, "Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
 
@@ -123,6 +125,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
 
             logger.Error(ex, "Unhandled error: {msg:l}", ex.Message);
+            HttpContext.Current.Server.ClearError();
+            HttpContext.Current.Response.Clear();
+            HttpContext.Current.Response.Redirect("~/error");
         }
 
         private void HandleUnauthError()
