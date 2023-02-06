@@ -1,7 +1,10 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using System;
+using System.Collections.Generic;
+using System.Security.Principal;
 using System.Text;
+using System.Web.UI.WebControls;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.API
 {
@@ -60,12 +63,22 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
         public ApiResponse<AccessPage> StartResetPassword(string identity, string callbackUrl)
         {
             if (identity is null) throw new ArgumentNullException(nameof(identity));
-            if (callbackUrl is null) throw new ArgumentNullException(nameof(callbackUrl));         
+            if (callbackUrl is null) throw new ArgumentNullException(nameof(callbackUrl));
+
+            // add netbios domain name to login if specified
+            if (!string.IsNullOrEmpty(_settings.NetBiosName))
+            {
+                identity = $"{_settings.NetBiosName}\\{identity}";
+            }
 
             var payload = new
             {
                 Identity = identity,
-                CallbackUrl = callbackUrl
+                CallbackUrl = callbackUrl,
+                Claims = new Dictionary<string, string>
+                {
+                    { MultiFactorClaims.ResetPassword, "true" }
+                }
             };
 
             var result = _apiClient.Post<ApiResponse<AccessPage>>("/self-service/start-reset-password", payload, x => x.Authorization = GetBasicAuth());

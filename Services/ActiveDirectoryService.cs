@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Buffers.Text;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -310,10 +311,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
         }
 
-        /// <summary>
-        /// Change user password
-        /// </summary>
-        public bool ChangePassword(string userName, string currentPassword, string newPassword, bool bindWithCredentials, out string errorReason)
+        public bool ChangeValidPassword(string userName, string currentPassword, string newPassword, out string errorReason)
         {
             var identity = LdapIdentity.ParseUser(userName);
             errorReason = null;
@@ -324,17 +322,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
-                    connection.SessionOptions.ProtocolVersion = 3;
-                    if (bindWithCredentials)
-                    {
-                        connection.Credential = new NetworkCredential(identity.Name, currentPassword);
-                        connection.AuthType = AuthType.Ntlm;
-                    }
-
+                    connection.SessionOptions.ProtocolVersion = 3;            
+                    connection.Credential = new NetworkCredential(identity.Name, currentPassword);
+                    connection.AuthType = AuthType.Ntlm;
                     connection.Bind();
 
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
-
                     var isProfileLoaded = LoadProfile(connection, domain, identity, out var profile);
                     if (!isProfileLoaded)
                     {
@@ -346,7 +339,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 _logger.Debug($"Changing password for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()}", identity.Name);
 
-                using (var ctx = CreateContext(userProfile.BaseDn.DnToFqdn(), bindWithCredentials, identity.Name, currentPassword))
+                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null, ContextOptions.Negotiate, identity.Name, currentPassword))
                 {
                     using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName, userProfile.DistinguishedName))
                     {
@@ -358,14 +351,118 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 _logger.Information("Password changed for user '{user:l}'", identity.Name);
                 return true;
             }
-            catch(PasswordException pex)
+            catch (PasswordException pex)
             {
-                _logger.Warning($"Changing password for user '{{user:l}}' failed: {pex.Message}, {pex.HResult}", identity.Name);
+                _logger.Warning(pex, $"Changing password for user '{{user:l}}' failed: {pex.Message}, {pex.HResult}", identity.Name);
                 errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
             }
             catch (Exception ex)
             {
-                _logger.Warning($"Changing password for user '{{user:l}}' failed: {ex.Message}", identity.Name);
+                _logger.Warning(ex, $"Changing password for user '{{user:l}}' failed: {ex.Message}", identity.Name);
+                errorReason = Resources.AD.UnableToChangePassword;
+            }
+
+            return false;
+        }
+
+        public bool ChangeExpiredPassword(string userName, string currentPassword, string newPassword, out string errorReason)
+        {
+            var identity = LdapIdentity.ParseUser(userName);
+            errorReason = null;
+
+            try
+            {
+                LdapProfile userProfile;
+
+                using (var connection = new LdapConnection(_configuration.Domain))
+                {
+                    connection.SessionOptions.ProtocolVersion = 3;
+                    connection.Bind();
+
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                    var isProfileLoaded = LoadProfile(connection, domain, identity, out var profile);
+                    if (!isProfileLoaded)
+                    {
+                        errorReason = Resources.AD.UnableToChangePassword;
+                        return false;
+                    }
+                    userProfile = profile;
+                }
+
+                _logger.Debug("Changing expired password for user '{user}' in '{dn:l}'", identity, userProfile.BaseDn.DnToFqdn());
+
+                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null, ContextOptions.Negotiate))
+                {
+                    using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName, userProfile.DistinguishedName))
+                    {
+                        user.ChangePassword(currentPassword, newPassword);
+                        user.Save();
+                    }
+                }
+
+                _logger.Information("Expired password changed for user '{user}'", identity);
+                return true;
+            }
+            catch(PasswordException pex)
+            {
+                _logger.Warning(pex, "Changing expired password for user '{user}' failed: {msg:l}, {hresult}", 
+                    identity, pex.Message, pex.HResult);
+                errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Changing expired password for user '{user}' failed: {msg:l}", identity, ex.Message);
+                errorReason = Resources.AD.UnableToChangePassword;
+            }
+
+            return false;
+        }
+
+        public bool ResetPassword(string userName, string newPassword, out string errorReason)
+        {
+            var identity = LdapIdentity.ParseUser(userName);
+            errorReason = null;
+
+            try
+            {
+                LdapProfile userProfile;
+
+                using (var connection = new LdapConnection(_configuration.Domain))
+                {
+                    connection.SessionOptions.ProtocolVersion = 3;
+                    connection.Bind();
+
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                    var isProfileLoaded = LoadProfile(connection, domain, identity, out var profile);
+                    if (!isProfileLoaded)
+                    {
+                        errorReason = Resources.AD.UnableToChangePassword;
+                        return false;
+                    }
+                    userProfile = profile;
+                }
+
+                _logger.Debug("Setting a new password for user '{user}' in '{dn:l}'", identity, userProfile.BaseDn.DnToFqdn());
+                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null, ContextOptions.Negotiate))
+                {
+                    using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName, userProfile.DistinguishedName))
+                    {
+                        user.SetPassword(newPassword);
+                        user.Save();
+                    }
+                }
+
+                _logger.Information("Successfully set new password for user '{user}'", identity);
+                return true;
+            }
+            catch (PasswordException pex)
+            {
+                _logger.Warning(pex, "Setting a new password for user '{user}' failed: {msg:l}, {hresult}", identity, pex.Message, pex.HResult);
+                errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Setting a new password for user '{user}' failed: {msg}", identity, ex.Message);
                 errorReason = Resources.AD.UnableToChangePassword;
             }
 
@@ -650,16 +747,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 _logger.Error(ex, "Unable to load forest schema");
                 return null;
             }
-        }
-
-        private PrincipalContext CreateContext(string basedn, bool bindWithCredentials, string username = null, string password = null)
-        {
-            if (bindWithCredentials)
-            {
-                return new PrincipalContext(ContextType.Domain, basedn, null, ContextOptions.Negotiate, username, password);
-            }
-
-            return new PrincipalContext(ContextType.Domain, basedn, null, ContextOptions.Negotiate);
         }
         
         private DateTime ParseLdapDate(string dateString)

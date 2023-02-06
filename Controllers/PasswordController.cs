@@ -29,7 +29,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View(model);
             }
 
-            if (!_activeDirectoryService.ChangePassword(User.Identity.Name, model.Password, model.NewPassword, true, out string errorReason))
+            if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out string errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);
                 return View(model);

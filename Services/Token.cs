@@ -7,6 +7,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public string Id { get; set; }
         public string Identity { get; set; }
         public bool MustChangePassword { get; set; }
+        public bool MustResetPassword { get; set; }
         public DateTime ValidTo { get; set; }
     }
 }
