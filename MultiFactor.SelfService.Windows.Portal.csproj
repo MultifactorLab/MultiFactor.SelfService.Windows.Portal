@@ -498,6 +498,7 @@
     <Content Include="Views\ForgottenPassword\Index.cshtml" />
     <Content Include="Views\ForgottenPassword\Reset.cshtml" />
     <Content Include="Views\ForgottenPassword\Wrong.cshtml" />
+    <Content Include="Views\ForgottenPassword\Done.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AccountLogin.ru.resx">

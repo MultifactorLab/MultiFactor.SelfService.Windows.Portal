@@ -1,6 +1,7 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery;
+using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
@@ -15,18 +16,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     {
         private readonly MultiFactorSelfServiceApiClient _apiClient;
         private readonly ILogger _logger;
+        private readonly ActiveDirectoryService _activeDirectory;
 
-        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, ILogger logger)
+        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, ILogger logger, ActiveDirectoryService activeDirectory)
         {
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
         }
 
         [HttpGet]
-        public ActionResult Index()
-        {
-            return View();
-        }
+        public ActionResult Index() => View();  
 
         [HttpPost]
         [VerifyCaptcha]
@@ -50,7 +50,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
-
         }
 
         [HttpPost]
@@ -77,7 +76,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View("Reset", form);
             }
 
-            return View(form);
+            if (!_activeDirectory.ChangePassword(form.Identity, null, form.NewPassword, false, out var errorReason))
+            {
+                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
+                ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
+                return View("Reset", form);
+            }
+
+            return RedirectToAction("Done");
         }
 
         public ActionResult Wrong()
@@ -85,5 +91,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var error = TempData["reset-password-error"] ?? Resources.PasswordReset.ErrorMessage;
             return View(error);
         }
+        public ActionResult Done() => View();
     }
 }
