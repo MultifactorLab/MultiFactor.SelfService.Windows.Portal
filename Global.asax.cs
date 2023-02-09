@@ -19,6 +19,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
@@ -94,6 +95,16 @@ namespace MultiFactor.SelfService.Windows.Portal
             var logger = Log.Logger;
             var ex = Server.GetLastError();
 
+            if (ex is HttpException httpException)
+            {
+                switch (httpException.GetHttpCode())
+                {
+                    case 401:
+                        HandleUnauthError();
+                        return;
+                }
+            }
+
             if (ex is UnauthorizedException)
             {
                 HandleUnauthError();
@@ -109,13 +120,11 @@ namespace MultiFactor.SelfService.Windows.Portal
             
             if (ex is FeatureNotEnabledException featureEx)
             {
-                logger.Warning(ex, "Unable to navigate to route because required feature is not enabled.");
-
                 var rd = HttpContext.Current.Request.RequestContext.RouteData;
                 var action = rd.Values["action"] ?? "action";
                 var controller = rd.Values["controller"] ?? "controller";
                 var route = $"/{controller}/{action}".ToLower();
-                logger.Warning(ex, "Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
+                logger.Warning("Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
 
                 HttpContext.Current.Server.ClearError();
                 HttpContext.Current.Response.Clear();
@@ -134,7 +143,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         {
             HttpContext.Current.Server.ClearError();
             HttpContext.Current.Response.Clear();
-            HttpContext.Current.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+            HttpContext.Current.Response.Redirect(FormsAuthentication.LoginUrl);
         }
 
         private void SetLogLevel(string level, LoggingLevelSwitch levelSwitch)

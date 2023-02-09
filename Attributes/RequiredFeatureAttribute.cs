@@ -29,17 +29,20 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
             
             if (_requiredFeatureFlags.HasFlag(ApplicationFeature.ExchangeActiveSyncDevicesManagement) && !configuration.EnableExchangeActiveSyncDevicesManagement)
             {
-                throw new FeatureNotEnabledException(ApplicationFeature.PasswordManagement.GetEnumDescription());
+                throw new FeatureNotEnabledException(ApplicationFeature.ExchangeActiveSyncDevicesManagement.GetEnumDescription());
             }
         }
     }
 
+    [Flags]
     public enum ApplicationFeature
     {
+        None = 0,
+
         [Description("Password Management")]
-        PasswordManagement = 0,
+        PasswordManagement = 1,
 
         [Description("Exchange Active Sync Devices Management")]
-        ExchangeActiveSyncDevicesManagement = 1
+        ExchangeActiveSyncDevicesManagement = 2
     }
 }
