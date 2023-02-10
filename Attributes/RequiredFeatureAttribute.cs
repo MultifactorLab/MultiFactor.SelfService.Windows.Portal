@@ -29,7 +29,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
             
             if (_requiredFeatureFlags.HasFlag(ApplicationFeature.ExchangeActiveSyncDevicesManagement) && !configuration.EnableExchangeActiveSyncDevicesManagement)
             {
-                throw new FeatureNotEnabledException(ApplicationFeature.PasswordManagement.GetEnumDescription());
+                throw new FeatureNotEnabledException(ApplicationFeature.ExchangeActiveSyncDevicesManagement.GetEnumDescription());
             }
             
             if (_requiredFeatureFlags.HasFlag(ApplicationFeature.PasswordRecovery) && !configuration.EnablePasswordRecovery)
@@ -44,18 +44,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
         }
     }
 
+    [Flags]
     public enum ApplicationFeature
     {
+        None = 0,
+
         [Description("Password Management")]
-        PasswordManagement = 0,
+        PasswordManagement = 1,
 
         [Description("Exchange Active Sync Devices Management")]
-        ExchangeActiveSyncDevicesManagement = 1,
+        ExchangeActiveSyncDevicesManagement = 2,
 
         [Description("Password Recovery")]
-        PasswordRecovery = 2,
+        PasswordRecovery = 4,
 
         [Description("Captcha")]
-        Captcha = 4
+        Captcha = 8
     }
 }

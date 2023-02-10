@@ -26,6 +26,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<TelegramController>();
             services.AddTransient<TotpController>();
             services.AddTransient<ForgottenPasswordController>();
+            services.AddTransient<ErrorController>();
         }
 
         internal static void RegisterServices(ServiceCollection services)
