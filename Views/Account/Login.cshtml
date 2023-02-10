@@ -48,7 +48,7 @@
                         <input type="submit" class="btn" value="@Resources.AccountLogin.Submit" id="submit" />
                     }
 
-                    @if (Configuration.Current.EnablePasswordRecovery)
+                    @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
                     {
                         <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@Resources.AccountLogin.ResetPassword</a>
                     }
