@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiFactor.SelfService.Windows.Portal", "MultiFactor.SelfService.Windows.Portal.csproj", "{FB0B4F4D-9564-41EF-AD83-DD6EA6F4CFE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiFactor.SelfService.Windows.Portal.Tests", "MultiFactor.SelfService.Windows.Portal.Tests\MultiFactor.SelfService.Windows.Portal.Tests.csproj", "{521DF653-A39F-4FE0-8BC6-86F603ABD617}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{FB0B4F4D-9564-41EF-AD83-DD6EA6F4CFE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB0B4F4D-9564-41EF-AD83-DD6EA6F4CFE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB0B4F4D-9564-41EF-AD83-DD6EA6F4CFE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{521DF653-A39F-4FE0-8BC6-86F603ABD617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{521DF653-A39F-4FE0-8BC6-86F603ABD617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{521DF653-A39F-4FE0-8BC6-86F603ABD617}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{521DF653-A39F-4FE0-8BC6-86F603ABD617}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
