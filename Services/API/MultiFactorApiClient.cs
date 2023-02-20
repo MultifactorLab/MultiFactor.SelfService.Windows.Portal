@@ -14,9 +14,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
     /// </summary>
     public class MultiFactorApiClient
     {
-        private ILogger _logger = Log.Logger;
-        private readonly Configuration _settings = Configuration.Current;
-        
+        private readonly Configuration _settings;
+        private readonly ILogger _logger;
+
+        public MultiFactorApiClient(Configuration settings, ILogger logger)
+        {
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public AccessPage CreateAccessRequest(string login, string displayName, string email, string phone, string postbackUrl, IDictionary<string, string> claims)
         {
             try
@@ -70,6 +76,30 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
                 var result = SendRequest<BypassPage>("/access/bypass/saml", json);
 
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Unable to connect API {_settings.MultiFactorApiUrl}: {ex.Message}");
+                throw;
+            }
+        }
+
+        public string RefreshAccessToken(string token, IDictionary<string, string> claims)
+        {
+            if (token is null) throw new ArgumentNullException(nameof(token));       
+            if (claims is null) throw new ArgumentNullException(nameof(claims));
+
+            try
+            {
+                var payload = new
+                {
+                    AccessToken = token,
+                    Claims = claims
+                };
+                var json = JsonConvert.SerializeObject(payload);
+
+                var result = SendRequest<string>("/token/refresh", json);
                 return result;
             }
             catch (Exception ex)

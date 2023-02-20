@@ -1,4 +1,6 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
+﻿using MultiFactor.SelfService.Windows.Portal.Core;
+using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
+using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -14,17 +16,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
     /// </summary>
     public class MultiFactorSelfServiceApiClient
     {
-        private ILogger _logger = Log.Logger;
-        private readonly Configuration _settings = Configuration.Current;
+        private readonly Configuration _settings;
+        private readonly ILogger _logger;
+        private readonly JwtTokenProvider _tokenProvider;
 
-        private string _multifactorToken;
-
-        public MultiFactorSelfServiceApiClient(string multifactorToken)
+        public MultiFactorSelfServiceApiClient(Configuration settings, ILogger logger, JwtTokenProvider tokenProvider)
+        
         {
-            _multifactorToken = multifactorToken ?? throw new ArgumentNullException(nameof(multifactorToken));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
         }
 
-        public UserProfile LoadProfile()
+        public UserProfile LoadUserProfile()
         {
             try
             {
@@ -146,7 +150,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
             using (var web = new WebClient())
             {
-                web.Headers.Add("Authorization", "Bearer " + _multifactorToken);
+                web.Headers.Add("Authorization", $"Bearer {_tokenProvider.GetToken()}");
 
                 if (!string.IsNullOrEmpty(_settings.MultiFactorApiProxy))
                 {

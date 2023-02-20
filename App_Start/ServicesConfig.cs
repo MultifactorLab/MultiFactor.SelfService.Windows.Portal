@@ -2,8 +2,12 @@
 using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
 using MultiFactor.SelfService.Windows.Portal.Controllers;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Core.Http;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha;
+using MultiFactor.SelfService.Windows.Portal.Services;
+using MultiFactor.SelfService.Windows.Portal.Services.API;
+using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using System;
 
 namespace MultiFactor.SelfService.Windows.Portal.App_Start
@@ -20,6 +24,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<PasswordController>();
             services.AddTransient<TelegramController>();
             services.AddTransient<TotpController>();
+            services.AddTransient<ErrorController>();
         }
 
         internal static void RegisterServices(ServiceCollection services)
@@ -33,6 +38,16 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             {
                 x.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
             });
+
+            services.AddScoped<JwtTokenProvider>();
+            services.AddScoped<MultiFactorSelfServiceApiClient>();
+
+            services.AddSingleton<TokenValidationService>();
+            services.AddSingleton<ActiveDirectoryService>();
+            services.AddSingleton<DataProtectionService>();
+            services.AddSingleton<MultiFactorApiClient>();
+            services.AddSingleton<AuthService>();
+            services.AddPasswordChangingSessionCache();
         }
     }
 }

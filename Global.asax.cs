@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MultiFactor.SelfService.Windows.Portal.App_Start;
 using MultiFactor.SelfService.Windows.Portal.Core;
+using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
 using MultiFactor.SelfService.Windows.Portal.Syslog;
 using Serilog;
 using Serilog.Core;
@@ -14,13 +15,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
-    public class MvcApplication : System.Web.HttpApplication
+    public class MvcApplication : HttpApplication
     {
         protected void Application_Start()
         {
@@ -71,6 +74,9 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             var services = new ServiceCollection();
 
+            services.AddSingleton(Log.Logger);
+            services.AddSingleton(Configuration.Current);
+
             ServicesConfig.RegisterControllers(services);
             ServicesConfig.RegisterServices(services);
 
@@ -82,6 +88,62 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             DependencyResolver.SetResolver(new CustomDependencyResolver(provider));
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory(provider));
+        }
+
+        protected void Application_Error()
+        {
+            var logger = Log.Logger;
+            var ex = Server.GetLastError();
+
+            if (ex is HttpException httpException)
+            {
+                switch (httpException.GetHttpCode())
+                {
+                    case 401:
+                        HandleUnauthError();
+                        return;
+                }
+            }
+
+            if (ex is UnauthorizedException)
+            {
+                HandleUnauthError();
+                return;
+            }
+
+            if (ex is PasswordChangingSessionExpired pwdEx)
+            {
+                logger.Warning(ex, "Password changing session expired for user '{u:l}'", pwdEx.Identity);
+                HandleUnauthError();
+                return;
+            }
+            
+            if (ex is FeatureNotEnabledException featureEx)
+            {
+                var rd = HttpContext.Current.Request.RequestContext.RouteData;
+                var action = rd.Values["action"] ?? "action";
+                var controller = rd.Values["controller"] ?? "controller";
+                var route = $"/{controller}/{action}".ToLower();
+                logger.Warning("Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
+
+                HttpContext.Current.Server.ClearError();
+                HttpContext.Current.Response.Clear();
+                HttpContext.Current.Response.Redirect("~/home");
+
+                return;
+            }
+
+            logger.Error(ex, "Unhandled error: {msg:l}", ex.Message);
+            HttpContext.Current.Server.ClearError();
+            HttpContext.Current.Response.Clear();
+            HttpContext.Current.Response.Redirect("~/error");
+        }
+
+        private void HandleUnauthError()
+        {
+            HttpContext.Current.Server.ClearError();
+            HttpContext.Current.Response.Clear();
+            HttpContext.Current.Response.Redirect(FormsAuthentication.LoginUrl);
         }
 
         private void SetLogLevel(string level, LoggingLevelSwitch levelSwitch)
