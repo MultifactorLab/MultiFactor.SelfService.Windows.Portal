@@ -73,7 +73,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             var currentPassword = _dataProtectionService.Unprotect(encryptedPwd.Value);
-            if (!_activeDirectoryService.ChangePassword(userName.Value, currentPassword, model.NewPassword, false, out string errorReason))
+            if (!_activeDirectoryService.ChangeExpiredPassword(userName.Value, currentPassword, model.NewPassword, out string errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);
                 return View(model);

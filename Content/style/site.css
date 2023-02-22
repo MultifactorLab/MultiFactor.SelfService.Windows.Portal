@@ -648,6 +648,11 @@ p {
         margin-bottom: 0;
     }
 
+.forgotten-pwd-link {
+    float: right;
+    margin-top: 10px;
+}
+
 input[type="submit"] {
     background: #4082BC;
     border-radius: 4px;
