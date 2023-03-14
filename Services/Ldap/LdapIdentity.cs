@@ -126,5 +126,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             var index = Name.IndexOf("@");
             return Name.Substring(index + 1).ToLower();
         }
+
+        public override string ToString() => Name;
     }
 }

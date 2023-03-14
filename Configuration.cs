@@ -110,6 +110,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string LogLevel { get; set; }
 
         public bool EnablePasswordManagement { get; set; }
+        public bool EnablePasswordRecovery { get; set; }
         public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
 
         public static void Load()
@@ -246,6 +247,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             ReadCaptchaSettings(appSettings, configuration);
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
+            ReadPasswordRecoverySettings(appSettings, configuration);
 
             Current = configuration;
         }
@@ -255,6 +257,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             const string enabledCaptchaToken = "enable-google-re-captcha";
             const string captchaKeyToken = "google-re-captcha-key";
             const string captchaSecretToken = "google-re-captcha-secret";
+            const string requireCaptchaToken = "require-captcha";
 
             var enableGoogleReCaptchaSettings = appSettings[enabledCaptchaToken];
             if (string.IsNullOrEmpty(enableGoogleReCaptchaSettings))
@@ -279,6 +282,38 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             configuration.GoogleReCaptchaKey = googleReCaptchaKeySettings;
             configuration.GoogleReCaptchaSecret = googleReCaptchaSecretSettings;
+
+            if (Enum.TryParse<RequireCaptcha>(appSettings[requireCaptchaToken], true, out var rc))
+            {
+                configuration.RequireCaptcha = rc;
+            }
+            else
+            {
+                configuration.RequireCaptcha = enableGoogleReCaptcha 
+                    ? RequireCaptcha.Always 
+                    : RequireCaptcha.PasswordRecovery;
+            }
+        }
+
+        private static void ReadPasswordRecoverySettings(NameValueCollection appSettings, Configuration configuration)
+        {
+            var enablePasswordRecoveryToken = "enable-password-recovery";
+            var enablePasswordRecoverySetting = appSettings[enablePasswordRecoveryToken];
+
+            if (!string.IsNullOrEmpty(enablePasswordRecoverySetting))
+            {
+                if (!bool.TryParse(enablePasswordRecoverySetting, out var enablePasswordRecovery))
+                {
+                    throw new Exception($"Configuration error: Can't parse '{enablePasswordRecoveryToken}' value");
+                }
+
+                if (enablePasswordRecovery && !configuration.CaptchaConfigured)
+                {
+                    throw new Exception($"Configuration error: you need to enable captcha before using the password recovery feature");
+                }
+
+                configuration.EnablePasswordRecovery = enablePasswordRecovery;
+            }
         }
 
         private static string GetCaptchaError(string elementName)
@@ -356,6 +391,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         public string GoogleReCaptchaKey { get; private set; }
         public string GoogleReCaptchaSecret { get; private set; }
 
+        public RequireCaptcha RequireCaptcha { get; private set; }
+
+        public bool RequireCaptchaOnLogin => EnableGoogleReCaptcha && RequireCaptcha == RequireCaptcha.Always;
+        public bool CaptchaConfigured => EnableGoogleReCaptcha;
+
         public string SignUpGroups { get; private set; }
 
         public TimeSpan? PwdChangingSessionLifetime { get; private set; }
@@ -409,5 +449,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         {
             get { return (bool)this["requiresUserPrincipalName"]; }
         }
+    }
+
+    public enum RequireCaptcha
+    {
+        Always,
+        PasswordRecovery
     }
 }

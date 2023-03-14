@@ -44,6 +44,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                     },
                     Name = displayName,
                     Email = email,
+
                     Phone = phone,
                     Claims = claims,
                     Language = Thread.CurrentThread.CurrentCulture?.TwoLetterISOLanguageName,

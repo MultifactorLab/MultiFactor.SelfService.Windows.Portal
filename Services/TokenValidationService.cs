@@ -61,6 +61,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     Id = jwtSecurityToken.Id,
                     Identity = rawUserName ?? identity,
                     MustChangePassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword),
+                    MustResetPassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword),
                     ValidTo = jwtSecurityToken.ValidTo
                 };
 

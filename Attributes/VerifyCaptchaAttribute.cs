@@ -10,7 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (!Configuration.Current.EnableGoogleReCaptcha)
+            if (!Configuration.Current.RequireCaptchaOnLogin)
             {
                 return;
             }

@@ -24,6 +24,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<PasswordController>();
             services.AddTransient<TelegramController>();
             services.AddTransient<TotpController>();
+            services.AddTransient<ForgottenPasswordController>();
             services.AddTransient<ErrorController>();
         }
 
@@ -40,6 +41,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             });
 
             services.AddScoped<JwtTokenProvider>();
+            services.AddSingleton<ApiClient>();
             services.AddScoped<MultiFactorSelfServiceApiClient>();
 
             services.AddSingleton<TokenValidationService>();
