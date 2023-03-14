@@ -9,7 +9,6 @@ using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using System;
-using static MultiFactor.SelfService.Windows.Portal.Services.API.ApiClient;
 
 namespace MultiFactor.SelfService.Windows.Portal.App_Start
 {
