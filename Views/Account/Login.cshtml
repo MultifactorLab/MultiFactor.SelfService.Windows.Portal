@@ -1,4 +1,5 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
+﻿@using MultiFactor.SelfService.Windows.Portal.Services.API;
+@model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
 
 @{
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
@@ -9,8 +10,12 @@
     </div>
     <div class="form-column">
         <h2>@Resources.AccountLogin.Title</h2>
-        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
+        @using (Html.BeginForm("Login", "Account", new
         {
+            samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
+            oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty
+        }, FormMethod.Post))
+        { 
             <fieldset>
                 @Html.AntiForgeryToken()
                 <p>@Resources.AccountLogin.Invitation</p>
