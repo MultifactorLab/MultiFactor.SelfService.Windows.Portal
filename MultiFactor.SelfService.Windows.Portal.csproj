@@ -579,11 +579,13 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Totp.ru.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Totp.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Totp.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Telegram.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -621,11 +623,13 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Home.ru.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Home.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Home.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Global.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
