@@ -144,13 +144,16 @@
   <data name="Remove" xml:space="preserve">
     <value>отключить</value>
   </data>
-  <data name="SetupGoogleAuthenticator" xml:space="preserve">
-    <value>Подключить Google Authenticator</value>
+  <data name="SetupYandexKey" xml:space="preserve">
+    <value>Подключить Яндекс.Ключ</value>
   </data>
   <data name="SetupMobileApp" xml:space="preserve">
     <value>Подключить мобильное приложение</value>
   </data>
   <data name="SetupTelegram" xml:space="preserve">
     <value>Подключить Telegram</value>
+  </data>
+  <data name="YandexKey" xml:space="preserve">
+    <value>Яндекс.Ключ</value>
   </data>
 </root>
