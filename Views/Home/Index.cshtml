@@ -36,7 +36,7 @@
                 {
                     <tr>
                         <td>@(indexer++)</td>
-                        <td>Google Authenticator</td>
+                        <td>@Resources.Home.YandexKey</td>
                         <td>&nbsp;</td>
                         <td><a href="#" data-type="totp" data-id="@totp.Id">@Resources.Home.Remove</a></td>
                     </tr>
@@ -65,7 +65,7 @@
             }
             @if (Model.Policy.Totp && Model.TotpAuthenticators.Count == 0)
             {
-                <li><a href="~/totp" class="btn">@Resources.Home.SetupGoogleAuthenticator</a></li>
+                <li><a href="~/totp" class="btn">@Resources.Home.SetupYandexKey</a></li>
             }
             @if (Model.EnablePasswordManagement)
             {

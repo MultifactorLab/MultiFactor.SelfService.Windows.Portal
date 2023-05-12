@@ -124,7 +124,7 @@
     <value>To connect:</value>
   </data>
   <data name="Instruction1" xml:space="preserve">
-    <value>Install the Google Authenticator app on your phone. When in the app, press "Scan a QR-code" and point your camera at the QR-code below or open &lt;a href="{0}"&gt;this link&lt;/a&gt; from your phone.</value>
+    <value>Install the Yandex.Key app on your phone. When in the app, press "Scan a QR-code" and point your camera at the QR-code below or open &lt;a href="{0}"&gt;this link&lt;/a&gt; from your phone.</value>
   </data>
   <data name="Instruction2" xml:space="preserve">
     <value>Once you have added an account &lt;b&gt;enter the verification code&lt;/b&gt;.</value>
