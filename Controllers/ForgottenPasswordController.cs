@@ -99,7 +99,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             };
             if (Response.Cookies[Constants.PWD_RECOVERY_COOKIE] != null)
             {
-                Response.Cookies[Constants.PWD_RECOVERY_COOKIE].Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
             Response.Cookies.Add(cookie);
 
@@ -151,7 +151,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             if (Response.Cookies[Constants.PWD_RECOVERY_COOKIE] != null)
             {
-                Response.Cookies[Constants.PWD_RECOVERY_COOKIE].Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
             return View();
         }
