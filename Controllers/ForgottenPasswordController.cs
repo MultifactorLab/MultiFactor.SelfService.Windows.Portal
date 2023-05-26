@@ -7,6 +7,7 @@ using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Serilog;
 using System;
 using System.DirectoryServices.AccountManagement;
+using System.Web;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
@@ -19,16 +20,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ILogger _logger;
         private readonly ActiveDirectoryService _activeDirectory;
         private readonly TokenValidationService _tokenValidationService;
+        private readonly DataProtectionService _dataProtectionService;
 
         public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, 
             ILogger logger, 
             ActiveDirectoryService activeDirectory, 
-            TokenValidationService tokenValidationService)
+            TokenValidationService tokenValidationService,
+            DataProtectionService dataProtectionService)
         {
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
             _tokenValidationService = tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
+            _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
         }
 
         [HttpGet]
@@ -85,6 +89,20 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return RedirectToAction("Wrong");
             }
 
+            var cookie = new HttpCookie(Constants.PWD_RECOVERY_COOKIE)
+            {
+                Value = _dataProtectionService.Protect(token.Identity),
+                Expires = DateTime.Now.AddMinutes(5),
+                Path = "/",
+                Secure = true,
+                HttpOnly = true
+            };
+            if (Response.Cookies[Constants.PWD_RECOVERY_COOKIE] != null)
+            {
+                Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
+            }
+            Response.Cookies.Add(cookie);
+
             return View(new ResetPasswordForm 
             { 
                 Identity = token.Identity
@@ -105,6 +123,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View("Reset", form);
             }
 
+            var sesionCookie = Request.Cookies[Constants.PWD_RECOVERY_COOKIE]?.Value;
+            if (sesionCookie == null || _dataProtectionService.Unprotect(sesionCookie) != form.Identity)
+            {
+                _logger.Error("Invalid reset password session for user '{identity:l}': session not found", form.Identity);
+                ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
+                return View("Reset", form);
+            }
+
             if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out var errorReason))
             {
                 _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
@@ -120,6 +146,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var error = TempData["reset-password-error"] ?? Resources.PasswordReset.ErrorMessage;
             return View(error);
         }
-        public ActionResult Done() => View();
+
+        public ActionResult Done()
+        {
+            if (Response.Cookies[Constants.PWD_RECOVERY_COOKIE] != null)
+            {
+                Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
+            }
+            return View();
+        }
     }
 }
