@@ -10,10 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Configuration;
 using System.Web.Mvc;
-using System.Web.Security;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {

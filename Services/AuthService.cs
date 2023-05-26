@@ -31,7 +31,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             var cookie = new HttpCookie(Constants.COOKIE_NAME)
             {
                 Value = accessToken,
-                Expires = token.ValidTo
+                Expires = token.ValidTo,
+                HttpOnly = true
             };
 
             //remove mfa cookie
