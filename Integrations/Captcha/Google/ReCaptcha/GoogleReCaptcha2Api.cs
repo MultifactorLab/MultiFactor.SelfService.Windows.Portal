@@ -20,7 +20,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
         /// <param name="secret">Required. The shared key between your site and reCAPTCHA.</param>
         /// <param name="responseToken">Required. The user response token provided by the reCAPTCHA client-side integration on your site.</param>
         /// <param name="remoteIp">Optional. The user's IP address.</param>
-        public async Task<VerifyCaptchaResponseDto> SiteverifyAsync(string secret, string responseToken, string remoteIp = null)
+        public async Task<GoogleVerifyCaptchaResponseDto> SiteverifyAsync(string secret, string responseToken, string remoteIp = null)
         {
             if (secret is null) throw new ArgumentNullException(nameof(secret));
             if (responseToken is null) throw new ArgumentNullException(nameof(responseToken));
@@ -34,7 +34,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
                 action.Append($"&remoteip={remoteIp}");
             }
 
-            var resp = await _client.PostAsync<VerifyCaptchaResponseDto>(action.ToString()) ?? throw new Exception("Response is null");
+            var resp = await _client.PostAsync<GoogleVerifyCaptchaResponseDto>(action.ToString()) ?? throw new Exception("Response is null");
             return resp;
         }
     }

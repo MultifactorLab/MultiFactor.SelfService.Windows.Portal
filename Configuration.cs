@@ -244,7 +244,14 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.UseUpnAsIdentity = useUpnAsIdentity;
             }
 
-            ReadCaptchaSettings(appSettings, configuration);
+            if(!string.IsNullOrEmpty(appSettings["enable-google-re-captcha"]))
+            {
+                ReadObsoleteCaptchaSettings(appSettings, configuration);
+            } 
+            else
+            {
+                ReadCaptchaSettings(appSettings, configuration); 
+            }
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
@@ -252,7 +259,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             Current = configuration;
         }
 
-        private static void ReadCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
+        private static void ReadObsoleteCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
         {
             const string enabledCaptchaToken = "enable-google-re-captcha";
             const string captchaKeyToken = "google-re-captcha-key";
@@ -262,7 +269,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var enableGoogleReCaptchaSettings = appSettings[enabledCaptchaToken];
             if (string.IsNullOrEmpty(enableGoogleReCaptchaSettings))
             {
-                configuration.EnableGoogleReCaptcha = false;
+                configuration.EnableCaptcha = false;
                 return;
             }
 
@@ -271,7 +278,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 throw new Exception($"Configuration error: Can't parse '{enabledCaptchaToken}' value");
             }
 
-            configuration.EnableGoogleReCaptcha = enableGoogleReCaptcha;
+            configuration.EnableCaptcha = enableGoogleReCaptcha;
             if (!enableGoogleReCaptcha) return;
 
             var googleReCaptchaKeySettings = appSettings["google-re-captcha-key"];
@@ -280,8 +287,8 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (string.IsNullOrEmpty(googleReCaptchaKeySettings)) throw new Exception(GetCaptchaError(captchaKeyToken));
             if (string.IsNullOrEmpty(googleReCaptchaSecretSettings)) throw new Exception(GetCaptchaError(captchaSecretToken));
 
-            configuration.GoogleReCaptchaKey = googleReCaptchaKeySettings;
-            configuration.GoogleReCaptchaSecret = googleReCaptchaSecretSettings;
+            configuration.CaptchaKey = googleReCaptchaKeySettings;
+            configuration.CaptchaSecret = googleReCaptchaSecretSettings;
 
             if (Enum.TryParse<RequireCaptcha>(appSettings[requireCaptchaToken], true, out var rc))
             {
@@ -291,6 +298,53 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 configuration.RequireCaptcha = enableGoogleReCaptcha 
                     ? RequireCaptcha.Always 
+                    : RequireCaptcha.PasswordRecovery;
+            }
+        }
+
+        private static void ReadCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
+        {
+            const string enableCaptchaToken = "enable-captcha";
+            const string captchaTypeToken = "captcha-type";
+            const string captchaKeyToken = "captcha-key";
+            const string captchaSecretToken = "captcha-secret";
+            const string requireCaptchaToken = "require-captcha";
+
+            var captchaEnabledSetting = appSettings[enableCaptchaToken];
+            if (string.IsNullOrEmpty(captchaEnabledSetting))
+            {
+                configuration.EnableCaptcha = false;
+                return;
+            }
+            if (!bool.TryParse(captchaEnabledSetting, out var enableCaptcha))
+            {
+                throw new Exception($"Configuration error: Can't parse '{enableCaptchaToken}' value");
+            }
+            configuration.EnableCaptcha = enableCaptcha;
+
+            if (!enableCaptcha) return;
+
+            if (Enum.TryParse<CaptchaType>(appSettings[captchaTypeToken], true, out var ct))
+            {
+                configuration.CaptchaType = ct;
+            }
+
+            var captchaKeySetting = appSettings[captchaKeyToken];
+            var captchaSecretSetting = appSettings[captchaSecretToken];
+            if (string.IsNullOrEmpty(captchaKeySetting)) throw new Exception(GetCaptchaError(captchaKeyToken));
+            if (string.IsNullOrEmpty(captchaSecretSetting)) throw new Exception(GetCaptchaError(captchaSecretToken));
+
+            configuration.CaptchaKey = captchaKeySetting;
+            configuration.CaptchaSecret = captchaSecretSetting;
+
+            if (Enum.TryParse<RequireCaptcha>(appSettings[requireCaptchaToken], true, out var rc))
+            {
+                configuration.RequireCaptcha = rc;
+            }
+            else
+            {
+                configuration.RequireCaptcha = enableCaptcha
+                    ? RequireCaptcha.Always
                     : RequireCaptcha.PasswordRecovery;
             }
         }
@@ -387,14 +441,16 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
         }
 
-        public bool EnableGoogleReCaptcha { get; private set; }
-        public string GoogleReCaptchaKey { get; private set; }
-        public string GoogleReCaptchaSecret { get; private set; }
+        public bool EnableCaptcha { get; private set; }
+        public CaptchaType CaptchaType { get; private set; } = CaptchaType.Google;
+        public string CaptchaKey { get; private set; }
+        public string CaptchaSecret { get; private set; }
 
         public RequireCaptcha RequireCaptcha { get; private set; }
 
-        public bool RequireCaptchaOnLogin => EnableGoogleReCaptcha && RequireCaptcha == RequireCaptcha.Always;
-        public bool CaptchaConfigured => EnableGoogleReCaptcha;
+        public bool RequireCaptchaOnLogin => EnableCaptcha && RequireCaptcha == RequireCaptcha.Always;
+        public bool CaptchaConfigured => EnableCaptcha;
+        public bool IsCaptchaEnabled(CaptchaType type) => EnableCaptcha && CaptchaType == type;
 
         public string SignUpGroups { get; private set; }
 
@@ -455,5 +511,11 @@ namespace MultiFactor.SelfService.Windows.Portal
     {
         Always,
         PasswordRecovery
+    }
+
+    public enum CaptchaType
+    {
+        Google = 0,
+        Yandex = 1
     }
 }

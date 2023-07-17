@@ -15,7 +15,7 @@
             samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
             oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty
         }, FormMethod.Post))
-        { 
+        {
             <fieldset>
                 @Html.AntiForgeryToken()
                 <p>@Resources.AccountLogin.Invitation</p>
@@ -32,11 +32,18 @@
 
                     @if (Configuration.Current.RequireCaptchaOnLogin)
                     {
-                        <div class="g-recaptcha"
-                             data-sitekey="@Configuration.Current.GoogleReCaptchaKey"
-                             data-callback="captchaCallback"
-                             data-size="normal">
-                        </div>
+                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+                        {
+                            <div class="g-recaptcha"
+                                 data-sitekey="@Configuration.Current.CaptchaKey"
+                                 data-callback="captchaCallback"
+                                 data-size="normal">
+                            </div>
+                        }
+                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+                        {
+                            <div id="yandex-captcha-container"></div>
+                        }
                     }
 
                 </div>
@@ -64,9 +71,18 @@
 </div>
 
 @section head {
+
     @if (Configuration.Current.RequireCaptchaOnLogin)
     {
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+        {
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        }
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+        {
+            <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction"
+                    defer></script>
+        }
     }
 }
 
@@ -89,4 +105,24 @@
             }
         });
     });
+
+    @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+    {
+        <text>
+        function yandexCaptchaLoadFunction()
+        {
+            if (window.smartCaptcha)
+            {
+                const container = document.getElementById('yandex-captcha-container');
+                window.smartCaptcha.render(container, {
+                sitekey: '@Configuration.Current.CaptchaKey',
+                callback: captchaCallback,
+                hl: 'En-us'
+                });
+            }
+        }
+        </text>
+    }
 </script>
+
+

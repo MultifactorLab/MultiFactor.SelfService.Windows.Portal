@@ -1,28 +1,28 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
+namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha
 {
-    public class GoogleReCaptchaVerifier : ICaptchaVerifier
-    {
-        private readonly GoogleReCaptcha2Api _captcha2Api;
-        private readonly ILogger _logger;
+    public delegate ICaptchaVerifier CaptchaVerifierResolver();
 
-        public GoogleReCaptchaVerifier(GoogleReCaptcha2Api captcha2Api)
+    public abstract class BaseCaptchaVerifier : ICaptchaVerifier
+    {
+        protected const string DEFAULT_ERROR_MESSAGE = "Something went wrong";
+        protected ILogger _logger;
+
+        protected abstract Task<bool> VerifyTokenAsync(string token, string ip = null);
+
+        protected virtual string GetResponseAggregatedErrors()
         {
-            _captcha2Api = captcha2Api ?? throw new ArgumentNullException(nameof(captcha2Api));
-            _logger = Log.Logger;
+            return DEFAULT_ERROR_MESSAGE;
         }
 
         public async Task<CaptchaVerificationResult> VerifyCaptchaAsync(HttpRequestBase request)
         {
             if (request is null) throw new ArgumentNullException(nameof(request));
-
             try
             {
                 var token = request.Form[Constants.CAPTCHA_TOKEN];
@@ -31,13 +31,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
                     return CaptchaVerificationResult.CreateFail("Response token is null");
                 }
 
-                var response = await _captcha2Api.SiteverifyAsync(Configuration.Current.GoogleReCaptchaSecret, token);
-                if (response.Success)
+                var ipAddress = request.RequestContext.HttpContext.Request.UserHostAddress;
+
+                var response = await VerifyTokenAsync(token, ipAddress);
+                if (response)
                 {
                     return CaptchaVerificationResult.CreateSuccess();
                 }
 
-                var aggregatedError = response.ErrorCodes == null ? "Something went wrong" : AggregateErrors(response.ErrorCodes);
+                var aggregatedError = GetResponseAggregatedErrors();
                 return CaptchaVerificationResult.CreateFail(aggregatedError);
             }
             catch (Exception ex)
@@ -45,12 +47,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
                 _logger.Error(ex, "Captcha verification failed");
                 return CaptchaVerificationResult.CreateFail(ex.Message);
             }
-        }
-
-        private static string AggregateErrors(IReadOnlyList<string> errorCodes)
-        {
-            var mapped = errorCodes.Select(GoogleSiteverifyErrorCode.GetDescription);
-            return string.Join(Environment.NewLine, mapped);
         }
     }
 }
