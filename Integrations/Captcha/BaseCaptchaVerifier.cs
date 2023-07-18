@@ -11,7 +11,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha
     public abstract class BaseCaptchaVerifier : ICaptchaVerifier
     {
         protected const string DEFAULT_ERROR_MESSAGE = "Something went wrong";
-        protected ILogger _logger;
 
         protected abstract Task<bool> VerifyTokenAsync(string token, string ip = null);
 
@@ -44,7 +43,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Captcha verification failed");
+                Log.Logger.Error(ex, "Captcha verification failed");
                 return CaptchaVerificationResult.CreateFail(ex.Message);
             }
         }

@@ -252,10 +252,11 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 ReadCaptchaSettings(appSettings, configuration); 
             }
+            configuration.CaptchaProxy = appSettings["captcha-proxy"];
+
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
-
             Current = configuration;
         }
 
@@ -265,7 +266,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             const string captchaKeyToken = "google-re-captcha-key";
             const string captchaSecretToken = "google-re-captcha-secret";
             const string requireCaptchaToken = "require-captcha";
-
+                
             var enableGoogleReCaptchaSettings = appSettings[enabledCaptchaToken];
             if (string.IsNullOrEmpty(enableGoogleReCaptchaSettings))
             {
@@ -451,6 +452,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         public bool RequireCaptchaOnLogin => EnableCaptcha && RequireCaptcha == RequireCaptcha.Always;
         public bool CaptchaConfigured => EnableCaptcha;
         public bool IsCaptchaEnabled(CaptchaType type) => EnableCaptcha && CaptchaType == type;
+        public string CaptchaProxy { get; private set; }
 
         public string SignUpGroups { get; private set; }
 

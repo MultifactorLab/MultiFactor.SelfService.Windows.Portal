@@ -1,6 +1,5 @@
 ﻿using System.Web.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
 using Serilog;

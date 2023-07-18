@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex;
-using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
 using MultiFactor.SelfService.Windows.Portal.Controllers;
 using MultiFactor.SelfService.Windows.Portal.Core;
@@ -11,7 +10,8 @@ using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using System;
-using System.Reflection;
+using System.Net;
+using System.Net.Http;
 
 namespace MultiFactor.SelfService.Windows.Portal.App_Start
 {
@@ -52,16 +52,6 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         }
 
 
-        private static void ConfigureGoogleApi(ServiceCollection services)
-        {
-            services.AddTransient<GoogleReCaptcha2Api>()
-                .AddTransient<GoogleCaptchaHttpClientAdapterFactory>()
-                .AddHttpClient<GoogleCaptchaHttpClientAdapterFactory>((x) =>
-                {
-                    x.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
-                });
-        }
-
         private static void ConfigureCaptchaVerifier(ServiceCollection services)
         {
             services.AddTransient<GoogleReCaptchaVerifier>();
@@ -80,12 +70,44 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
 
         private static void ConfigureYandexCaptchaApi(ServiceCollection services)
         {
-            services.AddTransient<YandexCaptchaApi>()
+            var clientConf = services.AddTransient<YandexCaptchaApi>()
                 .AddTransient<YandexHttpClientAdapterFactory>()
                 .AddHttpClient<YandexHttpClientAdapterFactory>((client) =>
                 {
                     client.BaseAddress = new Uri("https://captcha-api.yandex.ru/");
                 });
+
+            ConfigureCaptchaProxyCredentials(clientConf);
+        }
+
+        private static void ConfigureGoogleApi(ServiceCollection services)
+        {
+            var clientConf = services.AddTransient<GoogleReCaptcha2Api>()
+                .AddTransient<GoogleCaptchaHttpClientAdapterFactory>()
+                .AddHttpClient<GoogleCaptchaHttpClientAdapterFactory>((x) =>
+                {
+                    x.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
+                });
+
+            ConfigureCaptchaProxyCredentials(clientConf);
+        }
+
+        private static void ConfigureCaptchaProxyCredentials(IHttpClientBuilder clientConf)
+        {
+            if (!string.IsNullOrEmpty(Configuration.Current.CaptchaProxy))
+            {
+                var proxyUri = new Uri(Configuration.Current.CaptchaProxy);
+                var proxy = new WebProxy(proxyUri);
+                if (!string.IsNullOrEmpty(proxyUri.UserInfo))
+                {
+                    var credentials = proxyUri.UserInfo.Split(new[] { ':' }, 2);
+                    proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
+                }
+                clientConf.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
+                {
+                    Proxy = proxy
+                });
+            }
         }
 
     }

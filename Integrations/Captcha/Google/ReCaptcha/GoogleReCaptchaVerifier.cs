@@ -1,12 +1,7 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
-using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha.Dto;
-using Serilog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
 {
@@ -17,7 +12,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
         public GoogleReCaptchaVerifier(GoogleReCaptcha2Api captcha2Api)
         {
             _captcha2Api = captcha2Api ?? throw new ArgumentNullException(nameof(captcha2Api));
-            _logger = Log.Logger;
         }
 
         protected override async Task<bool> VerifyTokenAsync(string token, string ip = null)
