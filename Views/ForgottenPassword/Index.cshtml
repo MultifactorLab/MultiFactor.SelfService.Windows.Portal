@@ -12,9 +12,9 @@
                 <p>@Resources.PasswordReset.EnterLogin</p>
                 <div class="form-row">
                     <div class="input">
-                        @Html.TextBoxFor(m => m.Identity, 
-                            new { 
-                                placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName ,
+                        @Html.TextBoxFor(m => m.Identity,
+                            new {
+                                placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName,
                                 autocomplete = "off"
                             })
                         @Html.ValidationMessageFor(m => m.Identity)
@@ -23,11 +23,18 @@
 
                     @if (Configuration.Current.CaptchaConfigured)
                     {
-                        <div class="g-recaptcha"
-                             data-sitekey="@Configuration.Current.GoogleReCaptchaKey"
-                             data-callback="captchaCallback"
-                             data-size="normal">
-                        </div>
+                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+                        {
+                            <div class="g-recaptcha"
+                                 data-sitekey="@Configuration.Current.CaptchaKey"
+                                 data-callback="captchaCallback"
+                                 data-size="normal">
+                            </div>
+                        }
+                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+                        {
+                            <div id="yandex-captcha-container"></div>
+                        }
                     }
                 </div>
                 <div class="form-row">
@@ -50,7 +57,15 @@
 @section head {
     @if (Configuration.Current.CaptchaConfigured)
     {
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+        {
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        }
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+        {
+            <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction"
+                    defer></script>
+        }
     }
 }
 
@@ -72,5 +87,25 @@
                 $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
             }
         });
-    });
+        });
+
+
+
+    @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+    {
+        <text>
+        function yandexCaptchaLoadFunction()
+        {
+            if (window.smartCaptcha)
+            {
+                const container = document.getElementById('yandex-captcha-container');
+                window.smartCaptcha.render(container, {
+                sitekey: '@Configuration.Current.CaptchaKey',
+                callback: captchaCallback,
+                hl: 'Ru-ru'
+                });
+            }
+        }
+        </text>
+    }
 </script>

@@ -10,7 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (!Configuration.Current.RequireCaptchaOnLogin)
+            if (!Configuration.Current.RequireCaptchaOnLogin && filterContext.HttpContext.Request.Path.StartsWith("/Account/Login"))
             {
                 return;
             }
