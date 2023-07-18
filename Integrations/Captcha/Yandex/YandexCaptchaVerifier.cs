@@ -1,10 +1,8 @@
-using MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex.Dto;
-using MultiFactor.SelfService.Windows.Portal;
-using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex.Dto;
 using System;
 using System.Threading.Tasks;
 
-namespace MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex
+namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex
 {
     public class YandexCaptchaVerifier : BaseCaptchaVerifier
     {

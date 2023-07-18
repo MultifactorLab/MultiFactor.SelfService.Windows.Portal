@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex;
 using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
 using MultiFactor.SelfService.Windows.Portal.Controllers;
 using MultiFactor.SelfService.Windows.Portal.Core;

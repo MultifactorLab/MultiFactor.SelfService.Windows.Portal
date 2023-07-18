@@ -1,5 +1,5 @@
 
-namespace MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex.Dto
+namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex.Dto
 {
     public class YandexVerifyCaptchaResponseDto
     {

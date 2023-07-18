@@ -3,7 +3,7 @@ using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha;
 using System;
 using System.Net.Http;
 
-namespace MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex
+namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex
 {
     public class YandexHttpClientAdapterFactory
     {

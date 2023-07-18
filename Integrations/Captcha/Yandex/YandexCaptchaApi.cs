@@ -1,11 +1,10 @@
-using MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex.Dto;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex.Dto;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MultiFactor.SelfService.Linux.Portal.Integrations.Captcha.Yandex
+namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex
 {
     public class YandexCaptchaApi
     {
