@@ -43,6 +43,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Index(EnterIdentityForm form)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(form);
+            }
+
             if (Configuration.Current.RequiresUpn)
             {
                 // AD requires UPN check

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha.Dto
 {
-    public class VerifyCaptchaResponseDto
+    public class GoogleVerifyCaptchaResponseDto
     {
         /// <summary>
         /// true|false.

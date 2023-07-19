@@ -247,6 +247,7 @@
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
+    <Compile Include="Core\LocalizationProvider.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CallbackUrlFactory.cs" />
     <Compile Include="Core\CustomControllerFactory.cs" />
@@ -263,11 +264,16 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Integrations\Google\ReCaptcha\Dto\VerifyCaptchaResponseDto.cs" />
-    <Compile Include="Integrations\Google\ReCaptcha\GoogleReCaptcha2Api.cs" />
-    <Compile Include="Integrations\Google\ReCaptcha\GoogleReCaptchaVerifier.cs" />
-    <Compile Include="Integrations\Google\ReCaptcha\GoogleSiteverifyErrorCode.cs" />
+    <Compile Include="Integrations\Captcha\BaseCaptchaVerifier.cs" />
+    <Compile Include="Integrations\Captcha\Google\ReCaptcha\Dto\GoogleVerifyCaptchaResponseDto.cs" />
+    <Compile Include="Integrations\Captcha\Google\ReCaptcha\GoogleReCaptcha2Api.cs" />
+    <Compile Include="Integrations\Captcha\Google\ReCaptcha\GoogleReCaptchaVerifier.cs" />
+    <Compile Include="Integrations\Captcha\Google\ReCaptcha\GoogleSiteverifyErrorCode.cs" />
     <Compile Include="Core\Http\HttpClientAdapter.cs" />
+    <Compile Include="Integrations\Captcha\Yandex\Dto\YandexVerifyCaptchaResponseDto.cs" />
+    <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaApi.cs" />
+    <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaVerifier.cs" />
+    <Compile Include="Integrations\Captcha\Yandex\YandexHttpClientAdapterFactory.cs" />
     <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />

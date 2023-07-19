@@ -1,7 +1,8 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
 using MultiFactor.SelfService.Windows.Portal.Core;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
 using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Attributes
@@ -10,13 +11,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (!Configuration.Current.RequireCaptchaOnLogin)
+            if (!Configuration.Current.RequireCaptchaOnLogin && 
+                filterContext.HttpContext.Request.Path.StartsWith("/Account/Login", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            var verifier = filterContext.HttpContext.GetRequestServices().GetRequiredService<ICaptchaVerifier>();
-            var res = verifier.VerifyCaptchaAsync(filterContext.HttpContext.Request).Result;
+            var captchaVerifierResolver = filterContext.HttpContext.GetRequestServices().GetRequiredService<CaptchaVerifierResolver>();
+            var captchaVerifier = captchaVerifierResolver();
+
+            var res = captchaVerifier.VerifyCaptchaAsync(filterContext.HttpContext.Request).Result;
             if (res.Success) return;
             
             Log.Logger.Warning("Captcha verification failed: {msg:l}", res.Message);
