@@ -1,4 +1,5 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery.EnterIdentityForm
+﻿@using MultiFactor.SelfService.Windows.Portal.Core
+@model MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery.EnterIdentityForm
 
 @{
     ViewBag.Title = Resources.PasswordReset.Title;
@@ -13,7 +14,8 @@
                 <div class="form-row">
                     <div class="input">
                         @Html.TextBoxFor(m => m.Identity,
-                            new {
+                            new
+                                 {
                                 placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName,
                                 autocomplete = "off"
                             })
@@ -59,7 +61,7 @@
     {
         if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
         {
-            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+            <script src="https://www.google.com/recaptcha/api.js?hl=@LocalizationProvider.GetLanguage()" async defer></script>
         }
         if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
         {
@@ -102,7 +104,7 @@
                 window.smartCaptcha.render(container, {
                 sitekey: '@Configuration.Current.CaptchaKey',
                 callback: captchaCallback,
-                hl: 'Ru-ru'
+                hl: '@LocalizationProvider.GetLanguage()'
                 });
             }
         }

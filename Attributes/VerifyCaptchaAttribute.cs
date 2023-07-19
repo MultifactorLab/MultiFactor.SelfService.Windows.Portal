@@ -1,4 +1,5 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
@@ -10,7 +11,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (!Configuration.Current.RequireCaptchaOnLogin && filterContext.HttpContext.Request.Path.StartsWith("/Account/Login"))
+            if (!Configuration.Current.RequireCaptchaOnLogin && 
+                filterContext.HttpContext.Request.Path.StartsWith("/Account/Login", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }

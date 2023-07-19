@@ -247,6 +247,7 @@
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
+    <Compile Include="Core\LocalizationProvider.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CallbackUrlFactory.cs" />
     <Compile Include="Core\CustomControllerFactory.cs" />

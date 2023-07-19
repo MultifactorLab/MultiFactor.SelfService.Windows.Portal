@@ -7,7 +7,6 @@ using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Serilog;
 using System;
 using System.DirectoryServices.AccountManagement;
-using System.Reflection;
 using System.Web;
 using System.Web.Mvc;
 

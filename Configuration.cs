@@ -4,10 +4,13 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Configuration;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
+    using static MultiFactor.SelfService.Windows.Portal.Constants;
+    using ConfigurationConstants = Constants.Configuration;
     public class Configuration
     {
         public static Configuration Current { get; private set; }
@@ -113,6 +116,23 @@ namespace MultiFactor.SelfService.Windows.Portal
         public bool EnablePasswordRecovery { get; set; }
         public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
 
+        public bool EnableCaptcha { get; private set; }
+        public CaptchaType CaptchaType { get; private set; } = CaptchaType.Google;
+        public string CaptchaKey { get; private set; }
+        public string CaptchaSecret { get; private set; }
+
+        public RequireCaptcha RequireCaptcha { get; private set; }
+
+        public bool RequireCaptchaOnLogin => EnableCaptcha && RequireCaptcha == RequireCaptcha.Always;
+        public bool CaptchaConfigured => EnableCaptcha;
+        public bool IsCaptchaEnabled(CaptchaType type) => EnableCaptcha && CaptchaType == type;
+        public string CaptchaProxy { get; private set; }
+
+        public string SignUpGroups { get; private set; }
+
+        public TimeSpan? PwdChangingSessionLifetime { get; private set; }
+        public long? PwdChangingSessionCacheSize { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -122,50 +142,22 @@ namespace MultiFactor.SelfService.Windows.Portal
                 throw new ConfigurationErrorsException("Can't find <portalSettings> element in web.config");
             }
 
-            var companyNameSetting = appSettings["company-name"];
-            var domainSetting = appSettings["company-domain"];
-            var activeDirectory2FaGroupSetting = appSettings["active-directory-2fa-group"];
-            var domainNetBiosNameSetting = appSettings["company-domain-netbios-name"];
-            var logoUrlSetting = appSettings["company-logo-url"];
-            var apiUrlSetting = appSettings["multifactor-api-url"];
-            var apiKeySetting = appSettings["multifactor-api-key"];
-            var apiProxySetting = appSettings["multifactor-api-proxy"];
-            var apiSecretSetting = appSettings["multifactor-api-secret"];
-            var logLevelSetting = appSettings["logging-level"];
-            var useActiveDirectoryUserPhoneSetting = appSettings["use-active-directory-user-phone"];
-            var useActiveDirectoryMobileUserPhoneSetting = appSettings["use-active-directory-mobile-user-phone"];
-            var enablePasswordManagementSetting = appSettings["enable-password-management"];
-            var enableExchangeActiveSyncSevicesManagementSetting = appSettings["enable-exchange-active-sync-devices-management"];
-            var useUpnAsIdentitySetting = appSettings["use-upn-as-identity"];
-
-            if (string.IsNullOrEmpty(companyNameSetting))
-            {
-                throw new Exception("Configuration error: 'company-name' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(domainSetting))
-            {
-                throw new Exception("Configuration error: 'company-domain' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(logoUrlSetting))
-            {
-                throw new Exception("Configuration error: 'company-logo-url' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(apiUrlSetting))
-            {
-                throw new Exception("Configuration error: 'multifactor-api-url' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(apiKeySetting))
-            {
-                throw new Exception("Configuration error: 'multifactor-api-key' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(apiSecretSetting))
-            {
-                throw new Exception("Configuration error: 'multifactor-api-secret' element not found or empty");
-            }
-            if (string.IsNullOrEmpty(logLevelSetting))
-            {
-                throw new Exception("Configuration error: 'logging-level' element not found");
-            }
+            var companyNameSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.COMPANY_NAME);
+            var domainSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.COMPANY_DOMAIN);
+            var activeDirectory2FaGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_2FA_GROUP);
+            var domainNetBiosNameSetting = GetValue(appSettings, ConfigurationConstants.General.COMPANY_DOMAIN_NETBIOS_NAME);
+            var logoUrlSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.COMPANY_LOGO_URL);
+            var apiUrlSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_URL);
+            var apiKeySetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_KEY);
+            var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
+            var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
+            var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
+           
+            var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
+            var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
+            var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
+            var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
+            var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
 
             var configuration = new Configuration
             {
@@ -179,47 +171,12 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiSecret = apiSecretSetting,
                 MultiFactorApiProxy = apiProxySetting,
                 LogLevel = logLevelSetting,
-                EnableExchangeActiveSyncDevicesManagement = false,
-                EnablePasswordManagement = true
+                EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncSevicesManagementSetting,
+                EnablePasswordManagement = enablePasswordManagementSetting,
+                UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
+                UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
+                UseUpnAsIdentity = useUpnAsIdentitySetting
             };
-
-            if (!string.IsNullOrEmpty(useActiveDirectoryUserPhoneSetting))
-            {
-                if (!bool.TryParse(useActiveDirectoryUserPhoneSetting, out var useActiveDirectoryUserPhone))
-                {
-                    throw new Exception("Configuration error: Can't parse 'use-active-directory-user-phone' value");
-                }
-
-                configuration.UseActiveDirectoryUserPhone = useActiveDirectoryUserPhone;
-            }
-
-            if (!string.IsNullOrEmpty(useActiveDirectoryMobileUserPhoneSetting))
-            {
-                if (!bool.TryParse(useActiveDirectoryMobileUserPhoneSetting, out var useActiveDirectoryMobileUserPhone))
-                {
-                    throw new Exception("Configuration error: Can't parse 'use-active-directory-mobile-user-phone' value");
-                }
-
-                configuration.UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhone;
-            }
-
-            if (!string.IsNullOrEmpty(enablePasswordManagementSetting))
-            {
-                if (!bool.TryParse(enablePasswordManagementSetting, out var enablePasswordManagement))
-                {
-                    throw new Exception("Configuration error: Can't parse 'enable-password-management' value");
-                }
-                configuration.EnablePasswordManagement = enablePasswordManagement;
-            }
-
-            if (!string.IsNullOrEmpty(enableExchangeActiveSyncSevicesManagementSetting))
-            {
-                if (!bool.TryParse(enableExchangeActiveSyncSevicesManagementSetting, out var enableExchangeActiveSyncSevicesManagement))
-                {
-                    throw new Exception("Configuration error: Can't parse 'enable-exchange-active-sync-devices-management' value");
-                }
-                configuration.EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncSevicesManagement;
-            }
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
             if (activeDirectorySection != null)
@@ -239,20 +196,17 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
             }
 
-            if (bool.TryParse(useUpnAsIdentitySetting, out var useUpnAsIdentity))
-            {
-                configuration.UseUpnAsIdentity = useUpnAsIdentity;
-            }
 
-            if(!string.IsNullOrEmpty(appSettings["enable-google-re-captcha"]))
+            if (!string.IsNullOrEmpty(appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA]))
             {
                 ReadObsoleteCaptchaSettings(appSettings, configuration);
-            } 
+            }
             else
             {
-                ReadCaptchaSettings(appSettings, configuration); 
+                ReadCaptchaSettings(appSettings, configuration);
             }
-            configuration.CaptchaProxy = appSettings["captcha-proxy"];
+
+            configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY]; ;
 
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
@@ -260,14 +214,38 @@ namespace MultiFactor.SelfService.Windows.Portal
             Current = configuration;
         }
 
+        private static bool ParseBoolean(NameValueCollection appSettings, string token)
+        {
+            var setting = GetValue(appSettings, token);
+            if (!string.IsNullOrEmpty(setting))
+            {
+                if (!bool.TryParse(setting, out var value))
+                {
+                    throw new Exception($"Configuration error: Can't parse {token} value");
+                }
+                return value;
+            }
+            return default(bool);
+        }
+
+        private static string GetRequiredValue(NameValueCollection appSettings, string token)
+        {
+            var value = appSettings[token];
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new Exception($"Configuration error: {token} element not found or empty");
+            }
+            return value;
+        }
+
+        private static string GetValue(NameValueCollection appSettings, string token)
+        {
+            return appSettings[token];
+        }
+
         private static void ReadObsoleteCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
         {
-            const string enabledCaptchaToken = "enable-google-re-captcha";
-            const string captchaKeyToken = "google-re-captcha-key";
-            const string captchaSecretToken = "google-re-captcha-secret";
-            const string requireCaptchaToken = "require-captcha";
-                
-            var enableGoogleReCaptchaSettings = appSettings[enabledCaptchaToken];
+            var enableGoogleReCaptchaSettings = appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA];
             if (string.IsNullOrEmpty(enableGoogleReCaptchaSettings))
             {
                 configuration.EnableCaptcha = false;
@@ -276,42 +254,38 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (!bool.TryParse(enableGoogleReCaptchaSettings, out var enableGoogleReCaptcha))
             {
-                throw new Exception($"Configuration error: Can't parse '{enabledCaptchaToken}' value");
+                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA}' value");
             }
 
             configuration.EnableCaptcha = enableGoogleReCaptcha;
             if (!enableGoogleReCaptcha) return;
 
-            var googleReCaptchaKeySettings = appSettings["google-re-captcha-key"];
-            var googleReCaptchaSecretSettings = appSettings["google-re-captcha-secret"];
+            var googleReCaptchaKeySettings = appSettings[ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_KEY];
+            var googleReCaptchaSecretSettings = appSettings[ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_SECRET];
 
-            if (string.IsNullOrEmpty(googleReCaptchaKeySettings)) throw new Exception(GetCaptchaError(captchaKeyToken));
-            if (string.IsNullOrEmpty(googleReCaptchaSecretSettings)) throw new Exception(GetCaptchaError(captchaSecretToken));
+            if (string.IsNullOrEmpty(googleReCaptchaKeySettings))
+                throw new Exception(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_KEY));
+            if (string.IsNullOrEmpty(googleReCaptchaSecretSettings))
+                throw new Exception(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_SECRET));
 
             configuration.CaptchaKey = googleReCaptchaKeySettings;
             configuration.CaptchaSecret = googleReCaptchaSecretSettings;
 
-            if (Enum.TryParse<RequireCaptcha>(appSettings[requireCaptchaToken], true, out var rc))
+            if (Enum.TryParse<RequireCaptcha>(appSettings[ConfigurationConstants.ObsoleteCaptcha.REQUIRE_CAPTCHA], true, out var rc))
             {
                 configuration.RequireCaptcha = rc;
             }
             else
             {
-                configuration.RequireCaptcha = enableGoogleReCaptcha 
-                    ? RequireCaptcha.Always 
+                configuration.RequireCaptcha = enableGoogleReCaptcha
+                    ? RequireCaptcha.Always
                     : RequireCaptcha.PasswordRecovery;
             }
         }
 
         private static void ReadCaptchaSettings(NameValueCollection appSettings, Configuration configuration)
         {
-            const string enableCaptchaToken = "enable-captcha";
-            const string captchaTypeToken = "captcha-type";
-            const string captchaKeyToken = "captcha-key";
-            const string captchaSecretToken = "captcha-secret";
-            const string requireCaptchaToken = "require-captcha";
-
-            var captchaEnabledSetting = appSettings[enableCaptchaToken];
+            var captchaEnabledSetting = appSettings[ConfigurationConstants.Captcha.ENABLE_CAPTCHA];
             if (string.IsNullOrEmpty(captchaEnabledSetting))
             {
                 configuration.EnableCaptcha = false;
@@ -319,26 +293,26 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
             if (!bool.TryParse(captchaEnabledSetting, out var enableCaptcha))
             {
-                throw new Exception($"Configuration error: Can't parse '{enableCaptchaToken}' value");
+                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.Captcha.ENABLE_CAPTCHA}' value");
             }
             configuration.EnableCaptcha = enableCaptcha;
 
             if (!enableCaptcha) return;
 
-            if (Enum.TryParse<CaptchaType>(appSettings[captchaTypeToken], true, out var ct))
+            if (Enum.TryParse<CaptchaType>(appSettings[ConfigurationConstants.Captcha.CAPTCHA_TYPE], true, out var ct))
             {
                 configuration.CaptchaType = ct;
             }
 
-            var captchaKeySetting = appSettings[captchaKeyToken];
-            var captchaSecretSetting = appSettings[captchaSecretToken];
-            if (string.IsNullOrEmpty(captchaKeySetting)) throw new Exception(GetCaptchaError(captchaKeyToken));
-            if (string.IsNullOrEmpty(captchaSecretSetting)) throw new Exception(GetCaptchaError(captchaSecretToken));
+            var captchaKeySetting = appSettings[ConfigurationConstants.Captcha.CAPTCHA_KEY];
+            var captchaSecretSetting = appSettings[ConfigurationConstants.Captcha.CAPTCHA_SECRET];
+            if (string.IsNullOrEmpty(captchaKeySetting)) throw new Exception(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_KEY));
+            if (string.IsNullOrEmpty(captchaSecretSetting)) throw new Exception(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_SECRET));
 
             configuration.CaptchaKey = captchaKeySetting;
             configuration.CaptchaSecret = captchaSecretSetting;
 
-            if (Enum.TryParse<RequireCaptcha>(appSettings[requireCaptchaToken], true, out var rc))
+            if (Enum.TryParse<RequireCaptcha>(appSettings[ConfigurationConstants.Captcha.REQUIRE_CAPTCHA], true, out var rc))
             {
                 configuration.RequireCaptcha = rc;
             }
@@ -352,14 +326,13 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         private static void ReadPasswordRecoverySettings(NameValueCollection appSettings, Configuration configuration)
         {
-            var enablePasswordRecoveryToken = "enable-password-recovery";
-            var enablePasswordRecoverySetting = appSettings[enablePasswordRecoveryToken];
+            var enablePasswordRecoverySetting = appSettings[ConfigurationConstants.PasswordRecovery.ENABLE_PASSWORD_RECOVERY];
 
             if (!string.IsNullOrEmpty(enablePasswordRecoverySetting))
             {
                 if (!bool.TryParse(enablePasswordRecoverySetting, out var enablePasswordRecovery))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{enablePasswordRecoveryToken}' value");
+                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.PasswordRecovery.ENABLE_PASSWORD_RECOVERY}' value");
                 }
 
                 if (enablePasswordRecovery && !configuration.CaptchaConfigured)
@@ -380,9 +353,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         private static void ReadSignUpGroupsSettings(NameValueCollection appSettings, Configuration configuration)
         {
             const string signUpGroupsRegex = @"([\wа-я\s\-]+)(\s*;\s*([\wа-я\s\-]+)*)*";
-            const string signUpGroupsToken = "sign-up-groups";
 
-            var signUpGroupsSettings = appSettings[signUpGroupsToken];
+            var signUpGroupsSettings = appSettings[ConfigurationConstants.SignUpGroups.SIGN_UP_GROUPS];
             if (string.IsNullOrWhiteSpace(signUpGroupsSettings))
             {
                 configuration.SignUpGroups = string.Empty;
@@ -391,7 +363,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (!Regex.IsMatch(signUpGroupsSettings, signUpGroupsRegex, RegexOptions.IgnoreCase))
             {
-                throw new Exception($"Invalid group names. Please check '{signUpGroupsToken}' settings property and fix syntax errors.");
+                throw new Exception($"Invalid group names. Please check '{ConfigurationConstants.SignUpGroups.SIGN_UP_GROUPS}' settings property and fix syntax errors.");
             }
 
             configuration.SignUpGroups = signUpGroupsSettings;
@@ -399,26 +371,24 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         private static void ReadAppCacheSettings(NameValueCollection appSettings, Configuration configuration)
         {
-            const string pwdChangingSessionLifetimeToken = "pwd-changing-session-lifetime";
-            const string pwdChangingSessionCacheSizeToken = "pwd-changing-session-cache-size";
 
-            var pwdChangingSessionLifetimeSetting = appSettings[pwdChangingSessionLifetimeToken];
+            var pwdChangingSessionLifetimeSetting = appSettings[ConfigurationConstants.ChangingSessionCache.LIFETIME];
             if (!string.IsNullOrEmpty(pwdChangingSessionLifetimeSetting))
             {
                 if (!TimeSpan.TryParseExact(pwdChangingSessionLifetimeSetting, @"hh\:mm\:ss", null, System.Globalization.TimeSpanStyles.None, out var timeSpan))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{pwdChangingSessionLifetimeToken}' value");
+                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.LIFETIME}' value");
                 }
 
                 configuration.PwdChangingSessionLifetime = timeSpan;
             }
 
-            var pwdChangingSessionCacheSizeSettings = appSettings[pwdChangingSessionCacheSizeToken];
+            var pwdChangingSessionCacheSizeSettings = appSettings[ConfigurationConstants.ChangingSessionCache.SIZE];
             if (!string.IsNullOrEmpty(pwdChangingSessionCacheSizeSettings))
             {
                 if (!long.TryParse(pwdChangingSessionCacheSizeSettings, out var bytes))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{pwdChangingSessionCacheSizeToken}' value");
+                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.SIZE}' value");
                 }
 
                 configuration.PwdChangingSessionCacheSize = bytes;
@@ -442,26 +412,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
         }
 
-        public bool EnableCaptcha { get; private set; }
-        public CaptchaType CaptchaType { get; private set; } = CaptchaType.Google;
-        public string CaptchaKey { get; private set; }
-        public string CaptchaSecret { get; private set; }
-
-        public RequireCaptcha RequireCaptcha { get; private set; }
-
-        public bool RequireCaptchaOnLogin => EnableCaptcha && RequireCaptcha == RequireCaptcha.Always;
-        public bool CaptchaConfigured => EnableCaptcha;
-        public bool IsCaptchaEnabled(CaptchaType type) => EnableCaptcha && CaptchaType == type;
-        public string CaptchaProxy { get; private set; }
-
-        public string SignUpGroups { get; private set; }
-
-        public TimeSpan? PwdChangingSessionLifetime { get; private set; }
-        public long? PwdChangingSessionCacheSize { get; private set; }
-
         public static string GetLogFormat()
         {
-            return PortalSettings?["logging-format"];
+            return PortalSettings?[ConfigurationConstants.General.LOGGING_FORMAT];
         }
     }
 
