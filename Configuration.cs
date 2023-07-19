@@ -206,7 +206,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 ReadCaptchaSettings(appSettings, configuration);
             }
 
-            configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY]; ;
+            configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY];
 
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
