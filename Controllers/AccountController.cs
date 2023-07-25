@@ -86,12 +86,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // credential is VALID
             if (adValidationResult.IsAuthenticated)
             {
+                var identity = GetIdentity(model, adValidationResult);
                 if (sso.HasSamlSession() && adValidationResult.IsBypass)
                 {
-                    return ByPassSamlSession(model.UserName, sso.SamlSessionId);
+                    return ByPassSamlSession(identity, sso.SamlSessionId);
                 }
-
-                var identity = GetIdentity(model, adValidationResult);
                 return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId, adValidationResult);
             }
 

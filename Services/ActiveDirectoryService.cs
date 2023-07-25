@@ -96,27 +96,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         {
                             _logger.Information($"User '{{user:l}}' is not member of {_configuration.ActiveDirectory2FaGroup} group", user.Name);
                             _logger.Information("Bypass second factor for user '{user:l}'", user.Name);
-                            return ActiveDirectoryCredentialValidationResult.ByPass();
+                            return ActiveDirectoryCredentialValidationResult.ByPass()
+                                .Fill(profile, _configuration);
                         }
                         _logger.Information($"User '{{user:l}}' is member of {_configuration.ActiveDirectory2FaGroup} group", user.Name);
                     }
 
-                    var result = ActiveDirectoryCredentialValidationResult.Ok();
-                    
-                    result.DisplayName = profile.DisplayName;
-                    result.Email = profile.Email;
-                    result.Upn = profile.Upn;
-
-                    if (_configuration.UseActiveDirectoryUserPhone)
-                    {
-                        result.Phone = profile.Phone;
-                    }
-                    if (_configuration.UseActiveDirectoryMobileUserPhone)
-                    {
-                        result.Phone = profile.Mobile;
-                    }
-
-                    return result;
+                    return ActiveDirectoryCredentialValidationResult.Ok()
+                        .Fill(profile, _configuration);
                 }
             }
             catch (LdapException lex)
