@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
+using System.Text.RegularExpressions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -78,6 +79,26 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public static ActiveDirectoryCredentialValidationResult UnknowError(string errorMessage = null)
         {
             return new ActiveDirectoryCredentialValidationResult { Reason = errorMessage ?? "Unknown error"};
+        }
+    }
+
+    public static class ActiveDirectoryValidationResultHelper
+    {
+        public static ActiveDirectoryCredentialValidationResult Fill(this ActiveDirectoryCredentialValidationResult result, LdapProfile profile, Configuration configuration)
+        {
+            result.DisplayName = profile.DisplayName;
+            result.Email = profile.Email;
+            result.Upn = profile.Upn;
+
+            if (configuration.UseActiveDirectoryUserPhone)
+            {
+                result.Phone = profile.Phone;
+            }
+            if (configuration.UseActiveDirectoryMobileUserPhone)
+            {
+                result.Phone = profile.Mobile;
+            }
+            return result;
         }
     }
 }
