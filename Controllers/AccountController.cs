@@ -61,7 +61,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpPost]
-        [VerifyCaptcha(true)]
+        [VerifyCaptcha]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginModel model, SingleSignOnDto sso)
         {
