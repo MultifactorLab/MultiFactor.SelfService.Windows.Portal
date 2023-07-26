@@ -9,10 +9,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
 {
     public class VerifyCaptchaAttribute : ActionFilterAttribute
     {
+        private bool _isLoginPage = false;
+        public VerifyCaptchaAttribute(bool isLoginPage = false)
+        {
+            _isLoginPage = isLoginPage;
+        }
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if (!Configuration.Current.RequireCaptchaOnLogin && 
-                filterContext.HttpContext.Request.Path.StartsWith("/Account/Login", StringComparison.OrdinalIgnoreCase))
+            if (_isLoginPage && !Configuration.Current.RequireCaptchaOnLogin)
             {
                 return;
             }
