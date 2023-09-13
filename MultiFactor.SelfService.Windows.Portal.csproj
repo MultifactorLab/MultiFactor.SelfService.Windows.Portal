@@ -278,6 +278,7 @@
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
+    <Compile Include="Models\Link.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\PasswordRecovery\ConfirmPasswordRecoveryForm.cs" />
     <Compile Include="Models\PasswordRecovery\EnterIdentityForm.cs" />

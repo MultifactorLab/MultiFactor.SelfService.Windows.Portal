@@ -857,3 +857,31 @@ table.authenticators {
             transform: translateY(-50%);
         }
 }
+
+
+.showcase {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 32px;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+.showcase-link {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+    padding: 1rem 2rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.showcase-link:hover {
+    border: 1px solid #4082BC;
+    border-radius: 4px;
+}
+.showcase-link-image {
+    height: 64px;
+    width: 64px;
+}
