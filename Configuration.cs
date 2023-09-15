@@ -133,7 +133,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public TimeSpan? PwdChangingSessionLifetime { get; private set; }
         public long? PwdChangingSessionCacheSize { get; private set; }
-        public List<Link> Links { get; private set; }
+        public Link[] Links { get; private set; }
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -201,7 +201,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (linkShowcaseSection != null)
             {
                 configuration.Links = (from object value in linkShowcaseSection.Links
-                                      select new Link((LinkElement)value)).ToList();
+                                      select new Link((LinkElement)value)).ToArray();
             }
 
             if (!string.IsNullOrEmpty(appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA]))

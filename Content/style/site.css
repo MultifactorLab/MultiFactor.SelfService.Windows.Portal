@@ -500,6 +500,7 @@ p {
     -ms-flex-direction: column;
     flex-direction: column;
     padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 #main {
@@ -866,6 +867,7 @@ table.authenticators {
     justify-content: center;
     align-items: center;
     padding: 16px;
+    margin-top: -7vh;
 }
 
 .showcase-link {

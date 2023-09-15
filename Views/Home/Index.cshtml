@@ -10,7 +10,7 @@
 
 <div class="block">
     <div class="container">
-        @if (Configuration.Current.Links != null && Configuration.Current.Links.Count > 0)
+        @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
         {
             <div class="showcase">
                 @foreach (var link in Configuration.Current.Links)
