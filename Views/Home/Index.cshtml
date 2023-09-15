@@ -10,6 +10,24 @@
 
 <div class="block">
     <div class="container">
+        @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
+        {
+            <div class="showcase">
+                @foreach (var link in Configuration.Current.Links)
+                {
+                    <a href="@link.Url">
+                        <div class="showcase-link">
+                            <img class="showcase-link-image" src="~/content/images/@link.Image" />
+
+                            <div class="link-title">
+                                @link.Title
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+
         <p>@Resources.Home.Greetings @(Model.Name ?? Model.Identity).</p>
         <p>@Resources.Home.ConfiguredMethods</p>
         <table class="authenticators max600">

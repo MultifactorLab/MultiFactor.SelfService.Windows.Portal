@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MultiFactor.SelfService.Windows.Portal.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -132,7 +133,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public TimeSpan? PwdChangingSessionLifetime { get; private set; }
         public long? PwdChangingSessionCacheSize { get; private set; }
-
+        public Link[] Links { get; private set; }
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -196,6 +197,12 @@ namespace MultiFactor.SelfService.Windows.Portal
                 configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
             }
 
+            var linkShowcaseSection = (LinkShowcaseSection)ConfigurationManager.GetSection("linksShowcase");
+            if (linkShowcaseSection != null)
+            {
+                configuration.Links = (from object value in linkShowcaseSection.Links
+                                      select new Link((LinkElement)value)).ToArray();
+            }
 
             if (!string.IsNullOrEmpty(appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA]))
             {
@@ -461,6 +468,52 @@ namespace MultiFactor.SelfService.Windows.Portal
             get { return (bool)this["requiresUserPrincipalName"]; }
         }
     }
+
+    public class LinkShowcaseSection : ConfigurationSection
+    {
+        [ConfigurationProperty("", IsDefaultCollection = true)]
+        public LinkShowcaseElementCollection Links
+        {
+            get { return (LinkShowcaseElementCollection)this[""]; }
+        }
+    }
+
+
+    public class LinkShowcaseElementCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new LinkElement();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return (element as LinkElement).Url;
+        }
+
+        public override ConfigurationElementCollectionType CollectionType
+        {
+            get { return ConfigurationElementCollectionType.BasicMap; }
+        }
+
+        protected override string ElementName
+        {
+            get { return "link"; }
+        }
+    }
+
+    public class LinkElement : ConfigurationElement
+    {
+        [ConfigurationProperty("url", IsRequired = true, IsKey = true)]
+        public string Url { get { return (string)this["url"]; } }
+
+        [ConfigurationProperty("title", IsRequired = true)]
+        public string Title { get { return (string)this["title"]; } }
+
+        [ConfigurationProperty("image", IsRequired = true)]
+        public string Image { get { return (string)this["image"]; } }
+    }
+
 
     public enum RequireCaptcha
     {
