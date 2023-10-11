@@ -6,8 +6,15 @@
 </head>
 <body>
     <hgroup>
-        <h1>@Resources.Error.SomethingWentWrong</h1>
-        <h2>@Html.Raw(Resources.Error.Generic)</h2>
+        @if (!string.IsNullOrEmpty(TempData["ErrorMessage"] as string))
+        {
+            <h1>@(TempData["ErrorMessage"])</h1>
+        }
+        else
+        {
+            <h1>@Resources.Error.SomethingWentWrong</h1>
+            <h2>@Html.Raw(Resources.Error.Generic)</h2>
+        }
     </hgroup>
 </body>
 </html>

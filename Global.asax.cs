@@ -114,7 +114,13 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (ex is PasswordChangingSessionExpired pwdEx)
             {
                 logger.Warning(ex, "Password changing session expired for user '{u:l}'", pwdEx.Identity);
-                HandleUnauthError();
+
+                HttpContext.Current.Server.ClearError();
+                HttpContext.Current.Response.Clear();
+
+                HttpContext.Current.Session.Add("ErrorMessage", Resources.ExpiredPasswordChange.SessionExpired);
+                HttpContext.Current.Response.Redirect("~/error");
+
                 return;
             }
             
