@@ -88,6 +88,8 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             DependencyResolver.SetResolver(new CustomDependencyResolver(provider));
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory(provider));
+
+            RemoveSomeHeaders();
         }
 
         protected void Application_Error()
@@ -163,6 +165,13 @@ namespace MultiFactor.SelfService.Windows.Portal
                     levelSwitch.MinimumLevel = LogEventLevel.Error;
                     break;
             }
+        }
+
+        //security requirements
+        private void RemoveSomeHeaders()
+        {
+            //it removes the X-AspNetMvc-Version from the response header
+            MvcHandler.DisableMvcResponseHeader = true;
         }
 
         private static void ConfigureSyslog(LoggerConfiguration loggerConfiguration, out string logMessage)
