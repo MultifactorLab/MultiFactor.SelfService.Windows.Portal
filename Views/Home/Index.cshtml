@@ -27,7 +27,13 @@
                 }
             </div>
         }
-
+        @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
+        {  
+            <div class="alert">
+                <h5>@Resources.Home.ShouldChangePassword</h5>
+                <small>@Resources.Home.PasswordExpirationDaysLeft: @Model.PasswordExpirationDaysLeft</small>
+            </div>
+        }
         <p>@Resources.Home.Greetings @(Model.Name ?? Model.Identity).</p>
         <p>@Resources.Home.ConfiguredMethods</p>
         <table class="authenticators max600">

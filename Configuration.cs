@@ -134,6 +134,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         public TimeSpan? PwdChangingSessionLifetime { get; private set; }
         public long? PwdChangingSessionCacheSize { get; private set; }
         public Link[] Links { get; private set; }
+        public int NotifyOnPasswordExpirationDaysLeft { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -159,6 +161,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
             var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
+            var notifyPasswordExpirationDaysLeft = GetValue(appSettings, ConfigurationConstants.General.NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT);
 
             var configuration = new Configuration
             {
@@ -176,8 +179,9 @@ namespace MultiFactor.SelfService.Windows.Portal
                 EnablePasswordManagement = enablePasswordManagementSetting,
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
-                UseUpnAsIdentity = useUpnAsIdentitySetting
-            };
+                UseUpnAsIdentity = useUpnAsIdentitySetting,
+                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft != null ? int.Parse(notifyPasswordExpirationDaysLeft) : 0
+			};
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
             if (activeDirectorySection != null)

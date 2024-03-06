@@ -179,6 +179,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);              
             }
 
+            if(validationResult.PasswordExpirationDate != null) 
+            {
+                claims.Add(MultiFactorClaims.PasswordExpirationDate, validationResult.PasswordExpirationDate.ToString());
+            }
+
             var accessPage = _apiClient.CreateAccessRequest(login, 
                 validationResult?.DisplayName, 
                 validationResult?.Email, 

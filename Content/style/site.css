@@ -556,6 +556,10 @@ p {
     max-width: 1023px;
     padding: 0 15px;
     margin: 0 auto;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
 }
 
 .login {
@@ -771,18 +775,19 @@ table.authenticators {
         margin-bottom: 19px;
     }
 
-    ul.action {
-        margin: 0 auto;
-        max-width: 353px;
+ul.action {
+    margin: 0 auto;
+    max-width: 353px;
+    width: 100%;
+}
+
+ul.action li {
+    margin-bottom: 24px;
+}
+
+    ul.action li:last-child {
+        margin-bottom: 0;
     }
-
-        ul.action li {
-            margin-bottom: 24px;
-        }
-
-            ul.action li:last-child {
-                margin-bottom: 0;
-            }
 
     a.btn {
         display: block;
@@ -886,4 +891,24 @@ table.authenticators {
 .showcase-link-image {
     height: 64px;
     width: 64px;
+}
+
+.alert {
+    border: 1px solid #ffc107;
+    border-radius: 5px;
+    background-color: #ffc107;
+    margin: 1rem;
+    padding: 1rem;
+}
+
+.showpassword-container {
+    position: relative;
+}
+.showpassword-switch {
+    position: absolute;
+    top: 36%;
+    right: 1rem;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }

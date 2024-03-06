@@ -13,6 +13,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Buffers.Text;
+using Newtonsoft.Json.Linq;
+using Microsoft.Ajax.Utilities;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -461,6 +463,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             profile = null;
 
             var attributes = new[] { "DistinguishedName", "displayName", "mail", "telephoneNumber", "mobile", "userPrincipalName" };
+            if(_configuration.NotifyOnPasswordExpirationDaysLeft > 0) {
+				attributes = new List<string>(attributes)
+				{
+					"msDS-UserPasswordExpiryTimeComputed"
+				}.ToArray();
+			}
             var searchFilter = $"(&(objectClass=user)({user.TypeName}={user.Name}))";
 
             var baseDn = SelectBestDomainToQuery(connection, user, domain);
@@ -491,9 +499,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 Email = entry.Attributes["mail"]?[0]?.ToString(),
                 Phone = entry.Attributes["telephoneNumber"]?[0]?.ToString(),
                 Mobile = entry.Attributes["mobile"]?[0]?.ToString(),
-            };
+			};
 
-            var displayNameValue = entry.Attributes["displayName"]?[0];
+            if(_configuration.NotifyOnPasswordExpirationDaysLeft > 0)
+            {
+				var passwordExpirationValue = entry.Attributes["msDS-UserPasswordExpiryTimeComputed"]?[0] as string;
+				if (passwordExpirationValue != null && Int64.TryParse(passwordExpirationValue, out long passwordExpirationInt))
+				{
+					profile.PasswordExpirationDate = DateTime.FromFileTime(passwordExpirationInt);
+				}
+			}
+
+			var displayNameValue = entry.Attributes["displayName"]?[0];
             if (displayNameValue != null)
             {
                 if (displayNameValue is byte[])
