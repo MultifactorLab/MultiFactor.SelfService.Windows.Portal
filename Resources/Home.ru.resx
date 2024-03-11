@@ -156,4 +156,10 @@
   <data name="YandexKey" xml:space="preserve">
     <value>Яндекс.Ключ</value>
   </data>
+  <data name="PasswordExpirationDaysLeft" xml:space="preserve">
+    <value>Осталось дней</value>
+  </data>
+  <data name="ShouldChangePassword" xml:space="preserve">
+    <value>Необходимо изменить пароль!</value>
+  </data>
 </root>

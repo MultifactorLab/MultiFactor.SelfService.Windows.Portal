@@ -54,7 +54,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 var identity = jwtSecurityToken.Subject;
                 var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
 
-                //use raw user name when possible couse multifactor may transform identity depend by settings
 
                 token = new Token
                 {
@@ -62,12 +61,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     Identity = rawUserName ?? identity,
                     MustChangePassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword),
                     MustResetPassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword),
-                    ValidTo = jwtSecurityToken.ValidTo
+                    ValidTo = jwtSecurityToken.ValidTo,
                 };
+
+                var passwordExpirationDate = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.PasswordExpirationDate);
+                if (_configuration.NotifyOnPasswordExpirationDaysLeft > 0 && passwordExpirationDate?.Value != null)
+                {
+                    token.PasswordExpirationDate = DateTime.Parse(passwordExpirationDate.Value);
+                }
 
                 return true; //token valid
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, "Error verifying token");
             }

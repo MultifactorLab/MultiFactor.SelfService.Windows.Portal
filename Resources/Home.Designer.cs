@@ -124,6 +124,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Days Left.
+        /// </summary>
+        public static string PasswordExpirationDaysLeft {
+            get {
+                return ResourceManager.GetString("PasswordExpirationDaysLeft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Phone.
         /// </summary>
         public static string Phone {
@@ -165,6 +174,15 @@ namespace Resources {
         public static string SetupYandexKey {
             get {
                 return ResourceManager.GetString("SetupYandexKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password should be changed!.
+        /// </summary>
+        public static string ShouldChangePassword {
+            get {
+                return ResourceManager.GetString("ShouldChangePassword", resourceCulture);
             }
         }
         

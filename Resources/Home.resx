@@ -156,4 +156,10 @@
   <data name="YandexKey" xml:space="preserve">
     <value>Yandex.Key</value>
   </data>
+  <data name="PasswordExpirationDaysLeft" xml:space="preserve">
+    <value>Days Left</value>
+  </data>
+  <data name="ShouldChangePassword" xml:space="preserve">
+    <value>Password should be changed!</value>
+  </data>
 </root>

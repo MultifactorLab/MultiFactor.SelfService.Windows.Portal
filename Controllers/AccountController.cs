@@ -9,7 +9,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
-using System.Globalization;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.Mvc;
@@ -25,8 +24,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly DataProtectionService _dataProtectionService;
         private readonly ILogger _logger;
 
-        public AccountController(ApplicationCache applicationCache, 
-            AuthService authService, 
+        public AccountController(ApplicationCache applicationCache,
+            AuthService authService,
             MultiFactorApiClient apiClient,
             ActiveDirectoryService activeDirectoryService,
             DataProtectionService dataProtectionService,
@@ -51,7 +50,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     {
                         var userName = User.Identity.Name;
 
-                        _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName); 
+                        _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
                         return RedirectToMfa(userName, Request.Url.ToString(), sso.SamlSessionId, sso.OidcSessionId);
                     }
                 }
@@ -107,17 +106,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
                     return RedirectToMfa(identity, model.MyUrl, null, null, adValidationResult);
                 }
-                
+
                 _logger.Warning("User '{u:l}' must change password but password management is not enabled", identity);
             }
-            
+
             ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
 
             // invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
             var rnd = new Random();
             int delay = rnd.Next(2, 6);
             await Task.Delay(TimeSpan.FromSeconds(delay));
-  
+
             return View(model);
         }
 
@@ -147,7 +146,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return View();
         }
 
-        private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, string oidcSessionId, 
+        private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, string oidcSessionId,
             ActiveDirectoryCredentialValidationResult validationResult = null)
         {
             // public url from browser if we behind nginx or other proxy
@@ -175,14 +174,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
             else
             {
-                if (samlSessionId != null) claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);             
-                if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);              
+                if (samlSessionId != null) claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
+                if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
             }
 
-            var accessPage = _apiClient.CreateAccessRequest(login, 
-                validationResult?.DisplayName, 
-                validationResult?.Email, 
-                validationResult?.Phone, 
+            if (validationResult.PasswordExpirationDate != null)
+            {
+                claims.Add(MultiFactorClaims.PasswordExpirationDate, validationResult.PasswordExpirationDate.ToString());
+            }
+
+            var accessPage = _apiClient.CreateAccessRequest(login,
+                validationResult?.DisplayName,
+                validationResult?.Email,
+                validationResult?.Phone,
                 postbackUrl, claims);
 
             return RedirectPermanent(accessPage.Url);
@@ -198,7 +202,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public ActionResult PostbackFromMfa(string accessToken)
         {
             _logger.Debug($"Received MFA token: {accessToken}");
-            _authService.SignIn(accessToken);     
+            _authService.SignIn(accessToken);
             return RedirectToAction("Index", "Home");
         }
     }

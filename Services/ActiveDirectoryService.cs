@@ -12,7 +12,6 @@ using System.Globalization;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Buffers.Text;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -68,7 +67,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             try
             {
                 _logger.Debug($"Verifying user '{{user:l}}' credential and status at {_configuration.Domain}", user.Name);
-                
+
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
                     connection.SessionOptions.ProtocolVersion = 3;
@@ -154,15 +153,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                     var filter = $"(objectclass=msexchactivesyncdevice)";
 
-                    var attrs = new[] 
+                    var attrs = new[]
                     {
                         "msExchDeviceID",
                         "msExchDeviceAccessState",
                         "msExchDeviceAccessStateReason",
-                        "msExchDeviceFriendlyName", 
+                        "msExchDeviceFriendlyName",
                         "msExchDeviceModel",
                         "msExchDeviceType",
-                        "whenCreated" 
+                        "whenCreated"
                     };
 
                     //active sync devices inside user dn container
@@ -170,7 +169,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                     _logger.Debug($"Found {searchResponse.Entries.Count} devices for user '{{user:l}}'", userName);
 
-                    for (var i=0; i < searchResponse.Entries.Count; i++)
+                    for (var i = 0; i < searchResponse.Entries.Count; i++)
                     {
                         var entry = searchResponse.Entries[i];
                         var device = new ExchangeActiveSyncDevice
@@ -249,7 +248,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         Operation = DirectoryAttributeOperation.Replace,
                     };
                     stateModificator.Add(state.ToString("d"));
-                    
+
                     var stateReasonModificator = new DirectoryAttributeModification
                     {
                         Name = "msExchDeviceAccessStateReason",
@@ -309,7 +308,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
-                    connection.SessionOptions.ProtocolVersion = 3;            
+                    connection.SessionOptions.ProtocolVersion = 3;
                     connection.Credential = new NetworkCredential(identity.Name, currentPassword);
                     connection.AuthType = AuthType.Ntlm;
                     connection.Bind();
@@ -390,9 +389,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 _logger.Information("Expired password changed for user '{user}'", identity);
                 return true;
             }
-            catch(PasswordException pex)
+            catch (PasswordException pex)
             {
-                _logger.Warning(pex, "Changing expired password for user '{user}' failed: {msg:l}, {hresult}", 
+                _logger.Warning(pex, "Changing expired password for user '{user}' failed: {msg:l}, {hresult}",
                     identity, pex.Message, pex.HResult);
                 errorReason = Resources.AD.PasswordDoesNotMeetRequirements;
             }
@@ -461,6 +460,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             profile = null;
 
             var attributes = new[] { "DistinguishedName", "displayName", "mail", "telephoneNumber", "mobile", "userPrincipalName" };
+            if (_configuration.NotifyOnPasswordExpirationDaysLeft > 0)
+            {
+                attributes = new List<string>(attributes)
+                {
+                    "msDS-UserPasswordExpiryTimeComputed"
+                }.ToArray();
+            }
             var searchFilter = $"(&(objectClass=user)({user.TypeName}={user.Name}))";
 
             var baseDn = SelectBestDomainToQuery(connection, user, domain);
@@ -492,6 +498,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 Phone = entry.Attributes["telephoneNumber"]?[0]?.ToString(),
                 Mobile = entry.Attributes["mobile"]?[0]?.ToString(),
             };
+
+            if (_configuration.NotifyOnPasswordExpirationDaysLeft > 0)
+            {
+                var passwordExpirationValue = entry.Attributes["msDS-UserPasswordExpiryTimeComputed"]?[0] as string;
+                if (passwordExpirationValue != null && Int64.TryParse(passwordExpirationValue, out long passwordExpirationInt))
+                {
+                    profile.PasswordExpirationDate = DateTime.FromFileTime(passwordExpirationInt);
+                }
+            }
 
             var displayNameValue = entry.Attributes["displayName"]?[0];
             if (displayNameValue != null)
@@ -735,7 +750,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 return null;
             }
         }
-        
+
         private DateTime ParseLdapDate(string dateString)
         {
             return DateTime

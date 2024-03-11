@@ -134,6 +134,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         public TimeSpan? PwdChangingSessionLifetime { get; private set; }
         public long? PwdChangingSessionCacheSize { get; private set; }
         public Link[] Links { get; private set; }
+        public int NotifyOnPasswordExpirationDaysLeft { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -153,12 +155,13 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
             var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
             var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
-           
+
             var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
             var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
             var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
+            var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
 
             var configuration = new Configuration
             {
@@ -176,7 +179,8 @@ namespace MultiFactor.SelfService.Windows.Portal
                 EnablePasswordManagement = enablePasswordManagementSetting,
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
-                UseUpnAsIdentity = useUpnAsIdentitySetting
+                UseUpnAsIdentity = useUpnAsIdentitySetting,
+                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft
             };
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
@@ -201,7 +205,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (linkShowcaseSection != null)
             {
                 configuration.Links = (from object value in linkShowcaseSection.Links
-                                      select new Link((LinkElement)value)).ToArray();
+                                       select new Link((LinkElement)value)).ToArray();
             }
 
             if (!string.IsNullOrEmpty(appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA]))
@@ -356,6 +360,22 @@ namespace MultiFactor.SelfService.Windows.Portal
             return $"Configuration error: '{elementName}' element not found or empty.\n" +
                 $"Please check configuration file and define this property or disable captcha";
         }
+
+        private static int ReadNotifyPasswordExpirationDaysLeft(NameValueCollection appSettings)
+        {
+            var notifyPasswordExpirationDaysLeft = GetValue(appSettings, ConfigurationConstants.General.NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT);
+            if (notifyPasswordExpirationDaysLeft != null)
+            {
+                var notifyPasswordExpirationDaysLeftInt = int.Parse(notifyPasswordExpirationDaysLeft);
+                if(notifyPasswordExpirationDaysLeftInt < 0 || notifyPasswordExpirationDaysLeftInt > 365)
+                {
+                    throw new Exception("'notify-on-password-expiration-days-left' must be in range between 0 and 365");
+                }
+                return notifyPasswordExpirationDaysLeftInt;
+            }
+            return 0;
+        }
+
 
         private static void ReadSignUpGroupsSettings(NameValueCollection appSettings, Configuration configuration)
         {

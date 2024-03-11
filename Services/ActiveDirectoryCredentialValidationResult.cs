@@ -1,4 +1,5 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
+using System;
 using System.Text.RegularExpressions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
@@ -17,6 +18,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public string Email { get; set; }
         public string Upn { get; set; }
         public string Phone { get; set; }
+        public DateTime? PasswordExpirationDate { get; set; }
 
 
         public static ActiveDirectoryCredentialValidationResult Ok()
@@ -78,7 +80,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public static ActiveDirectoryCredentialValidationResult UnknowError(string errorMessage = null)
         {
-            return new ActiveDirectoryCredentialValidationResult { Reason = errorMessage ?? "Unknown error"};
+            return new ActiveDirectoryCredentialValidationResult { Reason = errorMessage ?? "Unknown error" };
         }
     }
 
@@ -89,6 +91,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             result.DisplayName = profile.DisplayName;
             result.Email = profile.Email;
             result.Upn = profile.Upn;
+            result.PasswordExpirationDate = profile.PasswordExpirationDate;
 
             if (configuration.UseActiveDirectoryUserPhone)
             {

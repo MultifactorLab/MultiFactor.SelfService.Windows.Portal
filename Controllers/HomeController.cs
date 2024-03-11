@@ -1,5 +1,6 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
+using System;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
@@ -30,8 +31,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var userProfile = _api.LoadUserProfile();
             userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
             userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
-
-            return View(userProfile);        
+            var expiration = (DateTime?)HttpContext.Items["passwordExpirationDate"];
+            if (expiration != null)
+            {
+                userProfile.PasswordExpirationDaysLeft = (expiration - DateTime.Now).Value.Days;
+            }
+            return View(userProfile);
         }
 
         [HttpPost]
