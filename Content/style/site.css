@@ -867,7 +867,7 @@ ul.action li {
 
 .showcase {
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     gap: 32px;
     justify-content: center;
     align-items: center;
@@ -894,11 +894,14 @@ ul.action li {
 }
 
 .alert {
-    border: 1px solid #ffc107;
+    border: 1px solid #dc3545;
     border-radius: 5px;
-    background-color: #ffc107;
-    margin: 1rem;
+    background-color: #dc3545;
     padding: 1rem;
+    color: white;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 353px;
 }
 
 .showpassword-container {
@@ -906,7 +909,7 @@ ul.action li {
 }
 .showpassword-switch {
     position: absolute;
-    top: 36%;
+    top: 40%;
     right: 1rem;
     width: 16px;
     height: 16px;
