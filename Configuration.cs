@@ -161,7 +161,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
             var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
-            var notifyPasswordExpirationDaysLeft = GetValue(appSettings, ConfigurationConstants.General.NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT);
+            var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
 
             var configuration = new Configuration
             {
@@ -180,7 +180,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
-                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft != null ? int.Parse(notifyPasswordExpirationDaysLeft) : 0
+                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft
             };
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
@@ -360,6 +360,22 @@ namespace MultiFactor.SelfService.Windows.Portal
             return $"Configuration error: '{elementName}' element not found or empty.\n" +
                 $"Please check configuration file and define this property or disable captcha";
         }
+
+        private static int ReadNotifyPasswordExpirationDaysLeft(NameValueCollection appSettings)
+        {
+            var notifyPasswordExpirationDaysLeft = GetValue(appSettings, ConfigurationConstants.General.NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT);
+            if (notifyPasswordExpirationDaysLeft != null)
+            {
+                var notifyPasswordExpirationDaysLeftInt = int.Parse(notifyPasswordExpirationDaysLeft);
+                if(notifyPasswordExpirationDaysLeftInt < 0 || notifyPasswordExpirationDaysLeftInt > 365)
+                {
+                    throw new Exception("'notify-on-password-expiration-days-left' must be in range between 0 and 365");
+                }
+                return notifyPasswordExpirationDaysLeftInt;
+            }
+            return 0;
+        }
+
 
         private static void ReadSignUpGroupsSettings(NameValueCollection appSettings, Configuration configuration)
         {
