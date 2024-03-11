@@ -29,10 +29,10 @@
                 public const string ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT = "enable-exchange-active-sync-devices-management";
                 public const string USE_UPN_AS_IDENTITY = "use-upn-as-identity";
                 public const string LOGGING_FORMAT = "logging-format";
-				public const string NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT = "notify-on-password-expiration-days-left";
-			}
+                public const string NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT = "notify-on-password-expiration-days-left";
+            }
 
-			public static class ObsoleteCaptcha 
+            public static class ObsoleteCaptcha
             {
                 public const string ENABLE_GOOGLE_RECAPTCHA = "enable-google-re-captcha";
                 public const string GOOGLE_RECAPTCHA_KEY = "google-re-captcha-key";
@@ -64,7 +64,6 @@
             {
                 public const string LIFETIME = "pwd-changing-session-lifetime";
                 public const string SIZE = "pwd-changing-session-cache-size";
-
             }
         }
     }

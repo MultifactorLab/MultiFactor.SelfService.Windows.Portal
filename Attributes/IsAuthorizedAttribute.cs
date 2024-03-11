@@ -54,7 +54,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
             if(token.PasswordExpirationDate != null)
             {
                 filterContext.RequestContext.HttpContext.Items.Add("passwordExpirationDate", token.PasswordExpirationDate);
-			}
+            }
         }
 
         protected override bool AuthorizeCore(HttpContextBase httpContext)

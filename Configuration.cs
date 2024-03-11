@@ -155,7 +155,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
             var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
             var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
-           
+
             var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
             var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
@@ -181,7 +181,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft != null ? int.Parse(notifyPasswordExpirationDaysLeft) : 0
-			};
+            };
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
             if (activeDirectorySection != null)
@@ -205,7 +205,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (linkShowcaseSection != null)
             {
                 configuration.Links = (from object value in linkShowcaseSection.Links
-                                      select new Link((LinkElement)value)).ToArray();
+                                       select new Link((LinkElement)value)).ToArray();
             }
 
             if (!string.IsNullOrEmpty(appSettings[ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA]))

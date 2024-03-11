@@ -11,7 +11,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         public string Phone { get; set; }
         public string Mobile { get; set; }
         public DateTime? PasswordExpirationDate { get; set; }
-
         public LdapIdentity BaseDn { get; set; }
     }
 }

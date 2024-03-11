@@ -31,12 +31,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var userProfile = _api.LoadUserProfile();
             userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
             userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
-			var expiration = (DateTime?)HttpContext.Items["passwordExpirationDate"];
+            var expiration = (DateTime?)HttpContext.Items["passwordExpirationDate"];
             if (expiration != null)
             {
                 userProfile.PasswordExpirationDaysLeft = (expiration - DateTime.Now).Value.Days;
             }
-			return View(userProfile);        
+            return View(userProfile);
         }
 
         [HttpPost]

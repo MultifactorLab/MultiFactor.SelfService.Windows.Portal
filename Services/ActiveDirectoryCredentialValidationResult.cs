@@ -80,7 +80,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public static ActiveDirectoryCredentialValidationResult UnknowError(string errorMessage = null)
         {
-            return new ActiveDirectoryCredentialValidationResult { Reason = errorMessage ?? "Unknown error"};
+            return new ActiveDirectoryCredentialValidationResult { Reason = errorMessage ?? "Unknown error" };
         }
     }
 
@@ -93,7 +93,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             result.Upn = profile.Upn;
             result.PasswordExpirationDate = profile.PasswordExpirationDate;
 
-			if (configuration.UseActiveDirectoryUserPhone)
+            if (configuration.UseActiveDirectoryUserPhone)
             {
                 result.Phone = profile.Phone;
             }

@@ -34,6 +34,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
 
         public bool EnablePasswordManagement { get; set; }
         public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
-		public int PasswordExpirationDaysLeft { get; set; }
-	}
+        public int PasswordExpirationDaysLeft { get; set; }
+    }
 }
