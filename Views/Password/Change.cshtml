@@ -1,4 +1,5 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
+﻿@using MultiFactor.SelfService.Windows.Portal.Helpers;
+@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
 
 @{
     ViewBag.Title = Resources.PasswordChange.Title;
@@ -22,15 +23,15 @@
             </div>
             <div class="form-row">
                 <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
+                    @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.Password)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
+                    @Html.ToggleablePasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.NewPassword)
                 </div>
                 <div class="input">
-                    @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
+                    @Html.ToggleablePasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
                     @Html.ValidationMessageFor(m => m.NewPasswordAgain)
                 </div>
             </div>

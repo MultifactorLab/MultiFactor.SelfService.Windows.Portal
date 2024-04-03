@@ -1,4 +1,5 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery.ResetPasswordForm
+﻿@using MultiFactor.SelfService.Windows.Portal.Helpers;
+@model MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery.ResetPasswordForm
 
 @{
     ViewBag.Title = Resources.PasswordReset.Title;
@@ -26,11 +27,11 @@
                         @Html.HiddenFor(m => m.Identity)
                     </div>
                     <div class="input">
-                        @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
+                        @Html.ToggleablePasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.NewPassword)
                     </div>
                     <div class="input">
-                        @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
+                        @Html.ToggleablePasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.NewPasswordAgain)
                     </div>
                 </div>
