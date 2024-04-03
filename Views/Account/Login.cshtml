@@ -1,5 +1,6 @@
 ﻿@using MultiFactor.SelfService.Windows.Portal.Services.API;
 @using MultiFactor.SelfService.Windows.Portal.Core
+@using MultiFactor.SelfService.Windows.Portal.Helpers;
 @model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
 
 @{
@@ -25,12 +26,8 @@
                         @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName })
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
-                    <div class="input showpassword-container">
-                        <a class="showpassword-switch">
-                            <img class="showpassword-img" src="~/Content/images/show.svg" />
-                            <img class="hidepassword-img" src="~/Content/images/hide.svg" style="display: none"/>
-                        </a>
-                        @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
+                    <div class="input">
+                        @Html.ToggablePasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     @Html.ValidationSummary(true)
@@ -109,16 +106,6 @@
                 $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
             }
         });
-        $('.showpassword-switch').click(function () {
-            let input = $('#Password');
-            if (input.attr('type') == 'password') {
-                input.attr('type', 'text');
-            } else {
-                input.attr('type', 'password');
-            }
-            $('.showpassword-img').toggle();
-            $('.hidepassword-img').toggle();
-        })
     });
 
     @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
