@@ -1,4 +1,5 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
+﻿@using MultiFactor.SelfService.Windows.Portal.Helpers;
+@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
 
 @{
     ViewBag.Title = Resources.PasswordChange.Title;
@@ -7,37 +8,37 @@
     <div class="form-column">
         @using (Html.BeginForm("Change", "Password", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
-        <fieldset>
-            @Html.AntiForgeryToken()
-            <p>@Resources.PasswordChange.Invitation</p>
-            <ul class="list">
-                <li>@Resources.PasswordChange.Req1</li>
-                <li>@Resources.PasswordChange.Req2</li>
-                <li>@Resources.PasswordChange.Req3</li>
-                <li>@Resources.PasswordChange.Req4</li>
-            </ul>
-            <br />
-            <div>
-                @Html.ValidationSummary(true)
-            </div>
-            <div class="form-row">
-                <div class="input">
-                    @Html.PasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.Password)
+            <fieldset>
+                @Html.AntiForgeryToken()
+                <p>@Resources.PasswordChange.Invitation</p>
+                <ul class="list">
+                    <li>@Resources.PasswordChange.Req1</li>
+                    <li>@Resources.PasswordChange.Req2</li>
+                    <li>@Resources.PasswordChange.Req3</li>
+                    <li>@Resources.PasswordChange.Req4</li>
+                </ul>
+                <br />
+                <div>
+                    @Html.ValidationSummary(true)
                 </div>
-                <div class="input">
-                    @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPassword)
+                <div class="form-row">
+                    <div class="input">
+                        @Html.ToggablePasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
+                    <div class="input">
+                        @Html.ToggablePasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.NewPassword)
+                    </div>
+                    <div class="input">
+                        @Html.ToggablePasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                    </div>
                 </div>
-                <div class="input">
-                    @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                <div class="form-row">
+                    <input type="submit" value="@Resources.PasswordChange.Submit" />
                 </div>
-            </div>
-            <div class="form-row">
-                <input type="submit" value="@Resources.PasswordChange.Submit" />
-            </div>
-        </fieldset>
+            </fieldset>
         }
     </div>
 </div>
