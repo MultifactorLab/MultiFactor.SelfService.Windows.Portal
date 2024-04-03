@@ -8,7 +8,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Helpers
 {
     public static class MvcHelpers
     {
-        public static MvcHtmlString ToggablePasswordFor<TModel, TProperty>(
+        public static MvcHtmlString ToggleablePasswordFor<TModel, TProperty>(
             this HtmlHelper<TModel> htmlHelper,
             Expression<Func<TModel, TProperty>> expression,
             object htmlAttributes)
