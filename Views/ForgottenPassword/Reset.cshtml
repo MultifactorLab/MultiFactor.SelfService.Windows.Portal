@@ -10,13 +10,7 @@
         {
             <fieldset>
                 @Html.AntiForgeryToken()
-                <p>@Resources.PasswordReset.Invitation</p>
-                <ul class="list">
-                    <li>@Resources.PasswordChange.Req1</li>
-                    <li>@Resources.PasswordChange.Req2</li>
-                    <li>@Resources.PasswordChange.Req3</li>
-                    <li>@Resources.PasswordChange.Req4</li>
-                </ul>
+                @Html.Partial("_PasswordRequirementsPartial")
                 <br />
                 <div>
                     @Html.ValidationSummary(true)

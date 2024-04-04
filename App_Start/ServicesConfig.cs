@@ -49,6 +49,8 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddSingleton<MultiFactorApiClient>();
             services.AddSingleton<AuthService>();
             services.AddPasswordChangingSessionCache();
+
+            services.AddSingleton<ContentCache>();
         }
 
 

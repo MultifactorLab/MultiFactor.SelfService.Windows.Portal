@@ -1,4 +1,7 @@
-﻿namespace MultiFactor.SelfService.Windows.Portal
+﻿using System.IO;
+using System;
+
+namespace MultiFactor.SelfService.Windows.Portal
 {
     public class Constants
     {
@@ -8,6 +11,7 @@
         public const string CAPTCHA_TOKEN = "responseToken";
         public const string PWD_RECOVERY_COOKIE = "PSession";
 
+        public static readonly string WORKING_DIRECTORY = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
         public static class Configuration
         {

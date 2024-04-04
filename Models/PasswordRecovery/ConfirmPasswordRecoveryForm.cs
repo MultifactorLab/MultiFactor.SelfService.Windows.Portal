@@ -10,7 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery
 
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Resources.Validation))]
         [DataType(DataType.Password)]
-        [MinLength(7, ErrorMessageResourceName = "Minimum7", ErrorMessageResourceType = typeof(Resources.Validation))]
+        [MinLength(1, ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Resources.Validation))]
         [System.Web.Mvc.AllowHtml]
         public string NewPassword { get; set; }
 
