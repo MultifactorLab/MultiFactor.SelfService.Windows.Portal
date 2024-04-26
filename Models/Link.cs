@@ -8,10 +8,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Models
             Url = linkElement.Url;
             Title = linkElement.Title;
             Image = linkElement.Image;
+            OpenInNewTab = linkElement.OpenInNewTab;
         }
 
         public string Url { get; set; }
         public string Title { get; set; }
         public string Image { get; set; }
+        public bool OpenInNewTab { get; set; }
     }
 }

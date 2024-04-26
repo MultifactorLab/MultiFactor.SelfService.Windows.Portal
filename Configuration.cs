@@ -532,6 +532,15 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         [ConfigurationProperty("image", IsRequired = true)]
         public string Image { get { return (string)this["image"]; } }
+
+        [ConfigurationProperty("newTab", IsRequired = false, DefaultValue = true)]
+        public bool OpenInNewTab 
+        {
+            get
+            {
+                return (bool)this["newTab"]; 
+            }
+        }
     }
 
 
