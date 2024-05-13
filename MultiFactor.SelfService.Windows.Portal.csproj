@@ -17,10 +17,10 @@
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
+    <IISExpressSSLPort>49689</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -292,6 +292,16 @@
     <Compile Include="Models\PasswordRecovery\EnterIdentityForm.cs" />
     <Compile Include="Models\SingleSignOnDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\Shared_PasswordRequirementsPartial.ru.Designer.cs">
+      <DependentUpon>Shared_PasswordRequirementsPartial.ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\Shared_PasswordRequirementsPartial.Designer.cs">
+      <DependentUpon>Shared_PasswordRequirementsPartial.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Resources\AccountLogin.ru.Designer.cs">
       <DependentUpon>AccountLogin.ru.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -439,6 +449,7 @@
     <Compile Include="Services\Caching\ApplicationCacheConfig.cs" />
     <Compile Include="Services\Caching\CachedItem.cs" />
     <Compile Include="Services\Caching\ServiceCollectionExtensions.cs" />
+    <Compile Include="Services\ContentCache.cs" />
     <Compile Include="Services\DataProtectionService.cs" />
     <Compile Include="Services\Ldap\LdapIdentity.cs" />
     <Compile Include="Services\Ldap\LdapProfile.cs" />
@@ -511,13 +522,30 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Content\pwd.en.content">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\pwd.ru.content">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Properties\PublishProfiles\Publish to Folder.pubxml" />
     <Content Include="Views\ForgottenPassword\Index.cshtml" />
     <Content Include="Views\ForgottenPassword\Reset.cshtml" />
     <Content Include="Views\ForgottenPassword\Wrong.cshtml" />
     <Content Include="Views\ForgottenPassword\Done.cshtml" />
+    <Content Include="Views\Shared\_PasswordRequirementsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Shared_PasswordRequirementsPartial.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Shared_PasswordRequirementsPartial.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Shared_PasswordRequirementsPartial.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Shared_PasswordRequirementsPartial.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\AccountLogin.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AccountLogin.ru.Designer.cs</LastGenOutput>

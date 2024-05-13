@@ -11,6 +11,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Core
             var scope = context.Items[typeof(IServiceScope)] as IServiceScope;
             return scope?.ServiceProvider ?? throw new Exception("Service provider not configured");
         }
+        
+        public static IServiceProvider GetRequestServices(this HttpContext context)
+        {
+            var scope = context.Items[typeof(IServiceScope)] as IServiceScope;
+            return scope?.ServiceProvider ?? throw new Exception("Service provider not configured");
+        }
 
         public static string BuildCallbackUrl(this HttpContextBase context, string path)
         {
