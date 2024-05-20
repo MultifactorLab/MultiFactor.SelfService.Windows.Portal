@@ -504,16 +504,25 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 var passwordExpirationValue = entry.Attributes["msDS-UserPasswordExpiryTimeComputed"]?[0] as string;
                 if (passwordExpirationValue != null && Int64.TryParse(passwordExpirationValue, out long passwordExpirationInt))
                 {
-                    profile.PasswordExpirationDate = DateTime.FromFileTime(passwordExpirationInt);
+                    try
+                    {
+                        profile.PasswordExpirationDate = DateTime.FromFileTime(passwordExpirationInt);
+                    }
+                    catch (ArgumentOutOfRangeException aore)
+                    {
+                        // inconsistency between the parsing function and AD value
+                        _logger.Warning(aore, "Something wrong with password expiration date: 'msDS-UserPasswordExpiryTimeComputed'={passwordExpirationValue}", passwordExpirationValue);
+                        profile.PasswordExpirationDate = DateTime.MaxValue;
+                    }
                 }
             }
 
             var displayNameValue = entry.Attributes["displayName"]?[0];
             if (displayNameValue != null)
             {
-                if (displayNameValue is byte[])
+                if (displayNameValue is byte[] bytesName)
                 {
-                    profile.DisplayName = Encoding.UTF8.GetString((byte[])displayNameValue);
+                    profile.DisplayName = Encoding.UTF8.GetString(bytesName);
                 }
                 else
                 {
