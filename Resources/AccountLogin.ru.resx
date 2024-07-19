@@ -147,4 +147,13 @@
   <data name="WrongUserNameOrPassword" xml:space="preserve">
     <value>Неверное имя пользователя или пароль</value>
   </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="IdentityInvitation" xml:space="preserve">
+    <value>Введите логин</value>
+  </data>
+  <data name="AuthnInvitation" xml:space="preserve">
+    <value>Введите пароль для учетной записи</value>
+  </data>
 </root>

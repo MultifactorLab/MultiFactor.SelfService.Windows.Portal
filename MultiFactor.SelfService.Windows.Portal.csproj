@@ -268,6 +268,9 @@
     <Compile Include="Core\Http\NewtonsoftJsonDataSerializer.cs" />
     <Compile Include="Core\SerializingSettings.cs" />
     <Compile Include="Core\CustomDependencyResolver.cs" />
+    <Compile Include="Features\PreAuthnModeFeature\PreAuthnMode.cs" />
+    <Compile Include="Features\PreAuthnModeFeature\PreAuthnModeDescriptor.cs" />
+    <Compile Include="Features\PreAuthnModeFeature\PreAuthnModeSettings.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -286,6 +289,7 @@
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
+    <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\Link.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\PasswordRecovery\ConfirmPasswordRecoveryForm.cs" />
@@ -509,6 +513,8 @@
     <Content Include="Content\js\jquery.validate.min.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Views\Account\Authn.cshtml" />
+    <Content Include="Views\Account\Identity.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -701,7 +707,6 @@
     <Content Include="Content\js\jquery-3.6.0.slim.min.map" />
     <Content Include="Content\js\jquery-3.6.0.min.map" />
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

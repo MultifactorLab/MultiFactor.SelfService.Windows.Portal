@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using System;
+using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
 {
@@ -23,10 +24,28 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
             _cache.Set(key, value, options);
         }
 
+        public void SetIdentity(string key, IdentityModel value)
+        {
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(_config.AbsoluteExpiration)
+                .SetSize(GetDataSize(value));
+            _cache.Set(key, value, options);
+        }
+        
+        public CachedItem<IdentityModel> GetIdentity(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return CachedItem<IdentityModel>.Empty;
+            return _cache.TryGetValue(key, out IdentityModel value) 
+                ? new CachedItem<IdentityModel>(value) 
+                : CachedItem<IdentityModel>.Empty;
+        }
+        
         public CachedItem<string> Get(string key)
         {
-            if (_cache.TryGetValue(key, out string value)) return new CachedItem<string>(value);
-            return CachedItem<string>.Empty;
+            return _cache.TryGetValue(key, out string value) 
+                ? new CachedItem<string>(value) 
+                : CachedItem<string>.Empty;
         }
 
         public void Remove(string key)
@@ -38,6 +57,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
         {
             if (string.IsNullOrEmpty(data)) return 18;
             return 18 + data.Length * 2;
+        }
+        
+        private static long GetDataSize(IdentityModel data)
+        {
+            return 18 + data.AccessToken.Length * 2 + data.UserName.Length * 2;
         }
     }
 }

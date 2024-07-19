@@ -1,17 +1,21 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
+﻿using System;
+using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Configuration;
+using System.Web.Mvc;
+using MultiFactor.SelfService.Windows.Portal.Attributes;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
+using Resources;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
-using System.Threading.Tasks;
-using System.Web.Configuration;
-using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -23,6 +27,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ActiveDirectoryService _activeDirectoryService;
         private readonly DataProtectionService _dataProtectionService;
         private readonly ILogger _logger;
+        private const string CallbackFromMfa = "PostbackFromMfa";
 
         public AccountController(ApplicationCache applicationCache,
             AuthService authService,
@@ -41,22 +46,27 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Login(SingleSignOnDto sso)
         {
-            if (Request.IsAuthenticated)
+            if (Configuration.Current.PreAuthnMode.IsPreAuthEnable())
             {
-                if (Configuration.AuthenticationMode == AuthenticationMode.Windows && User.Identity != null)
-                {
-                    //integrated windows authentication
-                    if (!string.IsNullOrEmpty(User.Identity.Name) && User.Identity.AuthenticationType == "Negotiate")
-                    {
-                        var userName = User.Identity.Name;
-
-                        _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
-                        return RedirectToMfa(userName, Request.Url.ToString(), sso.SamlSessionId, sso.OidcSessionId);
-                    }
-                }
+                return RedirectToAction("Identity", sso);
             }
 
-            return View(new LoginModel());
+            bool userAuthenticated = Request.IsAuthenticated;
+            //integrated windows authentication
+            bool authenticateWindowsUser =
+                Configuration.AuthenticationMode == AuthenticationMode.Windows && User.Identity != null;
+            bool negotiateAuthentication = !string.IsNullOrEmpty(User.Identity?.Name) &&
+                                           User.Identity.AuthenticationType == "Negotiate";
+
+            if (!userAuthenticated || !authenticateWindowsUser || !negotiateAuthentication)
+            {
+                return View(new LoginModel());
+            }
+
+            var userName = User.Identity.Name;
+
+            _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
+            return RedirectToMfa(userName, Request?.Url?.ToString(), sso.SamlSessionId, sso.OidcSessionId);
         }
 
         [HttpPost]
@@ -75,7 +85,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 var userName = LdapIdentity.ParseUser(model.UserName);
                 if (userName.Type != IdentityType.UserPrincipalName)
                 {
-                    ModelState.AddModelError(string.Empty, Resources.AccountLogin.UserNameUpnRequired);
+                    ModelState.AddModelError(string.Empty, AccountLogin.UserNameUpnRequired);
                     return View(model);
                 }
             }
@@ -85,7 +95,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // credential is VALID
             if (adValidationResult.IsAuthenticated)
             {
-                var identity = GetIdentity(model, adValidationResult);
+                var identity = GetIdentity(model.UserName, adValidationResult);
                 if (sso.HasSamlSession() && adValidationResult.IsBypass)
                 {
                     return ByPassSamlSession(identity, sso.SamlSessionId);
@@ -95,7 +105,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (adValidationResult.UserMustChangePassword)
             {
-                var identity = GetIdentity(model, adValidationResult);
+                var identity = GetIdentity(model.UserName, adValidationResult);
                 _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
 
                 if (Configuration.Current.EnablePasswordManagement)
@@ -110,7 +120,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 _logger.Warning("User '{u:l}' must change password but password management is not enabled", identity);
             }
 
-            ModelState.AddModelError(string.Empty, Resources.AccountLogin.WrongUserNameOrPassword);
+            ModelState.AddModelError(string.Empty, AccountLogin.WrongUserNameOrPassword);
 
             // invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
             var rnd = new Random();
@@ -120,15 +130,154 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             return View(model);
         }
 
-        private static string GetIdentity(LoginModel model, ActiveDirectoryCredentialValidationResult adValidationResult)
+        /// <summary>
+        /// 2-step user verification: 2fa then AD credentials (first factor)
+        /// </summary>
+        /// <param name="sso">Model for sso integration. Can be empty.</param>
+        /// <param name="state">State for continuation user verification.</param>
+        /// <returns></returns>
+        public ActionResult Identity(SingleSignOnDto sso, string state)
         {
-            var identity = model.UserName;
+            if (!Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            {
+                return RedirectToAction("Login");
+            }
+
+            bool userAuthenticated = Request.IsAuthenticated;
+            //integrated windows authentication
+            bool authenticateWindowsUser =
+                Configuration.AuthenticationMode == AuthenticationMode.Windows && User.Identity != null;
+            bool negotiateAuthentication = !string.IsNullOrEmpty(User.Identity?.Name) &&
+                                           User.Identity.AuthenticationType == "Negotiate";
+
+            if (!userAuthenticated || !authenticateWindowsUser || !negotiateAuthentication)
+            {
+                var identity = _applicationCache.GetIdentity(state);
+                if (!identity.IsEmpty)
+                {
+                    return View("Authn", identity.Value);
+                }
+
+//_logger.Warning("Something wrong with ");
+                return View(new IdentityModel());
+            }
+
+            var userName = User.Identity.Name;
+
+            _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
+            return RedirectToMfa(userName, Request?.Url?.ToString(), sso.SamlSessionId, sso.OidcSessionId);
+        }
+
+        [HttpPost]
+        [VerifyCaptcha]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Identity(IdentityModel model, SingleSignOnDto sso)
+        {
+            if (!Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (Configuration.Current.RequiresUpn)
+            {
+                //AD requires UPN check
+                var userName = LdapIdentity.ParseUser(model.UserName);
+                if (userName.Type != IdentityType.UserPrincipalName)
+                {
+                    ModelState.AddModelError(string.Empty, AccountLogin.UserNameUpnRequired);
+                    return View(model);
+                }
+            }
+
+            // 2fa before authn
+            bool secondFactorNotProceededYet = string.IsNullOrWhiteSpace(model.AccessToken);
+            if (secondFactorNotProceededYet)
+            {
+                var identity = model.UserName;
+                if (Configuration.Current.UseUpnAsIdentity ||
+                    !string.IsNullOrEmpty(Configuration.Current.ActiveDirectory2FaGroup))
+                {
+                    var adResult = _activeDirectoryService.VerifyMembreshipAndLoadExtraAttribute(model.UserName.Trim());
+
+                    if (Configuration.Current.UseUpnAsIdentity)
+                    {
+                        identity = adResult.Upn;
+                    }
+
+                    if (adResult.IsBypass && sso.HasSamlSession())
+                    {
+                        return ByPassSamlSession(identity, sso.SamlSessionId);
+                    }
+                }
+
+                return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
+            }
+
+            // authn after 2fa
+            //AD credential check
+            var adValidationResult =
+                _activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
+            // credential is VALID
+            if (adValidationResult.IsAuthenticated)
+            {
+                var identity = GetIdentity(model.UserName, adValidationResult);
+                if (sso.HasSamlSession() && adValidationResult.IsBypass)
+                {
+                    return ByPassSamlSession(identity, sso.SamlSessionId);
+                }
+
+                _authService.SignIn(model.AccessToken);
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (adValidationResult.UserMustChangePassword)
+            {
+                var identity = GetIdentity(model.UserName, adValidationResult);
+                _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
+
+                if (Configuration.Current.EnablePasswordManagement)
+                {
+                    var encryptedPassword = _dataProtectionService.Protect(model.Password.Trim());
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(identity),
+                        model.UserName.Trim());
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(identity),
+                        encryptedPassword);
+                    // for change password redirect
+                    _authService.SignIn(model.AccessToken);
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                _logger.Warning("User '{u:l}' must change password but password management is not enabled",
+                    identity);
+            }
+
+            ModelState.AddModelError(string.Empty, AccountLogin.WrongUserNameOrPassword);
+
+            // invalid credentials, freeze response for 2-5 seconds to prevent brute-force attacks
+            var rnd = new Random();
+            int delay = rnd.Next(2, 6);
+            await Task.Delay(TimeSpan.FromSeconds(delay));
+
+            return View(model);
+        }
+
+        private static string GetIdentity(string userName,
+            ActiveDirectoryCredentialValidationResult adValidationResult)
+        {
+            var identity = userName;
             if (Configuration.Current.UseUpnAsIdentity)
             {
                 if (string.IsNullOrEmpty(adValidationResult.Upn))
                 {
-                    throw new InvalidOperationException($"Null UPN for user {model.UserName}");
+                    throw new InvalidOperationException($"Null UPN for user {userName}");
                 }
+
                 identity = adValidationResult.Upn;
             }
 
@@ -151,7 +300,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             // public url from browser if we behind nginx or other proxy
             var currentUri = new Uri(documentUrl);
-            var noLastSegment = string.Format("{0}://{1}", currentUri.Scheme, currentUri.Authority);
+            var noLastSegment = $"{currentUri.Scheme}://{currentUri.Authority}";
 
             for (int i = 0; i < currentUri.Segments.Length - 1; i++)
             {
@@ -159,12 +308,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             // remove trailing
-            var postbackUrl = $"{noLastSegment.Trim("/".ToCharArray())}/PostbackFromMfa";
+            var postbackUrl = $"{noLastSegment.Trim("/".ToCharArray())}/{CallbackFromMfa}";
 
-            //exra params
+            //extra params
             var claims = new Dictionary<string, string>
             {
-                // as specifyed by user
+                // as specified by user
                 { MultiFactorClaims.RawUserName, login }
             };
 
@@ -178,7 +327,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
             }
 
-            if (validationResult.PasswordExpirationDate != null)
+            if (validationResult?.PasswordExpirationDate != null)
             {
                 claims.Add(MultiFactorClaims.PasswordExpirationDate, validationResult.PasswordExpirationDate.ToString());
             }
@@ -202,6 +351,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public ActionResult PostbackFromMfa(string accessToken)
         {
             _logger.Debug($"Received MFA token: {accessToken}");
+            // 2fa before authn enable
+            if (Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var token = handler.ReadJwtToken(accessToken);
+                var claims = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName);
+                var baseUserName = Convert.ToBase64String(Encoding.UTF8.GetBytes(claims.Value));
+                _applicationCache.SetIdentity(baseUserName,
+                    new IdentityModel
+                        { UserName = claims?.Value, AccessToken = accessToken });
+                return RedirectToAction("Identity", "Account", new { state = baseUserName });
+            }
+
             _authService.SignIn(accessToken);
             return RedirectToAction("Index", "Home");
         }

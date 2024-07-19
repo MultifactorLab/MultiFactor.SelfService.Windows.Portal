@@ -1,16 +1,16 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using System.Web.Configuration;
+using MultiFactor.SelfService.Windows.Portal.Features.PreAuthnModeFeature;
+using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
-    using static MultiFactor.SelfService.Windows.Portal.Constants;
     using ConfigurationConstants = Constants.Configuration;
     public class Configuration
     {
@@ -73,11 +73,11 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (IncludedDomains?.Count > 0)
             {
-                return IncludedDomains.Any(included => included.ToLower() == domain.ToLower());
+                return IncludedDomains.Any(included => string.Equals(included, domain, StringComparison.CurrentCultureIgnoreCase));
             }
             if (ExcludedDomains?.Count > 0)
             {
-                return !ExcludedDomains.Any(excluded => excluded.ToLower() == domain.ToLower());
+                return ExcludedDomains.All(excluded => !string.Equals(excluded, domain, StringComparison.CurrentCultureIgnoreCase));
             }
 
             return true;
@@ -107,7 +107,9 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Multifactor API Secret
         /// </summary>
         public string MultiFactorApiSecret { get; set; }
-
+        
+        public PreAuthnModeDescriptor PreAuthnMode { get; set; }
+        
         /// <summary>
         /// Logging level
         /// </summary>
@@ -155,6 +157,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
             var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
             var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
+            var preAuthnMode = GetValue(appSettings, ConfigurationConstants.General.PRE_AUTHN_MODE);
 
             var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
             var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
@@ -162,6 +165,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
             var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
+
 
             var configuration = new Configuration
             {
@@ -180,7 +184,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
-                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft
+                NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
             };
 
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
@@ -219,6 +223,15 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY];
 
+            try
+            {
+                configuration.PreAuthnMode = PreAuthnModeDescriptor.Create(preAuthnMode, PreAuthnModeSettings.Default);
+            }
+            catch
+            {
+                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.General.PRE_AUTHN_MODE}' value. Must be one of: {PreAuthnModeDescriptor.DisplayAvailableModes()}");
+            }
+            
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
@@ -402,7 +415,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var pwdChangingSessionLifetimeSetting = appSettings[ConfigurationConstants.ChangingSessionCache.LIFETIME];
             if (!string.IsNullOrEmpty(pwdChangingSessionLifetimeSetting))
             {
-                if (!TimeSpan.TryParseExact(pwdChangingSessionLifetimeSetting, @"hh\:mm\:ss", null, System.Globalization.TimeSpanStyles.None, out var timeSpan))
+                if (!TimeSpan.TryParseExact(pwdChangingSessionLifetimeSetting, @"hh\:mm\:ss", null, TimeSpanStyles.None, out var timeSpan))
                 {
                     throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.LIFETIME}' value");
                 }

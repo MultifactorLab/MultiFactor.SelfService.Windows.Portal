@@ -32,7 +32,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 if (_jsonWebKeySet == null)
                 {
-                    FetchJwks();
+                    _jsonWebKeySet = FetchJwks();
                 }
 
                 var validationParameters = new TokenValidationParameters
@@ -53,8 +53,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 var identity = jwtSecurityToken.Subject;
                 var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
-
-
+                
                 token = new Token
                 {
                     Id = jwtSecurityToken.Id,
@@ -80,7 +79,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return false;
         }
 
-        private void FetchJwks()
+        private JsonWebKeySet FetchJwks()
         {
             //load Json Web Key Set from MultiFactor API
             //JWKS used for signature validation
@@ -89,6 +88,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             try
             {
+                // TODO: httpClient
                 using (var web = new WebClient())
                 {
                     _logger.Debug($"Fetching jwks from {jwksUrl}");
@@ -109,7 +109,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     var json = web.DownloadString(jwksUrl);
                     _logger.Debug($"Fetched jwks\n{json}");
 
-                    _jsonWebKeySet = new JsonWebKeySet(json);
+                    return new JsonWebKeySet(json);
                 }
             }
             catch

@@ -38,6 +38,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 throw new ArgumentNullException(nameof(userName));
             }
+
             if (string.IsNullOrEmpty(password))
             {
                 _logger.Error("Empty password provided for user '{user:l}'", userName);
@@ -113,6 +114,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     _logger.Warning($"Verification user '{{user:l}}' at {_configuration.Domain} failed: {result.Reason}", user.Name);
                     return result;
                 }
+
                 _logger.Error(lex, $"Verification user '{{user:l}}' at {_configuration.Domain} failed", user.Name);
                 return ActiveDirectoryCredentialValidationResult.UnknowError(lex.Message);
             }
@@ -123,6 +125,103 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
         }
 
+        public ActiveDirectoryCredentialValidationResult VerifyMembreshipAndLoadExtraAttribute(string userName)
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentNullException(nameof(userName));
+            }
+            var user = LdapIdentity.ParseUser(userName);
+            
+            //check UPN requirements
+            if (user.Type == IdentityType.UserPrincipalName)
+            {
+                var suffix = user.UpnToSuffix();
+                if (!_configuration.IsPermittedDomain(suffix))
+                {
+                    _logger.Warning($"User domain {suffix} not permitted");
+                    return ActiveDirectoryCredentialValidationResult.UnknowError("Domain not permitted");
+                }
+            }
+            else
+            {
+                if (_configuration.RequiresUpn)
+                {
+                    _logger.Warning("Only UserPrincipalName format permitted, see configuration");
+                    return ActiveDirectoryCredentialValidationResult.UnknowError("Invalid username format");
+                }
+            }
+
+            try
+            {
+                _logger.Debug($"Verifying user '{{user:l}}' credential and status at {_configuration.Domain}",
+                    user.Name);
+
+                using (var connection = new LdapConnection(_configuration.Domain))
+                {
+                    connection.SessionOptions.ProtocolVersion = 3;
+                    connection.AuthType = AuthType.Ntlm;
+                    connection.Credential = new NetworkCredential("Administrator", "z2jvjPuxV5ew");
+                    connection.Bind();
+
+                    _logger.Information(
+                        $"User '{{user:l}}' credential and status verified successfully at {_configuration.Domain}",
+                        user.Name);
+
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+
+                    var isProfileLoaded = LoadProfile(connection, domain, user, out var profile);
+                    if (!isProfileLoaded)
+                    {
+                        return ActiveDirectoryCredentialValidationResult.UnknowError("Unable to load profile");
+                    }
+
+                    var checkGroupMembership = !string.IsNullOrEmpty(_configuration.ActiveDirectory2FaGroup);
+                    if (checkGroupMembership)
+                    {
+                        var isMemberOf = IsMemberOf(connection, profile, user, _configuration.ActiveDirectory2FaGroup);
+
+                        if (!isMemberOf)
+                        {
+                            _logger.Information(
+                                $"User '{{user:l}}' is not member of {_configuration.ActiveDirectory2FaGroup} group",
+                                user.Name);
+                            _logger.Information("Bypass second factor for user '{user:l}'", user.Name);
+                            return ActiveDirectoryCredentialValidationResult.ByPass()
+                                .Fill(profile, _configuration);
+                        }
+
+                        _logger.Information(
+                            $"User '{{user:l}}' is member of {_configuration.ActiveDirectory2FaGroup} group",
+                            user.Name);
+                    }
+
+                    return ActiveDirectoryCredentialValidationResult.Ok()
+                        .Fill(profile, _configuration);
+                }
+            }
+            catch (LdapException lex)
+            {
+                if (lex.ServerErrorMessage != null)
+                {
+                    var result = ActiveDirectoryCredentialValidationResult.KnownError(lex.ServerErrorMessage);
+                    _logger.Warning(
+                        $"Load user info '{{user:l}}' at {_configuration.Domain} failed: {result.Reason}",
+                        user.Name);
+                    return result;
+                }
+
+                _logger.Error(lex, $"Load user info '{{user:l}}' at {_configuration.Domain} failed", user.Name);
+                return ActiveDirectoryCredentialValidationResult.UnknowError(lex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Load user info '{{user:l}}' at {_configuration.Domain} failed.", user.Name);
+                return ActiveDirectoryCredentialValidationResult.UnknowError(ex.Message);
+            }
+        }
+
+
         public IList<ExchangeActiveSyncDevice> SearchExchangeActiveSyncDevices(string userName)
         {
             var ret = new List<ExchangeActiveSyncDevice>();
@@ -130,8 +229,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             try
             {
-                LdapProfile userProfile;
-
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
                     //as app pool identity
@@ -147,7 +244,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         throw new Exception($"Unable to load profile for user '{userName}'");
                     }
 
-                    userProfile = profile;
+                    var userProfile = profile;
 
                     _logger.Debug($"Searching Exchange ActiveSync devices for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()}", user.Name);
 
@@ -165,7 +262,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     };
 
                     //active sync devices inside user dn container
-                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree, true, attrs);
+                    var searchResponse = Query(connection, userProfile.DistinguishedName, filter, SearchScope.Subtree,
+                        true, attrs);
 
                     _logger.Debug($"Found {searchResponse.Entries.Count} devices for user '{{user:l}}'", userName);
 
@@ -198,14 +296,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return ret;
         }
 
-        public void UpdateExchangeActiveSyncDeviceState(string userName, string deviceId, ExchangeActiveSyncDeviceAccessState state)
+        public void UpdateExchangeActiveSyncDeviceState(string userName, string deviceId,
+            ExchangeActiveSyncDeviceAccessState state)
         {
             var user = LdapIdentity.ParseUser(userName);
 
             try
             {
-                LdapProfile userProfile;
-
                 using (var connection = new LdapConnection(_configuration.Domain))
                 {
                     //as app pool identity
@@ -222,7 +319,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         throw new Exception(errText);
                     }
 
-                    userProfile = profile;
+                    var userProfile = profile;
 
                     _logger.Debug($"Updating Exchange ActiveSync device {deviceId} for user '{{user:l}}' in {userProfile.BaseDn.DnToFqdn()} with status {state}", user.Name);
 
@@ -254,7 +351,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         Name = "msExchDeviceAccessStateReason",
                         Operation = DirectoryAttributeOperation.Replace,
                     };
-                    stateReasonModificator.Add("2");    //individual
+                    stateReasonModificator.Add("2"); //individual
 
                     connection.SendRequest(new ModifyRequest(deviceDn, new[]
                     {
@@ -266,14 +363,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     var allowedModificator = new DirectoryAttributeModification
                     {
                         Name = "msExchMobileAllowedDeviceIDs",
-                        Operation = state == ExchangeActiveSyncDeviceAccessState.Allowed ? DirectoryAttributeOperation.Add : DirectoryAttributeOperation.Delete
+                        Operation = state == ExchangeActiveSyncDeviceAccessState.Allowed
+                            ? DirectoryAttributeOperation.Add
+                            : DirectoryAttributeOperation.Delete
                     };
                     allowedModificator.Add(deviceId);
 
                     var blockedModificator = new DirectoryAttributeModification
                     {
                         Name = "msExchMobileBlockedDeviceIDs",
-                        Operation = state == ExchangeActiveSyncDeviceAccessState.Blocked ? DirectoryAttributeOperation.Add : DirectoryAttributeOperation.Delete
+                        Operation = state == ExchangeActiveSyncDeviceAccessState.Blocked
+                            ? DirectoryAttributeOperation.Add
+                            : DirectoryAttributeOperation.Delete
                     };
                     blockedModificator.Add(deviceId);
 
@@ -320,6 +421,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         errorReason = Resources.AD.UnableToChangePassword;
                         return false;
                     }
+
                     userProfile = profile;
                 }
 
@@ -372,6 +474,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         errorReason = Resources.AD.UnableToChangePassword;
                         return false;
                     }
+
                     userProfile = profile;
                 }
 
@@ -425,6 +528,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         errorReason = Resources.AD.UnableToChangePassword;
                         return false;
                     }
+
                     userProfile = profile;
                 }
 
@@ -467,6 +571,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     "msDS-UserPasswordExpiryTimeComputed"
                 }.ToArray();
             }
+
             var searchFilter = $"(&(objectClass=user)({user.TypeName}={user.Name}))";
 
             var baseDn = SelectBestDomainToQuery(connection, user, domain);
@@ -587,10 +692,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         private SearchResponse Query(LdapConnection connection, string baseDn, string filter, SearchScope scope, bool chaseRefs, params string[] attributes)
         {
             var searchRequest = new SearchRequest
-                (baseDn,
-                 filter,
-                 scope,
-                 attributes);
+            (baseDn,
+                filter,
+                scope,
+                attributes);
 
             if (chaseRefs)
             {
@@ -680,9 +785,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     "cn");
 
                 var schema = new List<LdapIdentity>
-                    {
-                        root
-                    };
+                {
+                    root
+                };
 
                 for (var i = 0; i < trustedDomainsResult.Entries.Count; i++)
                 {
