@@ -239,6 +239,7 @@
     <Compile Include="App_Start\ServicesConfig.cs" />
     <Compile Include="Attributes\IsAuthorizedAttribute.cs" />
     <Compile Include="Attributes\RequiredFeatureAttribute.cs" />
+    <Compile Include="Attributes\RequiredIfNotNullAttribute.cs" />
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Constants.cs" />
@@ -268,9 +269,7 @@
     <Compile Include="Core\Http\NewtonsoftJsonDataSerializer.cs" />
     <Compile Include="Core\SerializingSettings.cs" />
     <Compile Include="Core\CustomDependencyResolver.cs" />
-    <Compile Include="Features\PreAuthnModeFeature\PreAuthnMode.cs" />
-    <Compile Include="Features\PreAuthnModeFeature\PreAuthnModeDescriptor.cs" />
-    <Compile Include="Features\PreAuthnModeFeature\PreAuthnModeSettings.cs" />
+    <Compile Include="Extensions\SearchResponseExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -285,6 +284,7 @@
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaApi.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaVerifier.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexHttpClientAdapterFactory.cs" />
+    <Compile Include="Models\AuthnModel.cs" />
     <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
@@ -455,10 +455,17 @@
     <Compile Include="Services\Caching\ServiceCollectionExtensions.cs" />
     <Compile Include="Services\ContentCache.cs" />
     <Compile Include="Services\DataProtectionService.cs" />
+    <Compile Include="Services\Ldap\ForestSchema.cs" />
+    <Compile Include="Services\Ldap\ForestSchemaLoader.cs" />
+    <Compile Include="Services\Ldap\LdapAttributes.cs" />
+    <Compile Include="Services\Ldap\LdapConnectionAdapter.cs" />
+    <Compile Include="Services\Ldap\LdapConnectionFactory.cs" />
     <Compile Include="Services\Ldap\LdapIdentity.cs" />
     <Compile Include="Services\Ldap\LdapProfile.cs" />
     <Compile Include="Services\API\MultiFactorApiClient.cs" />
     <Compile Include="Services\API\MultiFactorClaims.cs" />
+    <Compile Include="Services\Ldap\ProfileLoader.cs" />
+    <Compile Include="Services\Ldap\UserSearchResult.cs" />
     <Compile Include="Services\Token.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
     <Compile Include="Syslog\JsonRfc3164Formatter.cs" />
@@ -706,6 +713,9 @@
     <Content Include="Views\ExchangeActiveSyncDevices\Index.cshtml" />
     <Content Include="Content\js\jquery-3.6.0.slim.min.map" />
     <Content Include="Content\js\jquery-3.6.0.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Features\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

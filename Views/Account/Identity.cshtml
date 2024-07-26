@@ -27,14 +27,6 @@
                         @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? AccountLogin.UserNameUpn : AccountLogin.UserName })
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
-                   @if (!Configuration.Current.PreAuthnMode.IsPreAuthEnable())
-                    {
-                        <div class="input">
-                            @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off" })
-                            @Html.ValidationMessageFor(m => m.Password)
-                        </div>
-                       
-                    }
                     @Html.ValidationSummary(true)
 
                     @if (Configuration.Current.RequireCaptchaOnLogin)

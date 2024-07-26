@@ -46,7 +46,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public ActionResult Login(SingleSignOnDto sso)
         {
-            if (Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            if (Configuration.Current.PreAuthnMode)
             {
                 return RedirectToAction("Identity", sso);
             }
@@ -91,7 +91,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             //AD credential check
-            var adValidationResult = _activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
+            var adValidationResult = _activeDirectoryService.VerifyCredentialAndMembership(model.UserName.Trim(), model.Password.Trim());
             // credential is VALID
             if (adValidationResult.IsAuthenticated)
             {
@@ -134,11 +134,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         /// 2-step user verification: 2fa then AD credentials (first factor)
         /// </summary>
         /// <param name="sso">Model for sso integration. Can be empty.</param>
-        /// <param name="state">State for continuation user verification.</param>
+        /// <param name="requestId">State for continuation user verification.</param>
         /// <returns></returns>
-        public ActionResult Identity(SingleSignOnDto sso, string state)
+        public ActionResult Identity(SingleSignOnDto sso, string requestId)
         {
-            if (!Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            if (!Configuration.Current.PreAuthnMode)
             {
                 return RedirectToAction("Login");
             }
@@ -152,14 +152,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!userAuthenticated || !authenticateWindowsUser || !negotiateAuthentication)
             {
-                var identity = _applicationCache.GetIdentity(state);
-                if (!identity.IsEmpty)
-                {
-                    return View("Authn", identity.Value);
-                }
-
-//_logger.Warning("Something wrong with ");
-                return View(new IdentityModel());
+                var identity = _applicationCache.GetIdentity(requestId);
+                return !identity.IsEmpty 
+                    ? View("Authn", identity.Value) 
+                    : View(new IdentityModel());
             }
 
             var userName = User.Identity.Name;
@@ -173,14 +169,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Identity(IdentityModel model, SingleSignOnDto sso)
         {
-            if (!Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            if (!Configuration.Current.PreAuthnMode)
             {
                 return RedirectToAction("Login");
             }
 
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return string.IsNullOrEmpty(model.AccessToken) ? View(model) : View("Authn", model);
             }
 
             if (Configuration.Current.RequiresUpn)
@@ -199,29 +195,29 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (secondFactorNotProceededYet)
             {
                 var identity = model.UserName;
-                if (Configuration.Current.UseUpnAsIdentity ||
-                    !string.IsNullOrEmpty(Configuration.Current.ActiveDirectory2FaGroup))
+                if (!Configuration.Current.UseUpnAsIdentity && !Configuration.Current.ActiveDirectory2FaGroup.Any())
                 {
-                    var adResult = _activeDirectoryService.VerifyMembreshipAndLoadExtraAttribute(model.UserName.Trim());
+                    return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
+                }
+                var adResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName.Trim()));
 
-                    if (Configuration.Current.UseUpnAsIdentity)
-                    {
-                        identity = adResult.Upn;
-                    }
-
-                    if (adResult.IsBypass && sso.HasSamlSession())
-                    {
-                        return ByPassSamlSession(identity, sso.SamlSessionId);
-                    }
+                if (Configuration.Current.UseUpnAsIdentity)
+                {
+                    identity = adResult.Upn;
                 }
 
-                return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
+                if (adResult.IsBypass && sso.HasSamlSession())
+                {
+                    return ByPassSamlSession(identity, sso.SamlSessionId);
+                }
+
+                return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId, adResult);
             }
 
             // authn after 2fa
             //AD credential check
             var adValidationResult =
-                _activeDirectoryService.VerifyCredential(model.UserName.Trim(), model.Password.Trim());
+                _activeDirectoryService.VerifyCredentialAndMembership(model.UserName.Trim(), model.Password.Trim());
             // credential is VALID
             if (adValidationResult.IsAuthenticated)
             {
@@ -237,6 +233,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (adValidationResult.UserMustChangePassword)
             {
+                // if we need upn, we MUST request it from AD one more time
+                // because for expired password bind is failed
+                if (Configuration.Current.UseUpnAsIdentity)
+                {
+                    adValidationResult =
+                        _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
+                }
                 var identity = GetIdentity(model.UserName, adValidationResult);
                 _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
 
@@ -352,16 +355,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             _logger.Debug($"Received MFA token: {accessToken}");
             // 2fa before authn enable
-            if (Configuration.Current.PreAuthnMode.IsPreAuthEnable())
+            
+            if (Configuration.Current.PreAuthnMode)
             {
                 var handler = new JwtSecurityTokenHandler();
                 var token = handler.ReadJwtToken(accessToken);
                 var claims = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName);
-                var baseUserName = Convert.ToBase64String(Encoding.UTF8.GetBytes(claims.Value));
-                _applicationCache.SetIdentity(baseUserName,
+                var requestId = token.Id;
+                _applicationCache.SetIdentity(requestId,
                     new IdentityModel
                         { UserName = claims?.Value, AccessToken = accessToken });
-                return RedirectToAction("Identity", "Account", new { state = baseUserName });
+                return RedirectToAction("Identity", "Account", new { requestId = requestId });
             }
 
             _authService.SignIn(accessToken);

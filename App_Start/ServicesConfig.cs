@@ -12,6 +12,7 @@ using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 using System;
 using System.Net;
 using System.Net.Http;
+using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 
 namespace MultiFactor.SelfService.Windows.Portal.App_Start
 {
@@ -29,6 +30,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<TotpController>();
             services.AddTransient<ForgottenPasswordController>();
             services.AddTransient<ErrorController>();
+            services.AddTransient<LdapConnectionFactory>();
         }
 
         internal static void RegisterServices(ServiceCollection services)

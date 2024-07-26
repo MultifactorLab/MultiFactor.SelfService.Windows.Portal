@@ -5,12 +5,12 @@ using Resources;
 
 namespace MultiFactor.SelfService.Windows.Portal.Models
 {
-    public class IdentityModel
+    public class AuthnModel
     {
         [Required(ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Validation))]
         public string UserName { get; set; }
         
-        [RequiredIfNotNull(nameof(AccessToken), ErrorMessageResourceName = "Required", ErrorMessageResourceType = typeof(Validation))]
+        [RequiredIfNotNull(nameof(AccessToken))]
         [DataType(DataType.Password)]
         [AllowHtml]
         public string Password { get; set; }

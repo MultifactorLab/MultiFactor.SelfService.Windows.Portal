@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
 
@@ -6,8 +7,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 {
     public class LdapIdentity
     {
-        public string Name { get; set; }
-        public IdentityType Type { get; set; }
+        public string Name { get; private set; }
+        public IdentityType Type { get; private set; }
         public string TypeName
         {
             get
@@ -43,7 +44,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
-            var portIndex = name.IndexOf(":");
+            var portIndex = name.IndexOf(":", StringComparison.Ordinal);
             if (portIndex > 0)
             {
                 name = name.Substring(0, portIndex);
@@ -80,7 +81,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             var identity = name.ToLower();
 
             //remove DOMAIN\\ prefix
-            var index = identity.IndexOf("\\");
+            var index = identity.IndexOf("\\", StringComparison.Ordinal);
             if (index > 0)
             {
                 identity = identity.Substring(index + 1);
@@ -111,6 +112,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             return string.Join(".", fqdn);
         }
 
+        /// <summary>
+        /// Extracts CN from DN
+        /// </summary>
+        public static string DnToCn(string dn)
+        {
+            return dn.Split(',')[0].Split('=')[1];
+        }
+        
         public bool IsChildOf(LdapIdentity parent)
         {
             return Name != parent.Name && Name.EndsWith(parent.Name);
@@ -123,10 +132,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
                 throw new InvalidOperationException($"Invalid username format: {Name}. Expected UPN");
             }
 
-            var index = Name.IndexOf("@");
+            var index = Name.IndexOf("@", StringComparison.Ordinal);
             return Name.Substring(index + 1).ToLower();
         }
 
         public override string ToString() => Name;
+    }
+    
+    public class LdapDomainEqualityComparer : IEqualityComparer<LdapIdentity>
+    {
+        public bool Equals(LdapIdentity x, LdapIdentity y)
+        {
+            if (x == null || y == null) return false;
+            return x == y || x.Name == y.Name;
+        }
+
+        public int GetHashCode(LdapIdentity obj)
+        {
+            return obj.GetHashCode();
+        }
     }
 }

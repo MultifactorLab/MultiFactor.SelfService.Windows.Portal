@@ -23,9 +23,8 @@
                 @Html.AntiForgeryToken()
                 <p>@AccountLogin.AuthnInvitation <b>@Model.UserName</b></p>
                 <div class="form-row">
-
                     <div class="input">
-                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off" })
+                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off"})
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     @{

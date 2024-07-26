@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
-using MultiFactor.SelfService.Windows.Portal.Features.PreAuthnModeFeature;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal
@@ -19,50 +18,50 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// <summary>
         /// Company Name
         /// </summary>
-        public string CompanyName { get; set; }
+        public string CompanyName { get; private set; }
 
         /// <summary>
         /// Active Directory Domain
         /// </summary>
-        public string Domain { get; set; }
+        public string Domain { get; private set; }
 
         /// <summary>
-        /// Only members of this group required to pass 2fa to access (Optional)
+        /// Only members of these groups required to pass 2fa to access (Optional)
         /// </summary>
-        public string ActiveDirectory2FaGroup { get; set; }
+        public string[] ActiveDirectory2FaGroup { get; private set; } = Array.Empty<string>();
 
         /// <summary>
         /// Use ActiveDirectory User general properties phone number (Optional)
         /// </summary>
-        public bool UseActiveDirectoryUserPhone { get; set; }
+        public bool UseActiveDirectoryUserPhone { get; private set; }
 
         /// <summary>
         /// Use ActiveDirectory User general properties mobile phone number (Optional)
         /// </summary>
-        public bool UseActiveDirectoryMobileUserPhone { get; set; }
+        public bool UseActiveDirectoryMobileUserPhone { get; private set; }
 
         /// <summary>
         /// Active Directory NetBIOS Name to add to login
         /// </summary>
-        public string NetBiosName { get; set; }
+        public string NetBiosName { get; private set; }
 
         /// <summary>
         /// Only UPN user name format permitted
         /// </summary>
-        public bool RequiresUpn { get; set; }
+        public bool RequiresUpn { get; private set; }
 
         //Lookup for UPN and use it instead of uid
-        public bool UseUpnAsIdentity { get; set; }
+        public bool UseUpnAsIdentity { get; private set; }
 
         /// <summary>
         /// Use only these domains within forest(s)
         /// </summary>
-        public IList<string> IncludedDomains { get; set; }
+        private IList<string> IncludedDomains { get; set; }
 
         /// <summary>
         /// Use all but not these domains within forest(s)
         /// </summary>
-        public IList<string> ExcludedDomains { get; set; }
+        private IList<string> ExcludedDomains { get; set; }
 
         /// <summary>
         /// Check if any included domains or exclude domains specified and contains required domain
@@ -86,45 +85,45 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// <summary>
         /// Company Logo URL
         /// </summary>
-        public string LogoUrl { get; set; }
+        public string LogoUrl { get; private set; }
 
         /// <summary>
         /// Multifactor API URL
         /// </summary>
-        public string MultiFactorApiUrl { get; set; }
+        public string MultiFactorApiUrl { get; private set; }
 
         /// <summary>
         /// HTTP Proxy for API
         /// </summary>
-        public string MultiFactorApiProxy { get; set; }
+        public string MultiFactorApiProxy { get; private set; }
 
         /// <summary>
         /// Multifactor API KEY
         /// </summary>
-        public string MultiFactorApiKey { get; set; }
+        public string MultiFactorApiKey { get; private set; }
 
         /// <summary>
         /// Multifactor API Secret
         /// </summary>
-        public string MultiFactorApiSecret { get; set; }
+        public string MultiFactorApiSecret { get; private set; }
         
-        public PreAuthnModeDescriptor PreAuthnMode { get; set; }
+        public bool PreAuthnMode { get; private set; }
         
         /// <summary>
         /// Logging level
         /// </summary>
-        public string LogLevel { get; set; }
+        public string LogLevel { get; private set; }
 
-        public bool EnablePasswordManagement { get; set; }
-        public bool EnablePasswordRecovery { get; set; }
-        public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
+        public bool EnablePasswordManagement { get; private set; }
+        public bool EnablePasswordRecovery { get; private set; }
+        public bool EnableExchangeActiveSyncDevicesManagement { get; private set; }
 
-        public bool EnableCaptcha { get; private set; }
-        public CaptchaType CaptchaType { get; private set; } = CaptchaType.Google;
+        private bool EnableCaptcha { get; set; }
+        private CaptchaType CaptchaType { get; set; } = CaptchaType.Google;
         public string CaptchaKey { get; private set; }
         public string CaptchaSecret { get; private set; }
 
-        public RequireCaptcha RequireCaptcha { get; private set; }
+        private RequireCaptcha RequireCaptcha { get; set; }
 
         public bool RequireCaptchaOnLogin => EnableCaptcha && RequireCaptcha == RequireCaptcha.Always;
         public bool CaptchaConfigured => EnableCaptcha;
@@ -157,12 +156,12 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
             var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
             var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
-            var preAuthnMode = GetValue(appSettings, ConfigurationConstants.General.PRE_AUTHN_MODE);
+            var preAuthnMode = ParseBoolean(appSettings, ConfigurationConstants.General.PRE_AUTHN_MODE);
 
             var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
             var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
-            var enableExchangeActiveSyncSevicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
+            var enableExchangeActiveSyncServicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
             var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
 
@@ -171,7 +170,6 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 CompanyName = companyNameSetting,
                 Domain = domainSetting,
-                ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting,
                 NetBiosName = domainNetBiosNameSetting,
                 LogoUrl = logoUrlSetting,
                 MultiFactorApiUrl = apiUrlSetting,
@@ -179,29 +177,34 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiSecret = apiSecretSetting,
                 MultiFactorApiProxy = apiProxySetting,
                 LogLevel = logLevelSetting,
-                EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncSevicesManagementSetting,
+                EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncServicesManagementSetting,
                 EnablePasswordManagement = enablePasswordManagementSetting,
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
+                PreAuthnMode = preAuthnMode,
             };
-
+            
+            if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))
+            {
+                configuration.ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+            }
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
             if (activeDirectorySection != null)
             {
                 var includedDomains = (from object value in activeDirectorySection.IncludedDomains
                                        select ((ValueElement)value).Name).ToList();
-                var excludeddDomains = (from object value in activeDirectorySection.ExcludedDomains
+                var excludedDomains = (from object value in activeDirectorySection.ExcludedDomains
                                         select ((ValueElement)value).Name).ToList();
 
-                if (includedDomains.Count > 0 && excludeddDomains.Count > 0)
+                if (includedDomains.Count > 0 && excludedDomains.Count > 0)
                 {
                     throw new Exception("Both IncludedDomains and ExcludedDomains configured.");
                 }
 
                 configuration.IncludedDomains = includedDomains;
-                configuration.ExcludedDomains = excludeddDomains;
+                configuration.ExcludedDomains = excludedDomains;
                 configuration.RequiresUpn = activeDirectorySection.RequiresUpn;
             }
 
@@ -222,15 +225,6 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
 
             configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY];
-
-            try
-            {
-                configuration.PreAuthnMode = PreAuthnModeDescriptor.Create(preAuthnMode, PreAuthnModeSettings.Default);
-            }
-            catch
-            {
-                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.General.PRE_AUTHN_MODE}' value. Must be one of: {PreAuthnModeDescriptor.DisplayAvailableModes()}");
-            }
             
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
@@ -241,15 +235,12 @@ namespace MultiFactor.SelfService.Windows.Portal
         private static bool ParseBoolean(NameValueCollection appSettings, string token)
         {
             var setting = GetValue(appSettings, token);
-            if (!string.IsNullOrEmpty(setting))
+            if (string.IsNullOrEmpty(setting)) return default;
+            if (!bool.TryParse(setting, out var value))
             {
-                if (!bool.TryParse(setting, out var value))
-                {
-                    throw new Exception($"Configuration error: Can't parse {token} value");
-                }
-                return value;
+                throw new Exception($"Configuration error: Can't parse {token} value");
             }
-            return default(bool);
+            return value;
         }
 
         private static string GetRequiredValue(NameValueCollection appSettings, string token)
