@@ -284,7 +284,6 @@
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaApi.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaVerifier.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexHttpClientAdapterFactory.cs" />
-    <Compile Include="Models\AuthnModel.cs" />
     <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />

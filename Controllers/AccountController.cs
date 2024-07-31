@@ -105,6 +105,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (adValidationResult.UserMustChangePassword)
             {
+                // because if we here - bind throw exception, so need verify
+                adValidationResult =
+                    _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
                 var identity = GetIdentity(model.UserName, adValidationResult);
                 _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
 
