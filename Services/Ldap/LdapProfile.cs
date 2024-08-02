@@ -6,6 +6,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 {
     public class LdapProfile
     {
+        private const int PasswordExpiredFlag = 0x800000; 
         private readonly ILogger _logger;
         public LdapProfile(LdapIdentity baseDn, LdapAttributes attributes, ILogger logger)
         {
@@ -45,6 +46,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         public string Email => LdapAttrs.GetValue("mail");
         public string Phone => LdapAttrs.GetValue("telephoneNumber");
         public string Mobile => LdapAttrs.GetValue("mobile");
+        public bool UserMustChangePassword()
+        {
+            // = "User must change password at next logon" setting
+            var userMustChangePasswordHasValue = int.TryParse(LdapAttrs.GetValue("pwdLastSet"), out var pwdLastSet);
+            if (userMustChangePasswordHasValue && pwdLastSet == 0)
+                return true;
+            
+            if (PasswordExpirationDate() < DateTime.Now)
+                return true;
+            return false;
+        }
+
         private LdapAttributes LdapAttrs { get; }
         
         public ReadOnlyCollection<string> MemberOf => LdapAttrs.GetValues("memberOf");

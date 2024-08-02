@@ -11,7 +11,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
     {
         public bool IsAuthenticated { get; private set; }
         public bool IsBypass { get; private set; }
-        public bool UserMustChangePassword { get; private set; }
+        public bool UserMustChangePassword { get; set; }
         public string Reason { get; private set; }
 
         public string DisplayName { get; set; }
@@ -93,7 +93,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             result.Email = profile.Email;
             result.Upn = profile.Upn;
             result.PasswordExpirationDate = profile.PasswordExpirationDate();
-
+            result.UserMustChangePassword = profile.UserMustChangePassword();
             if (configuration.UseActiveDirectoryUserPhone)
             {
                 result.Phone = profile.Phone;

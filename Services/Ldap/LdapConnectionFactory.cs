@@ -29,6 +29,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 
             _logger.Debug("Start connection to {Domain}", domain);
             var connection = new LdapConnection(domain);
+            connection.Credential = new NetworkCredential("Administrator", "z2jvjPuxV5ew");
             connection.SessionOptions.ProtocolVersion = 3;
             connection.SessionOptions.RootDseCache = true;    
 

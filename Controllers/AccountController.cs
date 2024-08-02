@@ -198,7 +198,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (secondFactorNotProceededYet)
             {
                 var identity = model.UserName;
-                if (!Configuration.Current.UseUpnAsIdentity && !Configuration.Current.ActiveDirectory2FaGroup.Any())
+                if (!Configuration.Current.NeedPrebindInfo())
                 {
                     return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
                 }
@@ -270,7 +270,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             int delay = rnd.Next(2, 6);
             await Task.Delay(TimeSpan.FromSeconds(delay));
 
-            return View(model);
+            return View("Authn", model);
         }
 
         private static string GetIdentity(string userName,

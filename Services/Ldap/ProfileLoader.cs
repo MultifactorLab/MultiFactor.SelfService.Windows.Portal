@@ -57,7 +57,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         {
             var queryAttributes = new List<string>
             {
-                "DistinguishedName", "displayName", "mail", "memberOf", "userPrincipalName",
+                "DistinguishedName", "displayName", "mail", "memberOf", "userPrincipalName", "pwdLastSet", "msDS-UserPasswordExpiryTimeComputed",//"ms-DS-User-Account-Control-Computed",
                 // todo: list of phone attr in config
                 "telephoneNumber",
                 "mobile"

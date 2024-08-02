@@ -53,6 +53,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         //Lookup for UPN and use it instead of uid
         public bool UseUpnAsIdentity { get; private set; }
 
+        public bool NeedPrebindInfo()
+        {
+            return UseUpnAsIdentity || ActiveDirectory2FaGroup.Any() || EnablePasswordManagement;
+        }
+
         /// <summary>
         /// Use only these domains within forest(s)
         /// </summary>
