@@ -113,6 +113,12 @@ namespace MultiFactor.SelfService.Windows.Portal
                 return;
             }
 
+            if (ex is ForbiddenException)
+            {
+                HandleUnauthError();
+                return;
+            }
+            
             if (ex is PasswordChangingSessionExpired pwdEx)
             {
                 logger.Warning(ex, "Password changing session expired for user '{u:l}'", pwdEx.Identity);

@@ -12,7 +12,7 @@
     </div>
     <div class="form-column">
         <h2>@AccountLogin.Title</h2>
-        @using (Html.BeginForm("Identity", "Account", new
+        @using (Html.BeginForm("Authn", "Account", new
                 {
                     samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
                     oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty

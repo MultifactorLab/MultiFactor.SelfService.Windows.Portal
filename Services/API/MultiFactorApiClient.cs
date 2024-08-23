@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading;
+using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.API
 {
@@ -56,6 +57,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
                 var result = SendRequest<AccessPage>("/access/requests", json);
                 return result;
+            }
+            catch (UnauthorizedException ex)
+            {
+                throw;
+            }
+            catch (ForbiddenException ex)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -123,26 +132,44 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
             _logger.Debug($"Sending request to API: {payload}");
 
-            using (var web = new WebClient())
+            try
             {
-                web.Headers.Add("Content-Type", "application/json");
-                web.Headers.Add("Authorization", "Basic " + auth);
-
-                if (!string.IsNullOrEmpty(_settings.MultiFactorApiProxy))
+                using (var web = new WebClient())
                 {
-                    _logger.Debug("Using proxy " + _settings.MultiFactorApiProxy);
+                    web.Headers.Add("Content-Type", "application/json");
+                    web.Headers.Add("Authorization", "Basic " + auth);
 
-                    var proxyUri = new Uri(_settings.MultiFactorApiProxy);
-                    web.Proxy = new WebProxy(proxyUri);
-
-                    if (!string.IsNullOrEmpty(proxyUri.UserInfo))
+                    if (!string.IsNullOrEmpty(_settings.MultiFactorApiProxy))
                     {
-                        var credentials = proxyUri.UserInfo.Split(new[] { ':' }, 2);
-                        web.Proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
+                        _logger.Debug("Using proxy " + _settings.MultiFactorApiProxy);
+
+                        var proxyUri = new Uri(_settings.MultiFactorApiProxy);
+                        web.Proxy = new WebProxy(proxyUri);
+
+                        if (!string.IsNullOrEmpty(proxyUri.UserInfo))
+                        {
+                            var credentials = proxyUri.UserInfo.Split(new[] { ':' }, 2);
+                            web.Proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
+                        }
                     }
+
+                    responseData = web.UploadData(_settings.MultiFactorApiUrl + path, "POST", requestData);
+                }
+            }
+            catch (WebException webEx)
+            {
+                if ((webEx.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException();
                 }
 
-                responseData = web.UploadData(_settings.MultiFactorApiUrl + path, "POST", requestData);
+                _logger.Error(webEx, $"Unable to connect API {_settings.MultiFactorApiUrl}: {webEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Unable to connect API {_settings.MultiFactorApiUrl}: {ex.Message}");
+                throw;
             }
 
             var json = Encoding.UTF8.GetString(responseData);
@@ -154,7 +181,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             if (!response.Success)
             {
                 _logger.Warning($"Got unsuccessful response from API: {json}");
-                throw new Exception(response.Message);
+                throw new ForbiddenException(response.Message);
             }
 
             return response.Model;

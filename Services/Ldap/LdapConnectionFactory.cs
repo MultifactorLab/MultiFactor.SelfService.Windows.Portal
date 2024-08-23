@@ -30,8 +30,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             _logger.Debug("Start connection to {Domain}", domain);
             var connection = new LdapConnection(domain);
             connection.SessionOptions.ProtocolVersion = 3;
-            connection.SessionOptions.RootDseCache = true;    
-
+            connection.SessionOptions.RootDseCache = true;
+            connection.Credential = new NetworkCredential("v.zimin", "Nodenode/");
             _logger.Debug("Start bind to {Domain} as a process user", domain);
             connection.Bind();
             

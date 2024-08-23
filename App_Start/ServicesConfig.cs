@@ -53,6 +53,8 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddPasswordChangingSessionCache();
 
             services.AddSingleton<ContentCache>();
+
+            services.AddHttpClient();
         }
 
 

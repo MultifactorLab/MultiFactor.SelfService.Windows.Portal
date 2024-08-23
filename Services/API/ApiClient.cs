@@ -85,6 +85,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                             web.Headers.Add("Content-Type", "application/json");
                             var requestData = Encoding.UTF8.GetBytes(payload);
                             responseData = web.UploadData($"{_configuration.MultiFactorApiUrl}{path}", "POST", requestData);
+                            //responseData = web.UploadData($"{_configuration.MultiFactorApiUrl}{path}", "POST", requestData);
                             break;
                         default:
                             throw new NotImplementedException($"Unknown API method {method}");

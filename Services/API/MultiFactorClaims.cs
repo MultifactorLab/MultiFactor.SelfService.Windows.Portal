@@ -8,5 +8,6 @@
         public const string PasswordExpirationDate = "passwordExpirationDate";
         public const string ResetPassword = "resetPassword";
         public const string RawUserName = "rawUserName";
+        public const string AdditionSsoStep = "additionSsoStep";
     }
 }

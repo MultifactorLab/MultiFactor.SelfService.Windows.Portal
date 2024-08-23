@@ -205,7 +205,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
                 if (includedDomains.Count > 0 && excludedDomains.Count > 0)
                 {
-                    throw new Exception("Both IncludedDomains and ExcludedDomains configured.");
+                    throw new ConfigurationErrorsException("Both IncludedDomains and ExcludedDomains configured.");
                 }
 
                 configuration.IncludedDomains = includedDomains;
@@ -243,7 +243,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (string.IsNullOrEmpty(setting)) return default;
             if (!bool.TryParse(setting, out var value))
             {
-                throw new Exception($"Configuration error: Can't parse {token} value");
+                throw new ConfigurationErrorsException($"Configuration error: Can't parse {token} value");
             }
             return value;
         }
@@ -253,7 +253,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var value = appSettings[token];
             if (string.IsNullOrEmpty(value))
             {
-                throw new Exception($"Configuration error: {token} element not found or empty");
+                throw new ConfigurationErrorsException($"Configuration error: {token} element not found or empty");
             }
             return value;
         }
@@ -274,7 +274,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (!bool.TryParse(enableGoogleReCaptchaSettings, out var enableGoogleReCaptcha))
             {
-                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA}' value");
+                throw new ConfigurationErrorsException($"Configuration error: Can't parse '{ConfigurationConstants.ObsoleteCaptcha.ENABLE_GOOGLE_RECAPTCHA}' value");
             }
 
             configuration.EnableCaptcha = enableGoogleReCaptcha;
@@ -284,9 +284,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             var googleReCaptchaSecretSettings = appSettings[ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_SECRET];
 
             if (string.IsNullOrEmpty(googleReCaptchaKeySettings))
-                throw new Exception(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_KEY));
+                throw new ConfigurationErrorsException(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_KEY));
             if (string.IsNullOrEmpty(googleReCaptchaSecretSettings))
-                throw new Exception(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_SECRET));
+                throw new ConfigurationErrorsException(GetCaptchaError(ConfigurationConstants.ObsoleteCaptcha.GOOGLE_RECAPTCHA_SECRET));
 
             configuration.CaptchaKey = googleReCaptchaKeySettings;
             configuration.CaptchaSecret = googleReCaptchaSecretSettings;
@@ -313,7 +313,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
             if (!bool.TryParse(captchaEnabledSetting, out var enableCaptcha))
             {
-                throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.Captcha.ENABLE_CAPTCHA}' value");
+                throw new ConfigurationErrorsException($"Configuration error: Can't parse '{ConfigurationConstants.Captcha.ENABLE_CAPTCHA}' value");
             }
             configuration.EnableCaptcha = enableCaptcha;
 
@@ -326,8 +326,8 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             var captchaKeySetting = appSettings[ConfigurationConstants.Captcha.CAPTCHA_KEY];
             var captchaSecretSetting = appSettings[ConfigurationConstants.Captcha.CAPTCHA_SECRET];
-            if (string.IsNullOrEmpty(captchaKeySetting)) throw new Exception(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_KEY));
-            if (string.IsNullOrEmpty(captchaSecretSetting)) throw new Exception(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_SECRET));
+            if (string.IsNullOrEmpty(captchaKeySetting)) throw new ConfigurationErrorsException(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_KEY));
+            if (string.IsNullOrEmpty(captchaSecretSetting)) throw new ConfigurationErrorsException(GetCaptchaError(ConfigurationConstants.Captcha.CAPTCHA_SECRET));
 
             configuration.CaptchaKey = captchaKeySetting;
             configuration.CaptchaSecret = captchaSecretSetting;
@@ -352,12 +352,12 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 if (!bool.TryParse(enablePasswordRecoverySetting, out var enablePasswordRecovery))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.PasswordRecovery.ENABLE_PASSWORD_RECOVERY}' value");
+                    throw new ConfigurationErrorsException($"Configuration error: Can't parse '{ConfigurationConstants.PasswordRecovery.ENABLE_PASSWORD_RECOVERY}' value");
                 }
 
                 if (enablePasswordRecovery && !configuration.CaptchaConfigured)
                 {
-                    throw new Exception($"Configuration error: you need to enable captcha before using the password recovery feature");
+                    throw new ConfigurationErrorsException($"Configuration error: you need to enable captcha before using the password recovery feature");
                 }
 
                 configuration.EnablePasswordRecovery = enablePasswordRecovery;
@@ -378,7 +378,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 var notifyPasswordExpirationDaysLeftInt = int.Parse(notifyPasswordExpirationDaysLeft);
                 if(notifyPasswordExpirationDaysLeftInt < 0 || notifyPasswordExpirationDaysLeftInt > 365)
                 {
-                    throw new Exception("'notify-on-password-expiration-days-left' must be in range between 0 and 365");
+                    throw new ConfigurationErrorsException("'notify-on-password-expiration-days-left' must be in range between 0 and 365");
                 }
                 return notifyPasswordExpirationDaysLeftInt;
             }
@@ -399,7 +399,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             if (!Regex.IsMatch(signUpGroupsSettings, signUpGroupsRegex, RegexOptions.IgnoreCase))
             {
-                throw new Exception($"Invalid group names. Please check '{ConfigurationConstants.SignUpGroups.SIGN_UP_GROUPS}' settings property and fix syntax errors.");
+                throw new ConfigurationErrorsException($"Invalid group names. Please check '{ConfigurationConstants.SignUpGroups.SIGN_UP_GROUPS}' settings property and fix syntax errors.");
             }
 
             configuration.SignUpGroups = signUpGroupsSettings;
@@ -413,7 +413,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 if (!TimeSpan.TryParseExact(pwdChangingSessionLifetimeSetting, @"hh\:mm\:ss", null, TimeSpanStyles.None, out var timeSpan))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.LIFETIME}' value");
+                    throw new ConfigurationErrorsException($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.LIFETIME}' value");
                 }
 
                 configuration.PwdChangingSessionLifetime = timeSpan;
@@ -424,7 +424,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 if (!long.TryParse(pwdChangingSessionCacheSizeSettings, out var bytes))
                 {
-                    throw new Exception($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.SIZE}' value");
+                    throw new ConfigurationErrorsException($"Configuration error: Can't parse '{ConfigurationConstants.ChangingSessionCache.SIZE}' value");
                 }
 
                 configuration.PwdChangingSessionCacheSize = bytes;
