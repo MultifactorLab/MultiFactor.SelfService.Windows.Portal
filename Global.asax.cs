@@ -193,6 +193,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var sysLogFramerSetting = appSettings["syslog-framer"];
             var sysLogFacilitySetting = appSettings["syslog-facility"];
             var sysLogAppName = appSettings["syslog-app-name"] ?? "multifactor-portal";
+            var sysLogTemplate = appSettings["syslog-template"];
             if (!bool.TryParse(appSettings["syslog-use-tls"], out var sysLogUseTls))
             {
                 sysLogUseTls = true;
@@ -219,8 +220,14 @@ namespace MultiFactor.SelfService.Windows.Portal
                         var serverIp = ResolveIP(uri.Host);
                         loggerConfiguration
                             .WriteTo
-                            .JsonUdpSyslog(serverIp, port: uri.Port, appName: sysLogAppName, format: format, facility: facility, json: isJson);
-                        logMessage = $"Using syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
+                            .JsonUdpSyslog(serverIp, 
+                            port: uri.Port, 
+                            appName: sysLogAppName, 
+                            format: format, 
+                            outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
+                            facility: facility, 
+                            json: isJson);
+                        logMessage = $"Using UDP syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     case "tcp":
                         loggerConfiguration
@@ -230,12 +237,12 @@ namespace MultiFactor.SelfService.Windows.Portal
                                 certValidationCallback: ValidateServerCertificate,
                                 secureProtocols: sysLogUseTls ? System.Security.Authentication.SslProtocols.Tls12 : System.Security.Authentication.SslProtocols.None,
                                 appName: sysLogAppName, 
-                                format: format, 
-                                
+                                format: format,
+                                outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
                                 framingType: framer, 
                                 facility: facility, 
                                 json: isJson);
-                        logMessage = $"Using syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
+                        logMessage = $"Using TCP syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     default:
                         throw new NotImplementedException($"Unknown scheme {uri.Scheme} for syslog-server {sysLogServer}. Expected udp or tcp");
