@@ -11,10 +11,13 @@ using Serilog.Formatting.Compact;
 using Serilog.Sinks.Syslog;
 using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -55,6 +58,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             ConfigureSyslog(loggerConfiguration, out var syslogInfoMessage);
             Log.Logger = loggerConfiguration.CreateLogger();
+            Serilog.Debugging.SelfLog.Enable(x => Debug.WriteLine(x));
 
             try
             {
@@ -189,6 +193,11 @@ namespace MultiFactor.SelfService.Windows.Portal
             var sysLogFramerSetting = appSettings["syslog-framer"];
             var sysLogFacilitySetting = appSettings["syslog-facility"];
             var sysLogAppName = appSettings["syslog-app-name"] ?? "multifactor-portal";
+            var sysLogTemplate = appSettings["syslog-template"];
+            if (!bool.TryParse(appSettings["syslog-use-tls"], out var sysLogUseTls))
+            {
+                sysLogUseTls = true;
+            }
 
             var isJson = Configuration.GetLogFormat() == "json";
 
@@ -211,20 +220,37 @@ namespace MultiFactor.SelfService.Windows.Portal
                         var serverIp = ResolveIP(uri.Host);
                         loggerConfiguration
                             .WriteTo
-                            .JsonUdpSyslog(serverIp, port: uri.Port, appName: sysLogAppName, format: format, facility: facility, json: isJson);
-                        logMessage = $"Using syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
+                            .JsonUdpSyslog(serverIp, 
+                            port: uri.Port, 
+                            appName: sysLogAppName, 
+                            format: format, 
+                            outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
+                            facility: facility, 
+                            json: isJson);
+                        logMessage = $"Using UDP syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     case "tcp":
                         loggerConfiguration
                             .WriteTo
-                            .JsonTcpSyslog(uri.Host, uri.Port, appName: sysLogAppName, format: format, framingType: framer, facility: facility, json: isJson);
-                        logMessage = $"Using syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
+                            .JsonTcpSyslog(uri.Host, 
+                                uri.Port, 
+                                certValidationCallback: ValidateServerCertificate,
+                                secureProtocols: sysLogUseTls ? System.Security.Authentication.SslProtocols.Tls12 : System.Security.Authentication.SslProtocols.None,
+                                appName: sysLogAppName, 
+                                format: format,
+                                outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
+                                framingType: framer, 
+                                facility: facility, 
+                                json: isJson);
+                        logMessage = $"Using TCP syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     default:
                         throw new NotImplementedException($"Unknown scheme {uri.Scheme} for syslog-server {sysLogServer}. Expected udp or tcp");
                 }
             }
         }
+
+        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
 
         private static TEnum ParseSettingOrDefault<TEnum>(string setting, TEnum defaultValue) where TEnum : struct
         {
