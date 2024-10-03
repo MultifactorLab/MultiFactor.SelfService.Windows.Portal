@@ -5,6 +5,7 @@ using System;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 
 namespace MultiFactor.SelfService.Windows.Portal.Attributes
 {
@@ -15,7 +16,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class IsAuthorizedAttribute : AuthorizeAttribute
     {
-        private bool _autorizeСore;
+        private bool _authorizeСore;
         private readonly bool _validateUserSession;
 
         /// <summary>
@@ -31,7 +32,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
         {
             base.OnAuthorization(filterContext);
 
-            if (!_validateUserSession || !_autorizeСore) return;
+            if (!_validateUserSession || !_authorizeСore) return;
 
             var scope = (IServiceScope)filterContext.HttpContext.Items[typeof(IServiceScope)];
             var validationSrv = scope.ServiceProvider.GetRequiredService<TokenValidationService>();
@@ -42,7 +43,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
                 return;
             }
 
-            if (token.MustChangePassword)
+            var userName = token.Identity;
+            var applicationCache = scope.ServiceProvider.GetRequiredService<ApplicationCache>();
+            var cachedUser = applicationCache.Get(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(userName));
+            if (token.MustChangePassword || !cachedUser.IsEmpty)
             {
                 filterContext.Result = new RedirectToRouteResult(new RouteValueDictionary
                 {
@@ -59,16 +63,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
 
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
+            
             var authorized = base.AuthorizeCore(httpContext);
             if (!_validateUserSession)
             {
-                _autorizeСore = authorized;
-                return _autorizeСore;
+                _authorizeСore = authorized;
+                return _authorizeСore;
             }
 
             var hasCookie = httpContext.Request.Cookies[Constants.COOKIE_NAME] != null;
-            _autorizeСore = authorized && hasCookie;
-            return _autorizeСore;
+            _authorizeСore = authorized && hasCookie;
+            return _authorizeСore;
         }
 
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)

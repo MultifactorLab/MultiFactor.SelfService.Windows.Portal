@@ -1,0 +1,66 @@
+﻿@using MultiFactor.SelfService.Windows.Portal.Helpers
+@using MultiFactor.SelfService.Windows.Portal.Services.API
+@using Resources
+@model MultiFactor.SelfService.Windows.Portal.Models.IdentityModel
+
+@{
+    ViewBag.Title = string.Format(Global.SiteName, Configuration.Current.CompanyName);
+}
+<div action="#" class="login">
+    <div class="form-bg">
+        <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
+    </div>
+    <div class="form-column">
+        <h2>@AccountLogin.Title</h2>
+        @using (Html.BeginForm("Authn", "Account", new
+                {
+                    samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
+                    oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty
+                }, FormMethod.Post))
+        {
+            <fieldset>
+                @Html.AntiForgeryToken()
+                <p>@AccountLogin.AuthnInvitation <b>@Model.UserName</b></p>
+                <div class="form-row">
+                    <div class="input">
+                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off"})
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
+                    @{
+                        @Html.HiddenFor(m => m.UserName) ;
+                        @Html.HiddenFor(m => m.AccessToken) ;
+                    }
+                    @Html.ValidationSummary(true)
+
+                </div>
+                <div class="form-row">
+                    <input type="hidden" name="myUrl" id="myUrl"/>
+
+                    <input type="submit" class="btn" value="@AccountLogin.Next" id="next"/>
+
+                    @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
+                    {
+                        <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@AccountLogin.ResetPassword</a>
+                    }
+                </div>
+            </fieldset>
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    function enableSubmit() {
+        $("form").find(':submit').removeAttr('disabled');
+    }
+    
+    $(document).ready(function(){
+        $('#myUrl').val(document.location);
+
+        $("form").submit(function () {
+            if ($(this).valid()) {
+                $(this).find(':submit').attr('disabled', 'disabled').val('@AccountLogin.PleaseWait');
+            }
+        });
+    });
+    
+</script>

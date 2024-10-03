@@ -12,7 +12,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
         public HomeController(MultiFactorSelfServiceApiClient api)
         {
-            _api = api ?? throw new System.ArgumentNullException(nameof(api));
+            _api = api ?? throw new ArgumentNullException(nameof(api));
         }
 
         public ActionResult Index()

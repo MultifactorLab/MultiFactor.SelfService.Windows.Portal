@@ -11,20 +11,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            var isLoginPage = filterContext.ActionDescriptor.ActionName == nameof(AccountController.Login)
-                && filterContext.ActionDescriptor.ControllerDescriptor.ControllerType == typeof(AccountController);
+            var actionName = filterContext.ActionDescriptor.ActionName;
+            var isLoginPage = (actionName == nameof(AccountController.Login) ||
+                               actionName == nameof(AccountController.Identity))
+                              && filterContext.ActionDescriptor.ControllerDescriptor.ControllerType ==
+                              typeof(AccountController);
 
             if (isLoginPage && !Configuration.Current.RequireCaptchaOnLogin)
             {
                 return;
             }
 
-            var captchaVerifierResolver = filterContext.HttpContext.GetRequestServices().GetRequiredService<CaptchaVerifierResolver>();
+            var captchaVerifierResolver = filterContext.HttpContext.GetRequestServices()
+                .GetRequiredService<CaptchaVerifierResolver>();
             var captchaVerifier = captchaVerifierResolver();
 
             var res = captchaVerifier.VerifyCaptchaAsync(filterContext.HttpContext.Request).Result;
             if (res.Success) return;
-            
+
             Log.Logger.Warning("Captcha verification failed: {msg:l}", res.Message);
 
             var controller = filterContext.Controller as Controller;
@@ -33,7 +37,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Attributes
                 Log.Logger.Error("Controller is null, impossible to add captcha verification error to the model state");
             }
 
-            controller.ModelState.AddModelError(string.Empty, Resources.Validation.CaptchaFailed);
+            controller?.ModelState.AddModelError(string.Empty, Resources.Validation.CaptchaFailed);
         }
     }
 }

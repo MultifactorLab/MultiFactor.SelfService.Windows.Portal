@@ -11,7 +11,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
 {
     public class HttpClientAdapter
     {
-        private readonly string _baseUrl;
         private readonly HttpClient _client;
         private readonly IJsonDataSerializer _jsonDataSerializer;
         private readonly ILogger _logger;

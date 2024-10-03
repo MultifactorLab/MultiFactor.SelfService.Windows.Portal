@@ -70,7 +70,8 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Install the MultiFactor app on your phone. When in the app, press &quot;+&quot; and point your camera at the QR-code below or open &lt;a href=&quot;multifactor://resolve?r={0}&quot;&gt;this link&lt;/a&gt; from your phone..
+        ///   Ищет локализованную строку, похожую на Install the MultiFactor app on your phone. When in the app, press &quot;+&quot; and point your camera at the
+        /// QR-code below or open &lt;a href=&quot;multifactor://resolve?r={0}&quot;&gt;this link&lt;/a&gt; from your phone..
         /// </summary>
         public static string Instruction {
             get {

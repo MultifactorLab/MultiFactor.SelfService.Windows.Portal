@@ -18,17 +18,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
         public IList<UserProfileAuthenticator> MobileAppAuthenticators { get; set; }
         public IList<UserProfileAuthenticator> PhoneAuthenticators { get; set; }
 
-        public int Count
-        {
-            get
-            {
-                return
-                    TotpAuthenticators.Count +
-                    TelegramAuthenticators.Count +
-                    MobileAppAuthenticators.Count +
-                    PhoneAuthenticators.Count;
-            }
-        }
+        public int Count =>
+            TotpAuthenticators.Count +
+            TelegramAuthenticators.Count +
+            MobileAppAuthenticators.Count +
+            PhoneAuthenticators.Count;
 
         public UserProfilePolicy Policy { get; set; }
 

@@ -4,20 +4,19 @@
     {
         public T Value { get; set; }
 
-        private bool _isEmpty;
-        public bool IsEmpty => _isEmpty;
+        public bool IsEmpty { get; }
 
         public static CachedItem<T> Empty => new CachedItem<T>();
 
         private CachedItem()
         {
-            _isEmpty = true;
+            IsEmpty = true;
         }
 
         public CachedItem(T value)
         {
             Value = value;
-            _isEmpty = false;
+            IsEmpty = false;
         }
     }
 }

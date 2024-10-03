@@ -17,10 +17,13 @@
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>49689</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
-    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
+    <IISExpressWindowsAuthentication>
+    </IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>
+    </IISExpressUseClassicPipelineMode>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -239,6 +242,7 @@
     <Compile Include="App_Start\ServicesConfig.cs" />
     <Compile Include="Attributes\IsAuthorizedAttribute.cs" />
     <Compile Include="Attributes\RequiredFeatureAttribute.cs" />
+    <Compile Include="Attributes\RequiredIfNotNullAttribute.cs" />
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Constants.cs" />
@@ -254,6 +258,7 @@
     <Compile Include="Controllers\TelegramController.cs" />
     <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
+    <Compile Include="Core\Exceptions\ForbiddenException.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CallbackUrlFactory.cs" />
@@ -268,6 +273,7 @@
     <Compile Include="Core\Http\NewtonsoftJsonDataSerializer.cs" />
     <Compile Include="Core\SerializingSettings.cs" />
     <Compile Include="Core\CustomDependencyResolver.cs" />
+    <Compile Include="Extensions\SearchResponseExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -286,6 +292,7 @@
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
     <Compile Include="Models\GoogleAuthenticatorModel.cs" />
+    <Compile Include="Models\IdentityModel.cs" />
     <Compile Include="Models\Link.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\PasswordRecovery\ConfirmPasswordRecoveryForm.cs" />
@@ -451,10 +458,17 @@
     <Compile Include="Services\Caching\ServiceCollectionExtensions.cs" />
     <Compile Include="Services\ContentCache.cs" />
     <Compile Include="Services\DataProtectionService.cs" />
+    <Compile Include="Services\Ldap\ForestSchema.cs" />
+    <Compile Include="Services\Ldap\ForestSchemaLoader.cs" />
+    <Compile Include="Services\Ldap\LdapAttributes.cs" />
+    <Compile Include="Services\Ldap\LdapConnectionAdapter.cs" />
+    <Compile Include="Services\Ldap\LdapConnectionFactory.cs" />
     <Compile Include="Services\Ldap\LdapIdentity.cs" />
     <Compile Include="Services\Ldap\LdapProfile.cs" />
     <Compile Include="Services\API\MultiFactorApiClient.cs" />
     <Compile Include="Services\API\MultiFactorClaims.cs" />
+    <Compile Include="Services\Ldap\ProfileLoader.cs" />
+    <Compile Include="Services\Ldap\UserSearchResult.cs" />
     <Compile Include="Services\Token.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
     <Compile Include="Syslog\JsonRfc3164Formatter.cs" />
@@ -509,6 +523,8 @@
     <Content Include="Content\js\jquery.validate.min.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Views\Account\Authn.cshtml" />
+    <Content Include="Views\Account\Identity.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -701,7 +717,6 @@
     <Content Include="Content\js\jquery-3.6.0.slim.min.map" />
     <Content Include="Content\js\jquery-3.6.0.min.map" />
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -718,9 +733,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>49699</DevelopmentServerPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:49689/</IISUrl>
+          <IISUrl>http://localhost:56797/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
