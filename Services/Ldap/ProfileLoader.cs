@@ -57,7 +57,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         {
             var queryAttributes = new List<string>
             {
-                "DistinguishedName", "displayName", "mail", "memberOf", "userPrincipalName", "pwdLastSet", "msDS-UserPasswordExpiryTimeComputed",//"ms-DS-User-Account-Control-Computed",
+                "DistinguishedName", "displayName", "mail", "memberOf", "userPrincipalName", "pwdLastSet", "msDS-UserPasswordExpiryTimeComputed",
                 // todo: list of phone attr in config
                 "telephoneNumber",
                 "mobile"
@@ -66,10 +66,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             if (config.UseUpnAsIdentity)
             {
                 queryAttributes.Add("userPrincipalName");
-            }
-            if (config.NotifyOnPasswordExpirationDaysLeft > 0)
-            {
-                queryAttributes.Add("msDS-UserPasswordExpiryTimeComputed");
             }
             return queryAttributes.Distinct().ToArray();
         }
