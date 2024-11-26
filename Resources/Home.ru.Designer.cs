@@ -78,24 +78,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to У вас подключены следующие способы проверки доступа:.
-        /// </summary>
-        public static string ConfiguredMethods {
-            get {
-                return ResourceManager.GetString("ConfiguredMethods", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Подтверждаете отключение?.
-        /// </summary>
-        public static string ConfirmRemoving {
-            get {
-                return ResourceManager.GetString("ConfirmRemoving", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Выход.
         /// </summary>
         public static string Exit {
@@ -123,15 +105,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Мобильное приложение.
-        /// </summary>
-        public static string MobileApp {
-            get {
-                return ResourceManager.GetString("MobileApp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Осталось дней.
         /// </summary>
         public static string PasswordExpirationDaysLeft {
@@ -141,65 +114,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Телефон.
-        /// </summary>
-        public static string Phone {
-            get {
-                return ResourceManager.GetString("Phone", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to отключить.
-        /// </summary>
-        public static string Remove {
-            get {
-                return ResourceManager.GetString("Remove", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Подключить мобильное приложение.
-        /// </summary>
-        public static string SetupMobileApp {
-            get {
-                return ResourceManager.GetString("SetupMobileApp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Подключить Telegram.
-        /// </summary>
-        public static string SetupTelegram {
-            get {
-                return ResourceManager.GetString("SetupTelegram", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Подключить Яндекс.Ключ.
-        /// </summary>
-        public static string SetupYandexKey {
-            get {
-                return ResourceManager.GetString("SetupYandexKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Необходимо изменить пароль!.
         /// </summary>
         public static string ShouldChangePassword {
             get {
                 return ResourceManager.GetString("ShouldChangePassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Яндекс.Ключ.
-        /// </summary>
-        public static string YandexKey {
-            get {
-                return ResourceManager.GetString("YandexKey", resourceCulture);
             }
         }
     }

@@ -38,17 +38,5 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
             return View(userProfile);
         }
-
-        [HttpPost]
-        public ActionResult RemoveAuthenticator(string authenticator, string id)
-        {
-            var userProfile = _api.LoadUserProfile();
-            if (userProfile.Count > 1) //do not remove last
-            {
-                _api.RemoveAuthenticator(authenticator, id);
-            }
-
-            return RedirectToAction("Index");
-        }
     }
 }

@@ -120,12 +120,6 @@
   <data name="ChangePassword" xml:space="preserve">
     <value>Сменить пароль</value>
   </data>
-  <data name="ConfiguredMethods" xml:space="preserve">
-    <value>У вас подключены следующие способы проверки доступа:</value>
-  </data>
-  <data name="ConfirmRemoving" xml:space="preserve">
-    <value>Подтверждаете отключение?</value>
-  </data>
   <data name="Exit" xml:space="preserve">
     <value>Выход</value>
   </data>
@@ -134,27 +128,6 @@
   </data>
   <data name="ManageActiveSyncDevices" xml:space="preserve">
     <value>Проверить устройства с почтой</value>
-  </data>
-  <data name="MobileApp" xml:space="preserve">
-    <value>Мобильное приложение</value>
-  </data>
-  <data name="Phone" xml:space="preserve">
-    <value>Телефон</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>отключить</value>
-  </data>
-  <data name="SetupYandexKey" xml:space="preserve">
-    <value>Подключить Яндекс.Ключ</value>
-  </data>
-  <data name="SetupMobileApp" xml:space="preserve">
-    <value>Подключить мобильное приложение</value>
-  </data>
-  <data name="SetupTelegram" xml:space="preserve">
-    <value>Подключить Telegram</value>
-  </data>
-  <data name="YandexKey" xml:space="preserve">
-    <value>Яндекс.Ключ</value>
   </data>
   <data name="PasswordExpirationDaysLeft" xml:space="preserve">
     <value>Осталось дней</value>

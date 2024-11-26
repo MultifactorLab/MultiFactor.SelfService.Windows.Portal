@@ -4,10 +4,6 @@
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 }
 
-@{ 
-    var indexer = 1;
-}
-
 <div class="block">
     <div class="container">
         @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
@@ -52,32 +48,4 @@
             <li><a href="~/account/logout" class="btn">@Resources.Home.Exit</a></li>
         </ul>
     </div>
-    @using (Html.BeginForm("RemoveAuthenticator", "Home", FormMethod.Post, new { Id = "remove-authenticator-form" }))
-    {
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="authenticator" id="remove-authenticator-form-authenticator" />
-        <input type="hidden" name="id" id="remove-authenticator-form-id" />
-    }
 </div>
-<script type="text/javascript">
-    $(function () {
-        $("table.authenticators a").each(function () {
-            @if (Model.Count > 1)
-            {
-                <text>
-                $(this).on("click", function () {
-                    if (confirm('@Resources.Home.ConfirmRemoving')) {
-                        $('#remove-authenticator-form-authenticator').val($(this).attr('data-type'));
-                        $('#remove-authenticator-form-id').val($(this).attr('data-id'));
-                        $('#remove-authenticator-form').submit();
-                    }
-                });
-                </text>
-            }
-            else
-            {
-                <text>$(this).attr('disabled', 'disabled');</text>
-            }
-        });
-    });
-</script>

@@ -78,24 +78,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You have these authentication methods connected:.
-        /// </summary>
-        public static string ConfiguredMethods {
-            get {
-                return ResourceManager.GetString("ConfiguredMethods", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove method?.
-        /// </summary>
-        public static string ConfirmRemoving {
-            get {
-                return ResourceManager.GetString("ConfirmRemoving", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         public static string Exit {
@@ -123,15 +105,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mobile app.
-        /// </summary>
-        public static string MobileApp {
-            get {
-                return ResourceManager.GetString("MobileApp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Days Left.
         /// </summary>
         public static string PasswordExpirationDaysLeft {
@@ -141,65 +114,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Phone.
-        /// </summary>
-        public static string Phone {
-            get {
-                return ResourceManager.GetString("Phone", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to remove.
-        /// </summary>
-        public static string Remove {
-            get {
-                return ResourceManager.GetString("Remove", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connect mobile app.
-        /// </summary>
-        public static string SetupMobileApp {
-            get {
-                return ResourceManager.GetString("SetupMobileApp", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connect Telegram.
-        /// </summary>
-        public static string SetupTelegram {
-            get {
-                return ResourceManager.GetString("SetupTelegram", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Connect Yandex.Key.
-        /// </summary>
-        public static string SetupYandexKey {
-            get {
-                return ResourceManager.GetString("SetupYandexKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Password should be changed!.
         /// </summary>
         public static string ShouldChangePassword {
             get {
                 return ResourceManager.GetString("ShouldChangePassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Yandex.Key.
-        /// </summary>
-        public static string YandexKey {
-            get {
-                return ResourceManager.GetString("YandexKey", resourceCulture);
             }
         }
     }
