@@ -252,12 +252,9 @@
     <Compile Include="Controllers\ForgottenPasswordController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\MobileAppController.cs" />
     <Compile Include="Controllers\ExpiredPasswordController.cs" />
     <Compile Include="Controllers\ExchangeActiveSyncDevicesController.cs" />
     <Compile Include="Controllers\PasswordController.cs" />
-    <Compile Include="Controllers\TelegramController.cs" />
-    <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
     <Compile Include="Core\Exceptions\ForbiddenException.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
@@ -707,9 +704,6 @@
     <Content Include="README.md" />
     <Content Include="Views\Account\ByPassSamlSession.cshtml" />
     <Content Include="Views\Password\Change.cshtml" />
-    <Content Include="Views\Totp\Index.cshtml" />
-    <Content Include="Views\Telegram\Index.cshtml" />
-    <Content Include="Views\MobileApp\Index.cshtml" />
     <Content Include="README.ru.md" />
     <Content Include="Views\ExpiredPassword\Change.cshtml" />
     <Content Include="Views\ExpiredPassword\Done.cshtml" />

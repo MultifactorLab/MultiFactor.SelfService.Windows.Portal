@@ -25,10 +25,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<Configure2FaController>();
             services.AddTransient<ExpiredPasswordController>();
             services.AddTransient<HomeController>();
-            services.AddTransient<MobileAppController>();
             services.AddTransient<PasswordController>();
-            services.AddTransient<TelegramController>();
-            services.AddTransient<TotpController>();
             services.AddTransient<ForgottenPasswordController>();
             services.AddTransient<ErrorController>();
             services.AddTransient<LdapConnectionFactory>();
