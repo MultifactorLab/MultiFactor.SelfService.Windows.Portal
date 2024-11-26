@@ -162,4 +162,7 @@
   <data name="ShouldChangePassword" xml:space="preserve">
     <value>Password should be changed!</value>
   </data>
+  <data name="Configure2FA" xml:space="preserve">
+    <value>Configure 2FA</value>
+  </data>
 </root>

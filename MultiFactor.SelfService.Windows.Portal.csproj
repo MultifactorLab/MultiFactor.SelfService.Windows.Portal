@@ -247,6 +247,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\Configure2FaController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\ForgottenPasswordController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />

@@ -84,6 +84,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             var result = _apiClient.Post<ApiResponse<AccessPage>>("/self-service/start-reset-password", payload, x => x.Authorization = GetBasicAuth());
             return result;
         }
+        
+        public ApiResponse<AccessPage> CreateEnrollmentRequest()
+        {
+            return _apiClient.Post<ApiResponse<AccessPage>>(
+                $"/self-service/create-enrollment-request?dcCode={_settings.Domain}",
+                payload: "{ }",
+                x => x.Authorization = GetBearerAuth());
+        }
 
         private string GetBearerAuth() => $"Bearer {_tokenProvider.GetToken()}"; 
 

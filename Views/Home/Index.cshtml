@@ -35,62 +35,12 @@
             </div>
         }
         <p>@Resources.Home.Greetings @(Model.Name ?? Model.Identity).</p>
-        <p>@Resources.Home.ConfiguredMethods</p>
-        <table class="authenticators max600">
-            <tbody>
-                @foreach (var app in Model.MobileAppAuthenticators)
-                {
-                    <tr>
-                        <td>@(indexer++)</td>
-                        <td>@Resources.Home.MobileApp</td>
-                        <td>@app.Label</td>
-                        <td><a href="#" data-type="mobileapp" data-id="@app.Id">@Resources.Home.Remove</a></td>
-                    </tr>
-                }
-                @foreach (var tlg in Model.TelegramAuthenticators)
-                {
-                    <tr>
-                        <td>@(indexer++)</td>
-                        <td>Telegram</td>
-                        <td>@tlg.Label</td>
-                        <td><a href="#" data-type="telegram" data-id="@tlg.Id">@Resources.Home.Remove</a></td>
-                    </tr>
-                }
-                @foreach (var totp in Model.TotpAuthenticators)
-                {
-                    <tr>
-                        <td>@(indexer++)</td>
-                        <td>@Resources.Home.YandexKey</td>
-                        <td>&nbsp;</td>
-                        <td><a href="#" data-type="totp" data-id="@totp.Id">@Resources.Home.Remove</a></td>
-                    </tr>
-                }
-                @foreach (var phone in Model.PhoneAuthenticators)
-                {
-                    <tr>
-                        <td>@(indexer++)</td>
-                        <td>@Resources.Home.Phone</td>
-                        <td>@phone.Label</td>
-                        <td><a href="#" data-type="phone" data-id="@phone.Id">@Resources.Home.Remove</a></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <p>&nbsp;</p>
+        <p></p>
+        
         <ul class="action">
-            @if (Model.Policy.MobileApp && Model.MobileAppAuthenticators.Count == 0)
-            {
-                <li><a href="~/mobileApp" class="btn">@Resources.Home.SetupMobileApp</a></li>
-            }
-            @if (Model.Policy.Telegram && Model.TelegramAuthenticators.Count == 0)
-            {
-                <li><a href="~/telegram" class="btn">@Resources.Home.SetupTelegram</a></li>
-            }
-            @if (Model.Policy.Totp && Model.TotpAuthenticators.Count == 0)
-            {
-                <li><a href="~/totp" class="btn">@Resources.Home.SetupYandexKey</a></li>
-            }
+            <li>
+                @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn" })
+            </li>
             @if (Model.EnablePasswordManagement)
             {
                 <li><a href="~/password/change" class="btn">@Resources.Home.ChangePassword</a></li>
