@@ -413,10 +413,8 @@
     <Compile Include="Services\API\DTO\AccessPage.cs" />
     <Compile Include="Services\API\DTO\BypassPage.cs" />
     <Compile Include="Services\API\DTO\ApiResponse.cs" />
-    <Compile Include="Services\API\DTO\TotpKey.cs" />
     <Compile Include="Services\API\DTO\UserProfile.cs" />
     <Compile Include="Services\API\DTO\UserProfileAuthenticator.cs" />
-    <Compile Include="Services\API\DTO\UserProfilePolicy.cs" />
     <Compile Include="Core\JwtTokenProvider.cs" />
     <Compile Include="Services\API\MultiFactorSelfServiceApiClient.cs" />
     <Compile Include="Services\AuthService.cs" />
