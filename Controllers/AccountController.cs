@@ -430,11 +430,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     validationResult.PasswordExpirationDate.ToString());
             }
 
-            var accessPage = _apiClient.CreateAccessRequest(login,
+            var personalData = new PersonalData(
                 validationResult?.DisplayName,
                 validationResult?.Email,
                 validationResult?.Phone,
-                postbackUrl, claims);
+                Configuration.Current.PrivacyModeDescriptor);
+            
+            var accessPage = _apiClient.CreateAccessRequest(login,
+                personalData.Name,
+                personalData.Email,
+                personalData.Phone,
+                postbackUrl,
+                claims);
 
             return RedirectPermanent(accessPage.Url);
         }
