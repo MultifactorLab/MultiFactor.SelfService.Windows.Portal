@@ -35,6 +35,9 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string LOGGING_FORMAT = "logging-format";
                 public const string NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT = "notify-on-password-expiration-days-left";
                 public const string PRE_AUTHN_MODE = "pre-authentication-method";
+                public const string LOAD_AD_NESTED_GROUPS = "load-active-directory-nested-groups";
+                public const string ACTIVE_DIRECTORY_GROUP = "active-directory-group";
+                public const string NESTED_GROUPS_BASE_DN = "nested-groups-base-dn";
                 public const string PrivacyMode = "privacy-mode";
             }
 
