@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal
@@ -141,6 +142,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         public long? PwdChangingSessionCacheSize { get; private set; }
         public Link[] Links { get; private set; }
         public int NotifyOnPasswordExpirationDaysLeft { get; private set; }
+        
+        public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
 
         public static void Load()
         {
@@ -169,7 +172,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var enableExchangeActiveSyncServicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
             var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
-
+            var privacyMode = GetValue(appSettings, ConfigurationConstants.General.PrivacyMode);
 
             var configuration = new Configuration
             {
@@ -189,6 +192,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
+                PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode)
             };
             
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))
