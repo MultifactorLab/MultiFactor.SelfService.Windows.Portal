@@ -1,5 +1,4 @@
-﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.CaptchaVerifier;
-using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
+﻿using MultiFactor.SelfService.Windows.Portal.Integrations.Captcha;
 using System;
 using System.Threading.Tasks;
 
