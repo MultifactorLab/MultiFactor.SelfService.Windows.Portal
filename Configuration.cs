@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal
@@ -150,6 +151,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         public long? PwdChangingSessionCacheSize { get; private set; }
         public Link[] Links { get; private set; }
         public int NotifyOnPasswordExpirationDaysLeft { get; private set; }
+        
+        public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
 
         public static void Load()
         {
@@ -182,7 +185,8 @@ namespace MultiFactor.SelfService.Windows.Portal
             var loadActiveDirectoryNestedGroups = ParseBoolean(appSettings, ConfigurationConstants.General.LOAD_AD_NESTED_GROUPS);
             var activeDirectoryGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_GROUP);
             var nestedGroupsBaseDn = GetValue(appSettings, ConfigurationConstants.General.NESTED_GROUPS_BASE_DN);
-            
+       
+            var privacyMode = GetValue(appSettings, ConfigurationConstants.General
             var configuration = new Configuration
             {
                 CompanyName = companyNameSetting,
@@ -202,6 +206,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
                 LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups
+                PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode)
             };
             
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))

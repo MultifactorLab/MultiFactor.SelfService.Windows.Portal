@@ -38,6 +38,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string LOAD_AD_NESTED_GROUPS = "load-active-directory-nested-groups";
                 public const string ACTIVE_DIRECTORY_GROUP = "active-directory-group";
                 public const string NESTED_GROUPS_BASE_DN = "nested-groups-base-dn";
+                public const string PrivacyMode = "privacy-mode";
             }
 
             public static class ObsoleteCaptcha

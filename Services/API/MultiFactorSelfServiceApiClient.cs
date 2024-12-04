@@ -30,36 +30,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return result.Model;
         }
 
-        public TotpKey CreateTotpKey()
-        {  
-            var result = _apiClient.Get<ApiResponse<TotpKey>>("/self-service/totp/new", x => x.Authorization = GetBearerAuth());
-            return result.Model;
-        }
-
-        public ApiResponse AddTotpAuthenticator(string key, string otp)
-        {
-            if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
-            if (string.IsNullOrEmpty(otp)) throw new ArgumentNullException(nameof(otp));
-           
-            var payload = new
-            {
-                Key = key,
-                Otp = otp
-            };
-
-            var result = _apiClient.Post<ApiResponse>("/self-service/totp", payload, x => x.Authorization = GetBearerAuth());
-            return result;
-        }
-
-        public ApiResponse RemoveAuthenticator(string authenticator, string id)
-        {
-            if (string.IsNullOrEmpty(authenticator)) throw new ArgumentNullException(nameof(authenticator));
-            if (string.IsNullOrEmpty(id)) throw new ArgumentNullException(nameof(id));
-        
-            var result = _apiClient.Delete<ApiResponse>($"/self-service/{authenticator}/{id}", x => x.Authorization = GetBearerAuth());
-            return result;
-        }
-
         public ApiResponse<AccessPage> StartResetPassword(string identity, string callbackUrl)
         {
             if (identity is null) throw new ArgumentNullException(nameof(identity));
@@ -83,6 +53,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
 
             var result = _apiClient.Post<ApiResponse<AccessPage>>("/self-service/start-reset-password", payload, x => x.Authorization = GetBasicAuth());
             return result;
+        }
+
+        public ApiResponse<AccessPage> CreateEnrollmentRequest()
+        {
+            return _apiClient.Post<ApiResponse<AccessPage>>(
+                "/self-service/create-enrollment-request",
+                payload: "{ }",
+                x => x.Authorization = GetBearerAuth());
         }
 
         private string GetBearerAuth() => $"Bearer {_tokenProvider.GetToken()}"; 

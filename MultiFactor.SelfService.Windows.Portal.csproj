@@ -247,16 +247,14 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\Configure2FaController.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
     <Compile Include="Controllers\ForgottenPasswordController.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\MobileAppController.cs" />
     <Compile Include="Controllers\ExpiredPasswordController.cs" />
     <Compile Include="Controllers\ExchangeActiveSyncDevicesController.cs" />
     <Compile Include="Controllers\PasswordController.cs" />
-    <Compile Include="Controllers\TelegramController.cs" />
-    <Compile Include="Controllers\TotpController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
     <Compile Include="Core\Exceptions\ForbiddenException.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
@@ -271,6 +269,8 @@
     <Compile Include="Core\Http\GoogleCaptchaHttpClientAdapterFactory.cs" />
     <Compile Include="Core\Http\HttpClientUtils.cs" />
     <Compile Include="Core\Http\NewtonsoftJsonDataSerializer.cs" />
+    <Compile Include="Core\PrivacyMode.cs" />
+    <Compile Include="Core\PrivacyModeDescriptor.cs" />
     <Compile Include="Core\SerializingSettings.cs" />
     <Compile Include="Core\CustomDependencyResolver.cs" />
     <Compile Include="Extensions\SearchResponseExtensions.cs" />
@@ -297,6 +297,7 @@
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\PasswordRecovery\ConfirmPasswordRecoveryForm.cs" />
     <Compile Include="Models\PasswordRecovery\EnterIdentityForm.cs" />
+    <Compile Include="Models\PersonalData.cs" />
     <Compile Include="Models\SingleSignOnDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Shared_PasswordRequirementsPartial.ru.Designer.cs">
@@ -379,36 +380,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Resources\Totp.ru.Designer.cs">
-      <DependentUpon>Totp.ru.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\Totp.Designer.cs">
-      <DependentUpon>Totp.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\Telegram.ru.Designer.cs">
-      <DependentUpon>Telegram.ru.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\Telegram.Designer.cs">
-      <DependentUpon>Telegram.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\MobileApp.ru.Designer.cs">
-      <DependentUpon>MobileApp.ru.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\MobileApp.Designer.cs">
-      <DependentUpon>MobileApp.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Resources\Error.ru.Designer.cs">
       <DependentUpon>Error.ru.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -445,10 +416,8 @@
     <Compile Include="Services\API\DTO\AccessPage.cs" />
     <Compile Include="Services\API\DTO\BypassPage.cs" />
     <Compile Include="Services\API\DTO\ApiResponse.cs" />
-    <Compile Include="Services\API\DTO\TotpKey.cs" />
     <Compile Include="Services\API\DTO\UserProfile.cs" />
     <Compile Include="Services\API\DTO\UserProfileAuthenticator.cs" />
-    <Compile Include="Services\API\DTO\UserProfilePolicy.cs" />
     <Compile Include="Core\JwtTokenProvider.cs" />
     <Compile Include="Services\API\MultiFactorSelfServiceApiClient.cs" />
     <Compile Include="Services\AuthService.cs" />
@@ -634,40 +603,6 @@
       <LastGenOutput>Validation.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Totp.ru.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Totp.ru.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Totp.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Totp.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Telegram.ru.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Telegram.ru.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Telegram.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Telegram.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\MobileApp.ru.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>MobileApp.ru.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\MobileApp.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>MobileApp.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Error.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Error.ru.Designer.cs</LastGenOutput>
@@ -706,9 +641,6 @@
     <Content Include="README.md" />
     <Content Include="Views\Account\ByPassSamlSession.cshtml" />
     <Content Include="Views\Password\Change.cshtml" />
-    <Content Include="Views\Totp\Index.cshtml" />
-    <Content Include="Views\Telegram\Index.cshtml" />
-    <Content Include="Views\MobileApp\Index.cshtml" />
     <Content Include="README.ru.md" />
     <Content Include="Views\ExpiredPassword\Change.cshtml" />
     <Content Include="Views\ExpiredPassword\Done.cshtml" />
