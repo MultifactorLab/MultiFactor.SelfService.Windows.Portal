@@ -523,6 +523,7 @@
     <Content Include="Content\js\jquery.validate.min.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.js" />
     <Content Include="Content\js\jquery.validate.unobtrusive.min.js" />
+    <Content Include="README.md" />
     <Content Include="Views\Account\Authn.cshtml" />
     <Content Include="Views\Account\Identity.cshtml" />
     <Content Include="Web.config" />
@@ -703,7 +704,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Content Include="README.md" />
     <Content Include="Views\Account\ByPassSamlSession.cshtml" />
     <Content Include="Views\Password\Change.cshtml" />
     <Content Include="Views\Totp\Index.cshtml" />
