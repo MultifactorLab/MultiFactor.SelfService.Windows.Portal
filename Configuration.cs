@@ -185,8 +185,8 @@ namespace MultiFactor.SelfService.Windows.Portal
             var loadActiveDirectoryNestedGroups = ParseBoolean(appSettings, ConfigurationConstants.General.LOAD_AD_NESTED_GROUPS);
             var activeDirectoryGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_GROUP);
             var nestedGroupsBaseDn = GetValue(appSettings, ConfigurationConstants.General.NESTED_GROUPS_BASE_DN);
-       
-            var privacyMode = GetValue(appSettings, ConfigurationConstants.General
+
+            var privacyMode = GetValue(appSettings, ConfigurationConstants.General.PrivacyMode);
             var configuration = new Configuration
             {
                 CompanyName = companyNameSetting,
@@ -205,7 +205,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
-                LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups
+                LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups,
                 PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode)
             };
             
