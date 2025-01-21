@@ -30,6 +30,15 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Only members of these groups required to pass 2fa to access (Optional)
         /// </summary>
         public string[] ActiveDirectory2FaGroup { get; private set; } = Array.Empty<string>();
+        
+        /// <summary>
+        /// Only members of these groups have access to the resource (Optional)
+        /// </summary>
+        public string[] ActiveDirectoryGroup { get; private set; } = Array.Empty<string>();
+
+        public bool LoadActiveDirectoryNestedGroups { get; private set; } = true;
+        
+        public string[] NestedGroupsBaseDn { get; private set; } = Array.Empty<string>();
 
         /// <summary>
         /// Use ActiveDirectory User general properties phone number (Optional)
@@ -174,6 +183,11 @@ namespace MultiFactor.SelfService.Windows.Portal
             var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
             var privacyMode = GetValue(appSettings, ConfigurationConstants.General.PrivacyMode);
 
+
+            var loadActiveDirectoryNestedGroups = ParseBoolean(appSettings, ConfigurationConstants.General.LOAD_AD_NESTED_GROUPS);
+            var activeDirectoryGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_GROUP);
+            var nestedGroupsBaseDn = GetValue(appSettings, ConfigurationConstants.General.NESTED_GROUPS_BASE_DN);
+            
             var configuration = new Configuration
             {
                 CompanyName = companyNameSetting,
@@ -192,13 +206,34 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
+                LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups,
                 PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode)
             };
             
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))
             {
-                configuration.ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                configuration.ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Distinct()
+                    .ToArray();
             }
+            
+            if (!string.IsNullOrEmpty(nestedGroupsBaseDn))
+            {
+                configuration.NestedGroupsBaseDn = nestedGroupsBaseDn
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+            }
+
+            if (!string.IsNullOrEmpty(activeDirectoryGroupSetting))
+            {
+                configuration.ActiveDirectoryGroup = activeDirectoryGroupSetting
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Distinct()
+                    .ToArray();
+            }
+
             var activeDirectorySection = (ActiveDirectorySection)ConfigurationManager.GetSection("ActiveDirectory");
             if (activeDirectorySection != null)
             {
