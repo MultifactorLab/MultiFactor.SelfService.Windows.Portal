@@ -128,6 +128,26 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 }
             }
 
+            if (_configuration.ActiveDirectoryGroup.Length > 0)
+            {
+                var accessGroup = _configuration.ActiveDirectoryGroup.FirstOrDefault(group => IsMemberOf(profile, group));
+                if (string.IsNullOrWhiteSpace(accessGroup))
+                {
+                    _logger.Warning(
+                        "User '{user:l}' is not a member of any access group ({accGroups:l}) in '{domain:l}'",
+                        user.Name,
+                        string.Join(", ", _configuration.ActiveDirectoryGroup),
+                        profile.BaseDn.Name);
+                    return ActiveDirectoryCredentialValidationResult.UnknownError($"User '{user}' is not a member of any access group");
+                }
+                
+                _logger.Debug(
+                    "User '{user:l}' is a member of the access group '{group:l}' in {domain:l}",
+                    user.Name,
+                    accessGroup.Trim(),
+                    profile.BaseDn.Name);
+            }
+
             //only users from group must process 2fa
             if (!_configuration.ActiveDirectory2FaGroup.Any())
             {
@@ -139,15 +159,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             if (mfaGroup is null)
             {
                 _logger.Information(
-                    $"User '{{user:l}}' is not member of {_configuration.ActiveDirectory2FaGroup} group",
-                    user.Name);
+                    "User '{user:l}' is not a member of any '{group:l}' 2Fa group",
+                    user.Name,
+                    string.Join(", ", _configuration.ActiveDirectory2FaGroup));
                 _logger.Information("Bypass second factor for user '{user:l}'", user.Name);
                 return ActiveDirectoryCredentialValidationResult.ByPass()
                     .Fill(profile, _configuration);
             }
 
-            _logger.Information($"User '{{user:l}}' is member of {_configuration.ActiveDirectory2FaGroup} group",
-                user.Name);
+            _logger.Information("User '{user:l}' is member of '{group:l}' 2Fa group", user.Name, string.Join(", ", _configuration.ActiveDirectory2FaGroup));
 
             return ActiveDirectoryCredentialValidationResult.Ok()
                 .Fill(profile, _configuration);
