@@ -471,7 +471,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                         "accessToken"
                     }
                 };
-                HttpClient httpClient = _httpFactory.CreateClient();
+                HttpClient httpClient = _httpFactory.CreateClient(Constants.HttpClients.MultifactorIdpApi);
                 var res = await httpClient.PostAsync(idpUrl, multipartContent);
                 var jsonResponse = await res.Content.ReadAsStringAsync();
                 return Content(jsonResponse);

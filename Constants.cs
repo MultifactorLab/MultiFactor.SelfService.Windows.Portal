@@ -75,5 +75,13 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string SIZE = "pwd-changing-session-cache-size";
             }
         }
+        
+        public static class HttpClients
+        {
+            public const string YandexCaptcha = "yandexCaptcha";
+            public const string MultifactorApi = "mfApi";
+            public const string GoogleCaptcha = "googleCaptcha";
+            public const string MultifactorIdpApi = "mfIdp";
+        }
     }
 }
