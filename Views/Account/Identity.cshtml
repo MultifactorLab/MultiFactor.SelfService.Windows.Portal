@@ -1,5 +1,4 @@
 ﻿@using MultiFactor.SelfService.Windows.Portal.Core
-@using MultiFactor.SelfService.Windows.Portal.Helpers
 @using MultiFactor.SelfService.Windows.Portal.Services.API
 @using Resources
 @model MultiFactor.SelfService.Windows.Portal.Models.IdentityModel
@@ -7,23 +6,22 @@
 @{
     ViewBag.Title = string.Format(Global.SiteName, Configuration.Current.CompanyName);
 }
+
 <div action="#" class="login">
-    <div class="form-bg">
-        <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
-    </div>
     <div class="form-column">
         <h2>@AccountLogin.Title</h2>
         @using (Html.BeginForm("Identity", "Account", new
                 {
                     samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
                     oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty
-                }, FormMethod.Post))
+                }, FormMethod.Post, new { @class = "login-form" }))
         {
             <fieldset>
                 @Html.AntiForgeryToken()
                 <p>@AccountLogin.IdentityInvitation</p>
                 <div class="form-row">
                     <div class="input">
+                        <span>@Resources.AccountLogin.UserName</span>
                         @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? AccountLogin.UserNameUpn : AccountLogin.UserName })
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
@@ -47,22 +45,25 @@
                     }
 
                 </div>
+                @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
+                {
+                    <div class="form-row">
+                        <div class="bottom-field-link-r">
+                            <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@Resources.AccountLogin.ResetPassword</a>
+                        </div>
+                    </div>
+                }
                 <div class="form-row">
-                    <input type="hidden" name="myUrl" id="myUrl"/>
+                    <input type="hidden" name="myUrl" id="myUrl" />
 
                     @if (Configuration.Current.RequireCaptchaOnLogin)
                     {
-                        <input type="hidden" name="responseToken" id="responseToken"/>
-                        <input type="submit" class="btn" disabled="disabled" value="@AccountLogin.Next" id="next"/>
+                        <input type="hidden" name="responseToken" id="responseToken" />
+                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@AccountLogin.Next" id="next" />
                     }
                     else
                     {
-                        <input type="submit" class="btn" value="@AccountLogin.Next" id="next"/>
-                    }
-
-                    @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
-                    {
-                        <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@AccountLogin.ResetPassword</a>
+                        <input type="submit" class="btn-primary w-100" value="@AccountLogin.Next" id="next" />
                     }
                 </div>
             </fieldset>

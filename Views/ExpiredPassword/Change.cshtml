@@ -5,7 +5,7 @@
 @{
     ViewBag.Title = Resources.PasswordChange.Title;
 }
-<div class="login change-pwd">
+<div class="login">
     <div class="form-column">
         @using (Html.BeginForm("Change", "ExpiredPassword", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="form-row">
-                <input type="submit" class="btn" value="@Resources.PasswordChange.Submit" />
+                <input type="submit" class="btn-primary w-100" value="@Resources.PasswordChange.Submit" />
             </div>
         </fieldset>
         }

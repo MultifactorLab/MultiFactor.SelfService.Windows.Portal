@@ -445,6 +445,8 @@
     <Compile Include="Syslog\SyslogLoggerJsonConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\images\stage.svg" />
+    <Content Include="Content\images\success.svg" />
     <Content Include="Content\js\qrcode.min.js" />
     <Content Include="Content\style\site.css" />
     <Content Include="Content\fonts\subset-SFProDisplay-Black.svg" />

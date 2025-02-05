@@ -16,18 +16,22 @@
 </head>
 <body>
     <div id="wrapper">
-        <header id="header">
-            <strong class="logo">
-                <img src="@Configuration.Current.LogoUrl" style="max-height:100px" />
-            </strong>
-            <h1>@ViewBag.Title</h1>
-        </header>
-        <main id="main">
-            @RenderBody()
-        </main>
-        <footer id="footer">
-            <em class="copyright">&copy; @Configuration.Current.CompanyName @DateTime.Now.Year</em>
-        </footer>
-    </div>
+        <div class="background-layout">
+            <header id="header">
+                <strong class="logo">
+                    <img src="@Configuration.Current.LogoUrl" style="max-height:100px" />
+                </strong>
+                <h1>@ViewBag.Title</h1>
+            </header>
+            <div class="stage">
+                <main id="main">
+                    @RenderBody()
+                </main>
+            </div>
+            <footer id="footer">
+                <em class="copyright">&copy; @Configuration.Current.CompanyName @DateTime.Now.Year</em>
+            </footer>
+            </div>
+        </div>
 </body>
 </html>
