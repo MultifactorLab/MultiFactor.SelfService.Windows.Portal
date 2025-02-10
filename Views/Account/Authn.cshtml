@@ -7,23 +7,21 @@
     ViewBag.Title = string.Format(Global.SiteName, Configuration.Current.CompanyName);
 }
 <div action="#" class="login">
-    <div class="form-bg">
-        <img src="~/content/images/login.svg" width="352" height="396" alt="Multifactor">
-    </div>
     <div class="form-column">
         <h2>@AccountLogin.Title</h2>
         @using (Html.BeginForm("Authn", "Account", new
                 {
                     samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
                     oidcSessionId = Context.Request.QueryString[MultiFactorClaims.OidcSessionId] ?? string.Empty
-                }, FormMethod.Post))
+                }, FormMethod.Post, new { @class = "login-form" }))
         {
             <fieldset>
                 @Html.AntiForgeryToken()
                 <p>@AccountLogin.AuthnInvitation <b>@Model.UserName</b></p>
                 <div class="form-row">
                     <div class="input">
-                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off"})
+                        <span>@Resources.AccountLogin.Password</span>
+                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = AccountLogin.Password, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     @{
@@ -33,15 +31,17 @@
                     @Html.ValidationSummary(true)
 
                 </div>
+                @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
+                {
+                    <div class="form-row">
+                        <div class="bottom-field-link-r">
+                            <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@AccountLogin.ResetPassword</a>
+                        </div>
+                    </div>
+                }
                 <div class="form-row">
-                    <input type="hidden" name="myUrl" id="myUrl"/>
-
-                    <input type="submit" class="btn" value="@AccountLogin.Next" id="next"/>
-
-                    @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
-                    {
-                        <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@AccountLogin.ResetPassword</a>
-                    }
+                    <input type="hidden" name="myUrl" id="myUrl" />
+                    <input type="submit" class="btn-primary w-100" value="@AccountLogin.Next" id="next" />
                 </div>
             </fieldset>
         }
