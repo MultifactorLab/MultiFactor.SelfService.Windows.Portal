@@ -845,9 +845,9 @@ ul.action li {
     margin-bottom: 24px;
 }
 
-    ul.action li:last-child {
-        margin-bottom: 0;
-    }
+ul.action li:last-child {
+    margin-bottom: 0;
+}
 
 a.btn {
     display: block;
@@ -862,38 +862,43 @@ a.btn {
     text-align: center;
 }
 
-    a.btn:hover {
-        color: #fff;
-        background: #4082BC;
-    }
+a.btn:hover {
+    color: #fff;
+    background: #4082BC;
+}
 
 a.active .btn {
     color: #fff;
     background: #4082BC;
 }
 
-    a.active .btn:hover {
-        background: #fff;
-        color: #4082BC;
-    }
+a.active .btn:hover {
+    background: #fff;
+    color: #4082BC;
+}
 
 @media screen and (max-width: 933px) {
     .login {
         position: relative;
         min-height: 0;
     }
+}
 
-        .login h2 {
-            text-align: center;
-        }
+@media screen and (max-width: 535px) {
+    .login {
+        padding: 0;
+    }
 
-        .login .form-bg {
-            display: none;
-        }
+    .login .form-column {
+        width: 400px !important;
+        max-width: 100%;
+    }
+}
 
-        .login .form-column {
-            padding: 0;
-        }
+@media screen and (max-height: 730px) {
+    html {
+        height: unset !important;
+    }
 }
 
 @media screen and (max-width: 744px) {
@@ -901,25 +906,25 @@ a.active .btn {
         padding-top: 30px;
     }
 
-        #header h1 {
-            margin-bottom: 10px;
-        }
+    #header h1 {
+        margin-bottom: 10px;
+    }
 
     .block h2 {
         margin-bottom: 30px;
     }
 
-        .block h2:before {
-            top: 50%;
-            -webkit-transform: translateY(-50%);
-            -ms-transform: translateY(-50%);
-            transform: translateY(-50%);
-        }
+    .block h2:before {
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+    }
 
-        .block h2:after {
-            top: 50%;
-            -webkit-transform: translateY(-50%);
-            -ms-transform: translateY(-50%);
-            transform: translateY(-50%);
-        }
+    .block h2:after {
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+    }
 }
