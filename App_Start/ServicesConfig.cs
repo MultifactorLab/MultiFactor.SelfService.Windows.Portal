@@ -34,7 +34,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         internal static void RegisterServices(ServiceCollection services)
         {
             services.AddSingleton<IJsonDataSerializer, NewtonsoftJsonDataSerializer>();
-
+            ConfigureHttpClients(services);
             ConfigureGoogleApi(services);
             ConfigureYandexCaptchaApi(services);
             ConfigureCaptchaVerifier(services);
@@ -71,48 +71,67 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
                 return srv.GetRequiredService<GoogleReCaptchaVerifier>();
             });
         }
+        
+        private static void ConfigureHttpClients(ServiceCollection services)
+        {
+            var handler = new HttpClientHandler();
+            var proxySetting = Configuration.Current.MultiFactorApiProxy;
+            if (!string.IsNullOrEmpty(proxySetting))
+            {
+                handler.Proxy = BuildProxy(proxySetting);
+            }
+
+            services
+                .AddHttpClient(Constants.HttpClients.MultifactorApi, client =>
+                {
+                    client.BaseAddress = new Uri(Configuration.Current.MultiFactorApiUrl);
+                })
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
+            
+            services
+                .AddHttpClient(Constants.HttpClients.GoogleCaptcha, client =>
+                {
+                    client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
+                })
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
+            
+            services
+                .AddHttpClient(Constants.HttpClients.YandexCaptcha, client =>
+                {
+                    client.BaseAddress = new Uri("https://captcha-api.yandex.ru/");
+                })
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
+            
+            services
+                .AddHttpClient(Constants.HttpClients.MultifactorIdpApi)
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
+        }
 
         private static void ConfigureYandexCaptchaApi(ServiceCollection services)
         {
-            var clientConf = services.AddTransient<YandexCaptchaApi>()
-                .AddTransient<YandexHttpClientAdapterFactory>()
-                .AddHttpClient<YandexHttpClientAdapterFactory>((client) =>
-                {
-                    client.BaseAddress = new Uri("https://captcha-api.yandex.ru/");
-                });
-
-            ConfigureCaptchaProxyCredentials(clientConf);
+            services
+                .AddTransient<YandexCaptchaApi>()
+                .AddTransient<YandexHttpClientAdapterFactory>();
         }
 
         private static void ConfigureGoogleApi(ServiceCollection services)
         {
-            var clientConf = services.AddTransient<GoogleReCaptcha2Api>()
-                .AddTransient<GoogleCaptchaHttpClientAdapterFactory>()
-                .AddHttpClient<GoogleCaptchaHttpClientAdapterFactory>((x) =>
-                {
-                    x.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
-                });
-
-            ConfigureCaptchaProxyCredentials(clientConf);
+            services
+                .AddTransient<GoogleReCaptcha2Api>()
+                .AddTransient<GoogleCaptchaHttpClientAdapterFactory>();
         }
-
-        private static void ConfigureCaptchaProxyCredentials(IHttpClientBuilder clientConf)
+        
+        private static WebProxy BuildProxy(string proxyUri)
         {
-            if (!string.IsNullOrEmpty(Configuration.Current.CaptchaProxy))
+            var uri = new Uri(proxyUri);
+            var proxy = new WebProxy(uri);
+            if (!string.IsNullOrEmpty(uri.UserInfo))
             {
-                var proxyUri = new Uri(Configuration.Current.CaptchaProxy);
-                var proxy = new WebProxy(proxyUri);
-                if (!string.IsNullOrEmpty(proxyUri.UserInfo))
-                {
-                    var credentials = proxyUri.UserInfo.Split(new[] { ':' }, 2);
-                    proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
-                }
-                clientConf.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
-                {
-                    Proxy = proxy
-                });
+                var credentials = uri.UserInfo.Split(new[] { ':' }, 2);
+                proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
             }
-        }
 
+            return proxy;
+        }
     }
 }
