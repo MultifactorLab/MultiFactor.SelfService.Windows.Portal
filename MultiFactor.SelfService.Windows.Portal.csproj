@@ -463,7 +463,6 @@
     <Content Include="Content\js\jquery.main.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
-    <Content Include="Content\fonts\fonts.scss" />
     <Content Include="Content\fonts\subset-SFProDisplay-Black.eot" />
     <Content Include="Content\fonts\subset-SFProDisplay-Black.ttf" />
     <Content Include="Content\fonts\subset-SFProDisplay-Black.woff" />
