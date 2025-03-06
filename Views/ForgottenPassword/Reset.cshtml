@@ -4,8 +4,9 @@
 @{
     ViewBag.Title = Resources.PasswordReset.Title;
 }
-<div class="login change-pwd">
+<div class="login">
     <div class="form-column">
+        <h2>@Resources.PasswordReset.Title</h2>
         @using (Html.BeginForm("ConfirmReset", "ForgottenPassword", FormMethod.Post))
         {
             <fieldset>
@@ -30,7 +31,7 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <input type="submit" value="@Resources.PasswordReset.Submit" />
+                    <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Submit" />
                 </div>
             </fieldset>
         }

@@ -4,48 +4,55 @@
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 }
 
-<div class="block">
-    <div class="container">
-        @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
-        {
-            <div class="showcase">
-                @foreach (var link in Configuration.Current.Links)
-                {
-                    <a href="@link.Url" @(link.OpenInNewTab ? "target=_blank" : "")>
-                        <div class="showcase-link">
-                            <img class="showcase-link-image" src="~/content/images/@link.Image" />
-
-                            <div class="link-title">
-                                @link.Title
-                            </div>
-                        </div>
-                    </a>
-                }
-            </div>
-        }
+<div class="login">
+    <div class="form-column">
         @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
         {
             <div class="alert">
-                <h5>@Resources.Home.ShouldChangePassword</h5>
-                <small>@Resources.Home.PasswordExpirationDaysLeft: @Model.PasswordExpirationDaysLeft</small>
+                <h4>@Resources.Home.ShouldChangePassword</h4>
+                <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.PasswordExpirationDaysLeft</h5>
             </div>
         }
-        <p>@Resources.Home.Greetings @(Model.Name ?? Model.Identity).</p>
-        <p></p>
-        
+        <div class="success-mark"></div>
+        <div class="auth-details">
+            @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
+            {
+                <div class="showcase">
+                    @foreach (var link in Configuration.Current.Links)
+                    {
+                        <a href="@link.Url" @(link.OpenInNewTab ? "target=_blank" : "")>
+                            <div class="showcase-link">
+                                <img class="showcase-link-image" src="~/content/images/@link.Image" />
+
+                                <div class="link-title">
+                                    @link.Title
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+
+            <h2>@Resources.Home.Title</h2>
+            <div class="auth-username">
+                <p>@Resources.Home.Greetings</p>
+                <p class="user-login">@(Model.Name ?? Model.Identity)</p>
+            </div>
+        </div>
+
         <ul class="action">
             <li>
-                @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn" })
+                @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn btn-secondary" })
             </li>
             @if (Model.EnablePasswordManagement)
             {
-                <li><a href="~/password/change" class="btn">@Resources.Home.ChangePassword</a></li>
+                <li><a href="~/password/change" class="btn btn-secondary">@Resources.Home.ChangePassword</a></li>
             }
             @if (Model.EnableExchangeActiveSyncDevicesManagement)
             {
-                <li><a href="~/ExchangeActiveSyncDevices" class="btn">@Resources.Home.ManageActiveSyncDevices</a></li>
+                <li><a href="~/ExchangeActiveSyncDevices" class="btn btn-secondary">@Resources.Home.ManageActiveSyncDevices</a></li>
             }
-            <li><a href="~/account/logout" class="btn">@Resources.Home.Exit</a></li>
+            <li><a href="~/account/logout" class="btn btn-secondary">@Resources.Home.Exit</a></li>
         </ul>
     </div>
 </div>

@@ -4,8 +4,9 @@
 @{
     ViewBag.Title = Resources.PasswordReset.Title;
 }
-<div class="login change-pwd">
+<div class="login">
     <div class="form-column">
+        <h2>@Resources.PasswordReset.Title</h2>
         @using (Html.BeginForm("Index", "ForgottenPassword", FormMethod.Post))
         {
             <fieldset>
@@ -44,11 +45,11 @@
                     @if (Configuration.Current.CaptchaConfigured)
                     {
                         <input type="hidden" name="responseToken" id="responseToken" />
-                        <input type="submit" class="btn" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit" />
+                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit" />
                     }
                     else
                     {
-                        <input type="submit" class="btn" value="@Resources.PasswordReset.Next" id="submit" />
+                        <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Next" id="submit" />
                     }
                 </div>
             </fieldset>

@@ -4,8 +4,8 @@
     ViewBag.Title = Resources.ExchangeActiveSyncDevices.Header;
 }
 
-<div class="block">
-    <div class="container">
+<div class="login">
+    <div class="form-column" style="width: unset">
         <div class="info">
             @Html.Raw(@Resources.ExchangeActiveSyncDevices.Instruction1)
         </div>
@@ -52,11 +52,9 @@
                 }
             </table>
         }
-        <br />
-        <br />
-        <ul class="action">
-            <li><a href="~/" class="btn">@Resources.ExchangeActiveSyncDevices.Ok</a></li>
-        </ul>
+        <div class="pt-4">
+            <a href="~/" class="btn-primary d-flex w-100 content-center">@Resources.ExchangeActiveSyncDevices.Ok</a>
+        </div>
     </div>
 </div>
 @using (Html.BeginForm("Approve", "ExchangeActiveSyncDevices", FormMethod.Post, new { Id = "approve-form" }))
