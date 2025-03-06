@@ -10,9 +10,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Captcha.Yandex
         private readonly HttpClient _client;
         private readonly IJsonDataSerializer _jsonDataSerializer;
         
-        public YandexHttpClientAdapterFactory(HttpClient client, IJsonDataSerializer jsonDataSerializer)
+        public YandexHttpClientAdapterFactory(IHttpClientFactory httpClientFactory, IJsonDataSerializer jsonDataSerializer)
         {
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _client = httpClientFactory.CreateClient(Constants.HttpClients.YandexCaptcha);
             _jsonDataSerializer = jsonDataSerializer ?? throw new ArgumentNullException(nameof(jsonDataSerializer));
         }
 

@@ -9,9 +9,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
         private readonly HttpClient _client;
         private readonly IJsonDataSerializer _jsonDataSerializer;
 
-        public GoogleCaptchaHttpClientAdapterFactory(HttpClient client, IJsonDataSerializer jsonDataSerializer)
+        public GoogleCaptchaHttpClientAdapterFactory(IHttpClientFactory httpClientFactory, IJsonDataSerializer jsonDataSerializer)
         {
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _client = httpClientFactory.CreateClient(Constants.HttpClients.GoogleCaptcha);
             _jsonDataSerializer = jsonDataSerializer ?? throw new ArgumentNullException(nameof(jsonDataSerializer));
         }
 
