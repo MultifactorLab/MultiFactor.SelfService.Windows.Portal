@@ -76,7 +76,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         {
             var handler = new HttpClientHandler();
             var proxySetting = Configuration.Current.MultiFactorApiProxy;
-            if (!string.IsNullOrEmpty(proxySetting))
+            if (!string.IsNullOrWhiteSpace(proxySetting))
             {
                 handler.Proxy = BuildProxy(proxySetting);
             }
@@ -125,7 +125,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         {
             var uri = new Uri(proxyUri);
             var proxy = new WebProxy(uri);
-            if (!string.IsNullOrEmpty(uri.UserInfo))
+            if (!string.IsNullOrWhiteSpace(uri.UserInfo))
             {
                 var credentials = uri.UserInfo.Split(new[] { ':' }, 2);
                 proxy.Credentials = new NetworkCredential(credentials[0], credentials[1]);
