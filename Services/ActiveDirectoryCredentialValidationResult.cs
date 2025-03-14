@@ -17,9 +17,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public string DisplayName { get; set; }
         public string Email { get; set; }
         public string Upn { get; set; }
+        public string OverridedIdentity { get; set; }
         public string Phone { get; set; }
         public DateTime? PasswordExpirationDate { get; set; }
-        
+
         public static ActiveDirectoryCredentialValidationResult Ok()
         {
             return new ActiveDirectoryCredentialValidationResult
@@ -51,7 +52,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 return UnknownError(errorMessage);
             }
-            
+
             var data = match.Groups[1].Value;
 
             switch (data)
@@ -94,6 +95,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             result.Upn = profile.Upn;
             result.PasswordExpirationDate = profile.PasswordExpirationDate();
             result.UserMustChangePassword = profile.UserMustChangePassword();
+            if (!string.IsNullOrWhiteSpace(configuration.UseAttributeAsIdentity))
+            {
+                result.OverridedIdentity = profile.GetAttributeValue(configuration.UseAttributeAsIdentity);
+            }
             if (configuration.UseActiveDirectoryUserPhone)
             {
                 result.Phone = profile.Phone;
@@ -104,9 +109,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             return result;
         }
-        
+
         public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
         {
+            if (!string.IsNullOrWhiteSpace(adValidationResult.OverridedIdentity))
+            {
+                return adValidationResult.OverridedIdentity;
+            }
             var identity = userName;
             if (!Configuration.Current.UseUpnAsIdentity) return identity;
 
