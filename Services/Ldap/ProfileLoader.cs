@@ -33,7 +33,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 
             //base profile
             var profileAttributes = new LdapAttributes();
-            var profile = new LdapProfile(LdapIdentity.BaseDn(result.Entry.DistinguishedName), profileAttributes, _logger);
+            var profile = new LdapProfile(LdapIdentity.BaseDn(result.Entry.DistinguishedName), profileAttributes, _logger, config.UseAttributeAsIdentity);
 
             foreach (var attr in queryAttributes.Where(x => !x.Equals("memberof", StringComparison.OrdinalIgnoreCase)))
             {

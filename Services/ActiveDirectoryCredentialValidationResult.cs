@@ -97,7 +97,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             result.UserMustChangePassword = profile.UserMustChangePassword();
             if (!string.IsNullOrWhiteSpace(configuration.UseAttributeAsIdentity))
             {
-                result.OverriddenIdentity = profile.GetAttributeValue(configuration.UseAttributeAsIdentity);
+                result.OverriddenIdentity = profile.OverridenIdentity;
             }
             if (configuration.UseActiveDirectoryUserPhone)
             {
@@ -112,6 +112,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
         {
+            if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity) && string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
+            {
+                throw new InvalidOperationException($"Failed to get overridden identity attribute '{Configuration.Current.UseAttributeAsIdentity}' for {userName}.");
+            }
             if (!string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
             {
                 return adValidationResult.OverriddenIdentity;

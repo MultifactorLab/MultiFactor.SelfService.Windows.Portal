@@ -213,14 +213,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             var adResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName.Trim()));
 
-            if (Configuration.Current.UseUpnAsIdentity)
-            {
-                identity = adResult.Upn;
-            }
-            else if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
-            {
-                identity = adResult.GetIdentity(model.UserName.Trim());
-            }
+            identity = GetConfiguredIdentity(model.UserName.Trim(), adResult) ?? identity;
 
             // sso session can skip 2fa, so go to pass entered
             if (adResult.IsBypass && sso.HasSamlSession())
@@ -288,7 +281,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                         _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
                 }
 
-                var identity = adValidationResult.GetIdentity(model.UserName);
+                var identity = GetConfiguredIdentity(model.UserName.Trim(), adValidationResult) ?? adValidationResult.GetIdentity(model.UserName);
                 _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
 
                 if (Configuration.Current.EnablePasswordManagement)
@@ -486,6 +479,20 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 _logger.Error(ex, $"Unable to connect API {idpUrl}: {ex.Message}");
                 throw;
             }
+        }
+
+        private static string GetConfiguredIdentity(string username, ActiveDirectoryCredentialValidationResult adResult)
+        {
+            if (Configuration.Current.UseUpnAsIdentity)
+            {
+                return adResult.Upn;
+            }
+            if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
+            {
+                return adResult.GetIdentity(username);
+            }
+
+            return null;
         }
     }
 }

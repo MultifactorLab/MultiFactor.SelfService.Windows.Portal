@@ -65,7 +65,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public bool NeedPrebindInfo()
         {
-            return UseUpnAsIdentity || ActiveDirectory2FaGroup.Any() || EnablePasswordManagement;
+            return UseUpnAsIdentity || !string.IsNullOrWhiteSpace(UseAttributeAsIdentity) || ActiveDirectory2FaGroup.Any() || EnablePasswordManagement;
         }
 
         /// <summary>
