@@ -164,6 +164,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!userAuthenticated || !authenticateWindowsUser || !negotiateAuthentication)
             {
+
                 var identity = _applicationCache.GetIdentity(requestId);
                 return !identity.IsEmpty
                     ? View("Authn", identity.Value)
@@ -204,7 +205,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             // 2fa before authn
             var identity = model.UserName;
-            // in common case 
+            // in common case
             if (!Configuration.Current.NeedPrebindInfo())
             {
                 return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
@@ -212,10 +213,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             var adResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName.Trim()));
 
-            if (Configuration.Current.UseUpnAsIdentity)
-            {
-                identity = adResult.Upn;
-            }
+            identity = adResult.GetIdentity(model.UserName.Trim());
 
             // sso session can skip 2fa, so go to pass entered
             if (adResult.IsBypass && sso.HasSamlSession())
@@ -268,19 +266,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     // go to idp, return and render html form with saml assertion
                     return await GetSamlAssertion(model.AccessToken);
                 }
-                
+
                 _authService.SignIn(model.AccessToken);
                 return RedirectToAction("Index", "Home");
             }
 
             if (adValidationResult.UserMustChangePassword)
             {
-                // if we need upn, we MUST request it from AD one more time
+                // if we need upn or custom attribute, we MUST request it from AD one more time
                 // because for expired password bind is failed
-                if (Configuration.Current.UseUpnAsIdentity)
+                if (Configuration.Current.UseUpnAsIdentity || !string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
                 {
-                    adValidationResult =
-                        _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
+                    adValidationResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
                 }
 
                 var identity = adValidationResult.GetIdentity(model.UserName);
@@ -332,7 +329,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // 2fa before authn enable
             if (Configuration.Current.PreAuthnMode)
             {
-                // hence continue authentication flow 
+                // hence continue authentication flow
                 return RedirectToCredValidationAfter2FA(accessToken);
             }
 
@@ -355,7 +352,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // for the password entry step
             var requestId = token.Id;
             _applicationCache.SetIdentity(requestId,
-                new IdentityModel { UserName = usernameClaims?.Value, AccessToken = accessToken });
+                new IdentityModel { UserName = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.Name)?.Value, AccessToken = accessToken });
 
             object routeValue = new { requestId = requestId };
 
@@ -379,7 +376,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             return RedirectToAction("Identity", "Account", routeValue);
         }
-        
+
         private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, string oidcSessionId,
             ActiveDirectoryCredentialValidationResult validationResult = null)
         {
@@ -405,7 +402,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (validationResult != null && validationResult.UserMustChangePassword)
             {
                 // if user must change pass, no add sso claims(even if they are present)
-                // otherwise callback url will be change and control will not return to ssp  
+                // otherwise callback url will be change and control will not return to ssp
                 claims.Add(MultiFactorClaims.ChangePassword, "true");
                 // if (Configuration.Current.PreAuthnMode && (oidcSessionId != null || samlSessionId != null))
                 // {
@@ -418,8 +415,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 if (samlSessionId != null) claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
                 if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
-                
-                // MUST add this claims, otherwise callback url will be change and control will not return to ssp  
+
+                // MUST add this claims, otherwise callback url will be change and control will not return to ssp
                 if (Configuration.Current.PreAuthnMode && (oidcSessionId != null || samlSessionId != null))
                     claims.Add(MultiFactorClaims.AdditionSsoStep, "true");
             }
@@ -435,7 +432,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 validationResult?.Email,
                 validationResult?.Phone,
                 Configuration.Current.PrivacyModeDescriptor);
-            
+
             var accessPage = _apiClient.CreateAccessRequest(login,
                 personalData.Name,
                 personalData.Email,
@@ -451,7 +448,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var bypassPage = _apiClient.CreateSamlBypassRequest(login, samlSessionId);
             return View("ByPassSamlSession", bypassPage);
         }
-        
+
         private async Task<ActionResult> GetSamlAssertion(string accessToken)
         {
             // no token verification because 'aud'=api_key and ssp_api_key!=saml_api_key
