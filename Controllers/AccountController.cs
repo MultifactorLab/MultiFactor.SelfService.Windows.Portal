@@ -213,7 +213,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             var adResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName.Trim()));
 
-            identity = GetConfiguredIdentity(model.UserName.Trim(), adResult) ?? identity;
+            identity = adResult.GetIdentity(model.UserName.Trim());
 
             // sso session can skip 2fa, so go to pass entered
             if (adResult.IsBypass && sso.HasSamlSession())
@@ -273,15 +273,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (adValidationResult.UserMustChangePassword)
             {
-                // if we need upn, we MUST request it from AD one more time
+                // if we need upn or custom attribute, we MUST request it from AD one more time
                 // because for expired password bind is failed
-                if (Configuration.Current.UseUpnAsIdentity)
+                if (Configuration.Current.UseUpnAsIdentity || !string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
                 {
-                    adValidationResult =
-                        _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
+                    adValidationResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
                 }
 
-                var identity = GetConfiguredIdentity(model.UserName.Trim(), adValidationResult) ?? adValidationResult.GetIdentity(model.UserName);
+                var identity = adValidationResult.GetIdentity(model.UserName);
                 _logger.Warning("User's credentials are valid but user '{u:l}' must change password", identity);
 
                 if (Configuration.Current.EnablePasswordManagement)
@@ -353,7 +352,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // for the password entry step
             var requestId = token.Id;
             _applicationCache.SetIdentity(requestId,
-                new IdentityModel { UserName = usernameClaims?.Value, AccessToken = accessToken });
+                new IdentityModel { UserName = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.Name)?.Value, AccessToken = accessToken });
 
             object routeValue = new { requestId = requestId };
 
@@ -479,20 +478,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 _logger.Error(ex, $"Unable to connect API {idpUrl}: {ex.Message}");
                 throw;
             }
-        }
-
-        private static string GetConfiguredIdentity(string username, ActiveDirectoryCredentialValidationResult adResult)
-        {
-            if (Configuration.Current.UseUpnAsIdentity)
-            {
-                return adResult.Upn;
-            }
-            if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
-            {
-                return adResult.GetIdentity(username);
-            }
-
-            return null;
         }
     }
 }
