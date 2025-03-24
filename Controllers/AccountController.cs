@@ -347,12 +347,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(accessToken);
-            var usernameClaims = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName);
+            var usernameClaims = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.Name);
 
             // for the password entry step
             var requestId = token.Id;
             _applicationCache.SetIdentity(requestId,
-                new IdentityModel { UserName = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.Name)?.Value, AccessToken = accessToken });
+                new IdentityModel { UserName = usernameClaims?.Value, AccessToken = accessToken });
 
             object routeValue = new { requestId = requestId };
 
