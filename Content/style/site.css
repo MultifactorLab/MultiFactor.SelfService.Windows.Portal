@@ -906,7 +906,7 @@ a.active .btn:hover {
     }
 
     .login .form-column {
-        width: 400px !important;
+        width: 400px;
         max-width: 100%;
     }
 }
