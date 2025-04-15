@@ -141,6 +141,7 @@ input {
         -webkit-box-sizing: border-box;
         box-sizing: border-box;
         padding: 0;
+        appearance: auto !important;
     }
 
     input[type=number]::-webkit-inner-spin-button,

@@ -532,7 +532,56 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             return false;
         }
-        
+
+        public bool UnlockUser(string userName)
+        {
+            var identity = LdapIdentity.ParseUser(userName);
+
+            try
+            {
+                LdapProfile userProfile;
+
+                using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
+                {
+                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                    var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
+                    var forestSchema = forestSchemaLoader.Load(domain);
+
+                    userProfile =
+                        new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
+                            identity);
+                    if (userProfile == null)
+                    {
+                        throw new NullReferenceException(nameof(userProfile));
+                    }
+                }
+
+                _logger.Debug("Processing unlock operation for user '{user}' in '{dn:l}'", identity,
+                    userProfile.BaseDn.DnToFqdn());
+
+                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
+                           ContextOptions.Negotiate))
+                {
+                    using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
+                               userProfile.DistinguishedName))
+                    {
+                        user.UnlockAccount();
+                        user.Save();
+                    }
+                }
+
+                _logger.Information("User '{user}' is unlocked", identity);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Unlock operation for user '{user}' failed: {msg:l}", identity,
+                    ex.Message);
+            }
+            
+            return false;
+        }
+
         private static bool IsMemberOf(LdapProfile profile, string group)
         {
             return profile.MemberOf?.Any(g => g.ToLower() == group.ToLower().Trim()) ?? false;

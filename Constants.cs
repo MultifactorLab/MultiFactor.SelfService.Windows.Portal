@@ -30,6 +30,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string USE_ACTIVE_DIRECTORY_USER_PHONE = "use-active-directory-user-phone";
                 public const string USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE = "use-active-directory-mobile-user-phone";
                 public const string ENABLE_PASSWORD_MANAGEMENT = "enable-password-management";
+                public const string ALLOW_USER_UNLOCK = "allow-user-unlock";
                 public const string ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT = "enable-exchange-active-sync-devices-management";
                 public const string USE_UPN_AS_IDENTITY = "use-upn-as-identity";
                 public const string LOGGING_FORMAT = "logging-format";

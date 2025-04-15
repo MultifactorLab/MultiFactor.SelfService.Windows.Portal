@@ -53,7 +53,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 var identity = jwtSecurityToken.Subject;
                 var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
-                
+                var unlockUser = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.UnlockUser)?.Value?.ToLower() == "true";
                 token = new Token
                 {
                     Id = jwtSecurityToken.Id,
@@ -61,6 +61,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                     MustChangePassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword),
                     MustResetPassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword),
                     ValidTo = jwtSecurityToken.ValidTo,
+                    MustUnlockUser = unlockUser
                 };
 
                 var passwordExpirationDate = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.PasswordExpirationDate);

@@ -16,14 +16,20 @@
                     <div class="input">
                         @Html.TextBoxFor(m => m.Identity,
                             new
-                                 {
+                            {
                                 placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName,
                                 autocomplete = "off"
                             })
                         @Html.ValidationMessageFor(m => m.Identity)
                     </div>
                     @Html.ValidationSummary(true)
-
+                    @if (Configuration.Current.AllowUserUnlock)
+                    {
+                        <div class="form-row">
+                            @Html.CheckBoxFor(x => x.UnlockUser)
+                            <label>@Resources.UserUnlock.CheckboxMessage</label>
+                        </div>
+                    }
                     @if (Configuration.Current.CaptchaConfigured)
                     {
                         if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
@@ -34,6 +40,7 @@
                                  data-size="normal">
                             </div>
                         }
+
                         if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
                         {
                             <div id="yandex-captcha-container"></div>
@@ -41,15 +48,15 @@
                     }
                 </div>
                 <div class="form-row">
-                    <input type="hidden" name="myUrl" id="myUrl" />
+                    <input type="hidden" name="myUrl" id="myUrl"/>
                     @if (Configuration.Current.CaptchaConfigured)
                     {
-                        <input type="hidden" name="responseToken" id="responseToken" />
-                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit" />
+                        <input type="hidden" name="responseToken" id="responseToken"/>
+                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit"/>
                     }
                     else
                     {
-                        <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Next" id="submit" />
+                        <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Next" id="submit"/>
                     }
                 </div>
             </fieldset>
@@ -64,6 +71,7 @@
         {
             <script src="https://www.google.com/recaptcha/api.js?hl=@LocalizationProvider.GetLanguage()" async defer></script>
         }
+
         if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
         {
             <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction"
