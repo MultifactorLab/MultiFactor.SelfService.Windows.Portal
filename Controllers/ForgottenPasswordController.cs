@@ -22,9 +22,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly TokenValidationService _tokenValidationService;
         private readonly DataProtectionService _dataProtectionService;
 
-        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, 
-            ILogger logger, 
-            ActiveDirectoryService activeDirectory, 
+        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient,
+            ILogger logger,
+            ActiveDirectoryService activeDirectory,
             TokenValidationService tokenValidationService,
             DataProtectionService dataProtectionService)
         {
@@ -36,7 +36,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         }
 
         [HttpGet]
-        public ActionResult Index() => View();  
+        public ActionResult Index() => View();
 
         [HttpPost]
         [VerifyCaptcha]
@@ -62,10 +62,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var callback = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
             try
             {
-                var response = _apiClient.StartResetPassword(form.Identity.Trim(), callback);
+                var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
+                var identity = adValidationResult.GetIdentity(form.Identity);
+                var response = _apiClient.StartResetPassword(identity, callback);
                 if (response.Success) return RedirectPermanent(response.Model.Url);
 
-                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
+                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", identity, response.Message);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
@@ -108,12 +110,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
             Response.Cookies.Add(cookie);
 
-            return View(new ResetPasswordForm 
-            { 
+            return View(new ResetPasswordForm
+            {
                 Identity = token.Identity
             });
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ConfirmReset(ResetPasswordForm form)
