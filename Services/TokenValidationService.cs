@@ -52,19 +52,31 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 var jwtSecurityToken = (JwtSecurityToken)securityToken;
 
                 var identity = jwtSecurityToken.Subject;
-                var rawUserName = claimsPrincipal.Claims.SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
-                var unlockUser = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.UnlockUser)?.Value?.ToLower() == "true";
+                var rawUserName = claimsPrincipal.Claims
+                    .SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
+                
+                var unlockUser = claimsPrincipal.Claims
+                    .FirstOrDefault(claim => claim.Type == MultiFactorClaims.UnlockUser)?.Value?.ToLower() == "true";
+                
+                var mustResetPassword =
+                    claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword);
+                
+                var mustChangePassword =
+                    claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword);
+                
                 token = new Token
                 {
                     Id = jwtSecurityToken.Id,
                     Identity = rawUserName ?? identity,
-                    MustChangePassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword),
-                    MustResetPassword = claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword),
+                    MustChangePassword = mustChangePassword,
+                    MustResetPassword = mustResetPassword,
                     ValidTo = jwtSecurityToken.ValidTo,
                     MustUnlockUser = unlockUser
                 };
 
-                var passwordExpirationDate = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.PasswordExpirationDate);
+                var passwordExpirationDate =
+                    claimsPrincipal.Claims.FirstOrDefault(claim =>
+                        claim.Type == MultiFactorClaims.PasswordExpirationDate);
                 if (_configuration.NotifyOnPasswordExpirationDaysLeft > 0 && passwordExpirationDate?.Value != null)
                 {
                     token.PasswordExpirationDate = DateTime.Parse(passwordExpirationDate.Value);
