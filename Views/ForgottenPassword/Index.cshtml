@@ -25,10 +25,11 @@
                     @Html.ValidationSummary(true)
                     @if (Configuration.Current.AllowUserUnlock)
                     {
-                        <div class="form-row">
+                        <label class="c-container">
+                            @Resources.UserUnlock.CheckboxMessage
                             @Html.CheckBoxFor(x => x.UnlockUser)
-                            <label>@Resources.UserUnlock.CheckboxMessage</label>
-                        </div>
+                            <span class="c-checkmark"></span>
+                        </label>
                     }
                     @if (Configuration.Current.CaptchaConfigured)
                     {

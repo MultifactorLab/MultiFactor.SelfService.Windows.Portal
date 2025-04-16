@@ -68,7 +68,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 if (form.UnlockUser && Configuration.Current.AllowUserUnlock)
                 {
-                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "Unlock/Complete", 2);
+                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "unlock/complete", 1);
                     response = _apiClient.StartUnlockingUser(form.Identity.Trim(), callbackUrl);
                 }
                 else

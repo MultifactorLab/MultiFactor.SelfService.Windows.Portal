@@ -535,40 +535,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public bool UnlockUser(string userName)
         {
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentNullException(nameof(userName));
+            }
+
             var identity = LdapIdentity.ParseUser(userName);
 
             try
             {
-                LdapProfile userProfile;
-
-                using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
-                {
-                    var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
-                    var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
-                    var forestSchema = forestSchemaLoader.Load(domain);
-
-                    userProfile =
-                        new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
-                            identity);
-                    if (userProfile == null)
-                    {
-                        throw new NullReferenceException(nameof(userProfile));
-                    }
-                }
+                LdapProfile userProfile = LoadLdapProfile(identity);
 
                 _logger.Debug("Processing unlock operation for user '{user}' in '{dn:l}'", identity,
                     userProfile.BaseDn.DnToFqdn());
 
-                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
-                           ContextOptions.Negotiate))
-                {
-                    using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
-                               userProfile.DistinguishedName))
-                    {
-                        user.UnlockAccount();
-                        user.Save();
-                    }
-                }
+                UnlockUser(userProfile);
 
                 _logger.Information("User '{user}' is unlocked", identity);
                 return true;
@@ -578,8 +559,42 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 _logger.Warning(ex, "Unlock operation for user '{user}' failed: {msg:l}", identity,
                     ex.Message);
             }
-            
+
             return false;
+        }
+
+        private void UnlockUser(LdapProfile userProfile)
+        {
+            using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
+                       ContextOptions.Negotiate))
+            {
+                using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
+                           userProfile.DistinguishedName))
+                {
+                    user.UnlockAccount();
+                    user.Save();
+                }
+            }
+        }
+
+        private LdapProfile LoadLdapProfile(LdapIdentity identity)
+        {
+            using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
+            {
+                var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
+                var forestSchema = forestSchemaLoader.Load(domain);
+
+                LdapProfile userProfile =
+                    new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
+                        identity);
+                if (userProfile == null)
+                {
+                    throw new NullReferenceException(nameof(userProfile));
+                }
+
+                return userProfile;
+            }
         }
 
         private static bool IsMemberOf(LdapProfile profile, string group)
