@@ -10,5 +10,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public bool MustResetPassword { get; set; }
         public DateTime? PasswordExpirationDate { get; set; }
         public DateTime ValidTo { get; set; }
+        public bool MustUnlockUser { get; set; }
     }
 }

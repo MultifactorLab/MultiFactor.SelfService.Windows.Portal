@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+}
+
+<div class="login">
+    <div class="form-column">
+        <h2>@Resources.PasswordReset.Title</h2>
+        <p>
+            @Resources.UserUnlock.Error
+        </p>
+        <ul class="action">
+            <li><a href="~/" class="center-button btn-primary w-100">@Resources.UserUnlock.Ok</a></li>
+        </ul>
+    </div>
+</div>

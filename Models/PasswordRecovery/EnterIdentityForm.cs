@@ -12,5 +12,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Models.PasswordRecovery
         /// </summary>
         [System.Web.Mvc.HiddenInput]
         public string MyUrl { get; set; }
+        
+        public bool UnlockUser { get; set; }
     }
 }

@@ -27,6 +27,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<HomeController>();
             services.AddTransient<PasswordController>();
             services.AddTransient<ForgottenPasswordController>();
+            services.AddTransient<UnlockController>();
             services.AddTransient<ErrorController>();
             services.AddTransient<LdapConnectionFactory>();
         }
