@@ -10,10 +10,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     public class PasswordController : ControllerBase
     {
         private readonly ActiveDirectoryService _activeDirectoryService;
+        private readonly PasswordPolicyService _passwordPolicyService;
 
-        public PasswordController(ActiveDirectoryService activeDirectoryService)
+        public PasswordController(
+            ActiveDirectoryService activeDirectoryService,
+            PasswordPolicyService passwordPolicyService)
         {
             _activeDirectoryService = activeDirectoryService ?? throw new System.ArgumentNullException(nameof(activeDirectoryService));
+            _passwordPolicyService = passwordPolicyService ?? throw new System.ArgumentNullException(nameof(passwordPolicyService));
         }
 
         [HttpGet]
@@ -29,6 +33,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View(model);
             }
 
+            var portalValidationResult = _passwordPolicyService.ValidatePassword(model.NewPassword, User.Identity.Name);
+            if (!portalValidationResult.IsValid)
+            {
+                ModelState.AddModelError(nameof(model.NewPassword), portalValidationResult.ErrorMessage);
+                return View(model);
+            }
+            
+            
             if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out string errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);

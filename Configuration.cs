@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Sections;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
@@ -154,6 +156,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         
         public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
 
+        public PasswordRequirements PasswordRequirements { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -273,6 +277,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
+            ReadPasswordRequirementsSettings(configuration);
             Current = configuration;
         }
 
@@ -401,6 +406,18 @@ namespace MultiFactor.SelfService.Windows.Portal
 
                 configuration.EnablePasswordRecovery = enablePasswordRecovery;
             }
+        }
+        
+        private static void ReadPasswordRequirementsSettings(Configuration configuration)
+        {            
+            var passwordRequirementsSection = (PasswordRequirementsSection)ConfigurationManager.GetSection("passwordRequirements");
+            
+            if (passwordRequirementsSection == null)
+            {
+                return;
+            }
+
+            configuration.PasswordRequirements = passwordRequirementsSection.ToPasswordRequirements();
         }
 
         private static string GetCaptchaError(string elementName)

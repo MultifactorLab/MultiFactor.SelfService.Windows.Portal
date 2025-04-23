@@ -245,6 +245,8 @@
     <Compile Include="Attributes\RequiredIfNotNullAttribute.cs" />
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="Configurations\Models\PasswordRequirements.cs" />
+    <Compile Include="Configurations\Sections\PasswordRequirementsSection.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\Configure2FaController.cs" />
@@ -300,6 +302,21 @@
     <Compile Include="Models\PersonalData.cs" />
     <Compile Include="Models\SingleSignOnDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\PasswordChange.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>PasswordChange.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\PasswordPolicy.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PasswordPolicy.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\PasswordPolicy.ru.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PasswordPolicy.ru.resx</DependentUpon>
+    </Compile>
     <Compile Include="Resources\Shared_PasswordRequirementsPartial.ru.Designer.cs">
       <DependentUpon>Shared_PasswordRequirementsPartial.ru.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -357,11 +374,6 @@
     </Compile>
     <Compile Include="Resources\PasswordChange.ru.Designer.cs">
       <DependentUpon>PasswordChange.ru.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Resources\PasswordChange.Designer.cs">
-      <DependentUpon>PasswordChange.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -438,6 +450,7 @@
     <Compile Include="Services\API\MultiFactorClaims.cs" />
     <Compile Include="Services\Ldap\ProfileLoader.cs" />
     <Compile Include="Services\Ldap\UserSearchResult.cs" />
+    <Compile Include="Services\PasswordPolicyService.cs" />
     <Compile Include="Services\Token.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
     <Compile Include="Syslog\JsonRfc3164Formatter.cs" />
@@ -522,6 +535,16 @@
     <Content Include="Views\Shared\_PasswordRequirementsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\PasswordPolicy.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PasswordPolicy.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\PasswordPolicy.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>PasswordPolicy.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Shared_PasswordRequirementsPartial.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Shared_PasswordRequirementsPartial.ru.Designer.cs</LastGenOutput>
@@ -584,9 +607,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\PasswordChange.resx">
+      <CustomToolNamespace>Resources</CustomToolNamespace>
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PasswordChange.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\ExchangeActiveSyncDevices.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

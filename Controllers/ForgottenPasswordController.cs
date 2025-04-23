@@ -21,18 +21,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ActiveDirectoryService _activeDirectory;
         private readonly TokenValidationService _tokenValidationService;
         private readonly DataProtectionService _dataProtectionService;
+        private readonly PasswordPolicyService _passwordPolicyService;
 
         public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, 
             ILogger logger, 
             ActiveDirectoryService activeDirectory, 
             TokenValidationService tokenValidationService,
-            DataProtectionService dataProtectionService)
+            DataProtectionService dataProtectionService,
+            PasswordPolicyService passwordPolicyService)
         {
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
             _tokenValidationService = tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
             _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
+            _passwordPolicyService = passwordPolicyService ?? throw new ArgumentNullException(nameof(passwordPolicyService));
         }
 
         [HttpGet]
@@ -133,6 +136,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 _logger.Error("Invalid reset password session for user '{identity:l}': session not found", form.Identity);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
+                return View("Reset", form);
+            }
+            
+            var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword, form.Identity);
+            if (!validationResult.IsValid)
+            {
+                ModelState.AddModelError(nameof(form.NewPassword), validationResult.ErrorMessage);
                 return View("Reset", form);
             }
 
