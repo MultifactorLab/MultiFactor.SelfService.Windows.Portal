@@ -2,6 +2,7 @@
 using MultiFactor.SelfService.Windows.Portal.Models;
 using MultiFactor.SelfService.Windows.Portal.Services;
 using System.Web.Mvc;
+using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -11,13 +12,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     {
         private readonly ActiveDirectoryService _activeDirectoryService;
         private readonly PasswordPolicyService _passwordPolicyService;
+        private readonly ILogger _logger;
 
         public PasswordController(
             ActiveDirectoryService activeDirectoryService,
-            PasswordPolicyService passwordPolicyService)
+            PasswordPolicyService passwordPolicyService,
+            ILogger logger)
         {
-            _activeDirectoryService = activeDirectoryService ?? throw new System.ArgumentNullException(nameof(activeDirectoryService));
-            _passwordPolicyService = passwordPolicyService ?? throw new System.ArgumentNullException(nameof(passwordPolicyService));
+            _activeDirectoryService = activeDirectoryService;
+            _passwordPolicyService = passwordPolicyService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -33,15 +37,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View(model);
             }
 
-            var portalValidationResult = _passwordPolicyService.ValidatePassword(model.NewPassword, User.Identity.Name);
-            if (!portalValidationResult.IsValid)
+            if (!_passwordPolicyService.IsPasswordValid(model.NewPassword, out var errorReason))
             {
-                ModelState.AddModelError(nameof(model.NewPassword), portalValidationResult.ErrorMessage);
+                _logger.Error("Unable to change password for user '{id:l}'. Failed to set new password: {err:l}", User.Identity.Name, errorReason);
+                ModelState.AddModelError(nameof(model.NewPassword), errorReason);
                 return View(model);
             }
             
             
-            if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out string errorReason))
+            if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);
                 return View(model);

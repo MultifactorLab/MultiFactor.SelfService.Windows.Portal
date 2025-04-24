@@ -9,8 +9,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Models
         public bool RequiresDigits { get; set; }
 
         public bool RequiresSpecialSymbol { get; set; }
-
-        public string RequiresPasswordLength { get; set; }
         
         public int MinLength { get; set; }
         

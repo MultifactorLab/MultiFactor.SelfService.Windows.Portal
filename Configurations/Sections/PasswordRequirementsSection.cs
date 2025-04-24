@@ -15,14 +15,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
                 RequiresUpperCaseLetters = GetBoolSetting("requires-upper-case-letters"),
                 RequiresLowerCaseLetters = GetBoolSetting("requires-lower-case-letters"),
                 RequiresDigits = GetBoolSetting("requires-digits"),
-                RequiresSpecialSymbol = GetBoolSetting("requires-special-symbol"),
-                RequiresPasswordLength = Settings["requires-password-length"]?.Value
+                RequiresSpecialSymbol = GetBoolSetting("requires-special-symbol")
             };
 
-            if (!string.IsNullOrEmpty(requirements.RequiresPasswordLength))
-            {
-                ParsePasswordLength(requirements);
-            }
+            ParsePasswordLength(requirements);
             
             return requirements;
         }
@@ -41,16 +37,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
         
         private void ParsePasswordLength(PasswordRequirements requirements)
         {
-            var parts = requirements.RequiresPasswordLength.Split('-');
-            if (parts.Length == 2 && int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
+            var lengthPolicy = Settings["requires-password-length"]?.Value;
+            if (!string.IsNullOrEmpty(lengthPolicy))
             {
-                requirements.MinLength = min;
-                requirements.MaxLength = max;
+                var parts = lengthPolicy.Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
+                {
+                    requirements.MinLength = min;
+                    requirements.MaxLength = max;
+                }
+                else
+                {
+                    throw new ConfigurationErrorsException("Configuration error: 'requires-password-length' must be in format 'min-max', for example '8-20'");
+                }
             }
-            else
-            {
-                throw new ConfigurationErrorsException("Configuration error: 'requires-password-length' must be in format 'min-max', for example '8-20'");
-            }
+            
         }
     }
 

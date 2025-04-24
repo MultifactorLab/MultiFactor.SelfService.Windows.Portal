@@ -30,12 +30,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             DataProtectionService dataProtectionService,
             PasswordPolicyService passwordPolicyService)
         {
-            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
-            _tokenValidationService = tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
-            _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
-            _passwordPolicyService = passwordPolicyService ?? throw new ArgumentNullException(nameof(passwordPolicyService));
+            _apiClient = apiClient;
+            _logger = logger;
+            _activeDirectory = activeDirectory;
+            _tokenValidationService = tokenValidationService;
+            _dataProtectionService = dataProtectionService;
+            _passwordPolicyService = passwordPolicyService;
         }
 
         [HttpGet]
@@ -139,14 +139,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View("Reset", form);
             }
             
-            var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword, form.Identity);
-            if (!validationResult.IsValid)
+            if (!_passwordPolicyService.IsPasswordValid(form.NewPassword, out string errorReason))
             {
-                ModelState.AddModelError(nameof(form.NewPassword), validationResult.ErrorMessage);
+                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
+                ModelState.AddModelError(nameof(form.NewPassword), errorReason);
                 return View("Reset", form);
             }
 
-            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out var errorReason))
+            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out errorReason))
             {
                 _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
