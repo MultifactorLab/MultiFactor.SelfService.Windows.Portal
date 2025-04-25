@@ -1,4 +1,5 @@
 
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
 using Resources;
@@ -17,44 +18,39 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         
         public PasswordValidationResult ValidatePassword(string password)
         {
-            
-            if (string.IsNullOrEmpty(password))
-            {
-                return PasswordValidationResult.Failure(PasswordPolicy.EmptyPassword);
-            }
-
             if (_passwordRequirements.MinLength > 0 && password.Length < _passwordRequirements.MinLength)
             {
-                return PasswordValidationResult.Failure(
+                return new PasswordValidationResult(false,
                     string.Format(PasswordPolicy.MinLength, _passwordRequirements.MinLength));
             }
 
             if (_passwordRequirements.MaxLength > 0 && password.Length > _passwordRequirements.MaxLength)
             {
-                return PasswordValidationResult.Failure(
+                return new PasswordValidationResult(false,
                     string.Format(PasswordPolicy.MaxLength, _passwordRequirements.MaxLength));                
             }
 
             if (_passwordRequirements.RequiresUpperCaseLetters && !ContainsUppercase(password))
             {
-                return PasswordValidationResult.Failure(PasswordPolicy.RequiresUppercase);
+                return new PasswordValidationResult(false, PasswordPolicy.RequiresUppercase);
             }
 
             if (_passwordRequirements.RequiresLowerCaseLetters && !ContainsLowercase(password))
             {
-                return PasswordValidationResult.Failure(PasswordPolicy.RequiresLowercase);
+                return  new PasswordValidationResult(false, PasswordPolicy.RequiresLowercase);
             }
 
             if (_passwordRequirements.RequiresDigits && !ContainsDigit(password))
             {
-                return PasswordValidationResult.Failure(PasswordPolicy.RequiresDigit);
+                return new PasswordValidationResult(false,PasswordPolicy.RequiresDigit);
             }
 
             if (_passwordRequirements.RequiresSpecialSymbol && !ContainsSpecialCharacter(password))
             {
-                return PasswordValidationResult.Failure(PasswordPolicy.RequiresSpecialChar);
+                return new PasswordValidationResult(false,PasswordPolicy.RequiresSpecialChar);
             }
-            return PasswordValidationResult.Success();
+            
+            return new PasswordValidationResult(true);
         }
         
 
@@ -77,26 +73,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         {
             return password.Any(c => !char.IsLetterOrDigit(c));
         }
-        
-        
     }
     
     public class PasswordValidationResult
-    { 
-        public bool IsValid { get; }
-
-        public string ErrorMessage { get; }
-
-        private PasswordValidationResult(bool isValid, string errorMessage = null)
+    {
+        public PasswordValidationResult(bool isValid, string errorMessage = null)
         {
             IsValid = isValid;
             ErrorMessage = errorMessage;
         }
+        public bool IsValid { get; }
 
-        public static PasswordValidationResult Success() => new PasswordValidationResult(true);
-
-        public static PasswordValidationResult Failure(string errorMessage) => 
-            new PasswordValidationResult(false, errorMessage);
+        public string ErrorMessage { get; }
 
         public override string ToString()
         {

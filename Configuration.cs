@@ -156,7 +156,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         
         public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
 
-        public PasswordRequirements PasswordRequirements { get; private set; }
+        public PasswordRequirements PasswordRequirements { get; set; }
 
         public static void Load()
         {

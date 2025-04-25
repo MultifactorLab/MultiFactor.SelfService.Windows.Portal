@@ -61,15 +61,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password cannot be empty.
-        /// </summary>
-        public static string EmptyPassword {
-            get {
-                return ResourceManager.GetString("EmptyPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Password must not exceed {0} characters.
         /// </summary>
         public static string MaxLength {
