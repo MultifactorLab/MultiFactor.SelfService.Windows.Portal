@@ -37,15 +37,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View(model);
             }
 
-            if (!_passwordPolicyService.IsPasswordValid(model.NewPassword, out var errorReason))
+            var validationResult = _passwordPolicyService.ValidatePassword(model.NewPassword);
+            if (!validationResult.IsValid)
             {
-                _logger.Error("Unable to change password for user '{u:l}'. Failed to set new password: {err:l}", User.Identity.Name, errorReason);
-                ModelState.AddModelError(nameof(model.NewPassword), errorReason);
+                _logger.Warning("Unable to change password for user '{u:l}'. Failed to set new password: {err:l}", User.Identity.Name, validationResult);
+                ModelState.AddModelError(nameof(model.NewPassword), validationResult.ToString());
                 return View(model);
             }
             
             
-            if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out errorReason))
+            if (!_activeDirectoryService.ChangeValidPassword(User.Identity.Name, model.Password, model.NewPassword, out var errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);
                 return View(model);

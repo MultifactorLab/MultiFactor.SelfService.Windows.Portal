@@ -246,6 +246,8 @@
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Configurations\Models\PasswordRequirements.cs" />
+    <Compile Include="Configurations\Sections\ActiveDirectorySection.cs" />
+    <Compile Include="Configurations\Sections\LinkShowcaseSection.cs" />
     <Compile Include="Configurations\Sections\PasswordRequirementsSection.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />

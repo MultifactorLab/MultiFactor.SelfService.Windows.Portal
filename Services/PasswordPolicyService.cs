@@ -1,7 +1,8 @@
-using System;
+
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
 using Resources;
+using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -14,51 +15,46 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             _passwordRequirements = configuration.PasswordRequirements;
         }
         
-        public bool IsPasswordValid(string password, out string errorReason)
+        public PasswordValidationResult ValidatePassword(string password)
         {
-            errorReason = null;
+            
             if (string.IsNullOrEmpty(password))
             {
-                errorReason = PasswordPolicy.EmptyPassword;
-                return false;
+                return PasswordValidationResult.Failure(PasswordPolicy.EmptyPassword);
             }
-            
+
             if (_passwordRequirements.MinLength > 0 && password.Length < _passwordRequirements.MinLength)
             {
-                errorReason = string.Format(PasswordPolicy.MinLength, _passwordRequirements.MinLength);
-                return false;
+                return PasswordValidationResult.Failure(
+                    string.Format(PasswordPolicy.MinLength, _passwordRequirements.MinLength));
             }
-            
+
             if (_passwordRequirements.MaxLength > 0 && password.Length > _passwordRequirements.MaxLength)
             {
-                errorReason = string.Format(PasswordPolicy.MaxLength, _passwordRequirements.MaxLength);
-                return false;
+                return PasswordValidationResult.Failure(
+                    string.Format(PasswordPolicy.MaxLength, _passwordRequirements.MaxLength));                
             }
-            
+
             if (_passwordRequirements.RequiresUpperCaseLetters && !ContainsUppercase(password))
             {
-                errorReason = PasswordPolicy.RequiresUppercase;
-                return false;
+                return PasswordValidationResult.Failure(PasswordPolicy.RequiresUppercase);
             }
-            
+
             if (_passwordRequirements.RequiresLowerCaseLetters && !ContainsLowercase(password))
             {
-                errorReason = PasswordPolicy.RequiresLowercase;
-                return false;
+                return PasswordValidationResult.Failure(PasswordPolicy.RequiresLowercase);
             }
-            
+
             if (_passwordRequirements.RequiresDigits && !ContainsDigit(password))
             {
-                errorReason = PasswordPolicy.RequiresDigit;
-                return false;
+                return PasswordValidationResult.Failure(PasswordPolicy.RequiresDigit);
             }
-            
+
             if (_passwordRequirements.RequiresSpecialSymbol && !ContainsSpecialCharacter(password))
             {
-                errorReason = PasswordPolicy.RequiresSpecialChar;
-                return false;
+                return PasswordValidationResult.Failure(PasswordPolicy.RequiresSpecialChar);
             }
-            return true;
+            return PasswordValidationResult.Success();
         }
         
 
@@ -80,6 +76,31 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         private static bool ContainsSpecialCharacter(string password)
         {
             return password.Any(c => !char.IsLetterOrDigit(c));
+        }
+        
+        
+    }
+    
+    public class PasswordValidationResult
+    { 
+        public bool IsValid { get; }
+
+        public string ErrorMessage { get; }
+
+        private PasswordValidationResult(bool isValid, string errorMessage = null)
+        {
+            IsValid = isValid;
+            ErrorMessage = errorMessage;
+        }
+
+        public static PasswordValidationResult Success() => new PasswordValidationResult(true);
+
+        public static PasswordValidationResult Failure(string errorMessage) => 
+            new PasswordValidationResult(false, errorMessage);
+
+        public override string ToString()
+        {
+            return ErrorMessage;
         }
     }
 } 

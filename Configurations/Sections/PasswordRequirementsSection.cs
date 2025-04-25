@@ -1,5 +1,7 @@
+using System;
 using System.Configuration;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
+using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
 {
@@ -8,7 +10,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
         [ConfigurationProperty("", IsDefaultCollection = true)]
         private PasswordRequirementElementCollection Settings => (PasswordRequirementElementCollection)this[""];
 
-        public PasswordRequirements ToPasswordRequirements()
+        public static PasswordRequirements GetRequirements()
+        {
+            var section = (PasswordRequirementsSection)ConfigurationManager.GetSection("passwordRequirements");
+            return section?.ToPasswordRequirements() ?? new PasswordRequirements();
+        }
+
+        private PasswordRequirements ToPasswordRequirements()
         {
             var requirements = new PasswordRequirements
             {
@@ -37,21 +45,39 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
         
         private void ParsePasswordLength(PasswordRequirements requirements)
         {
-            var lengthPolicy = Settings["requires-password-length"]?.Value;
-            if (!string.IsNullOrEmpty(lengthPolicy))
+            requirements.MinLength = ParseLengthSetting("requires-min-password-length");
+            requirements.MaxLength = ParseLengthSetting("requires-max-password-length");
+    
+            ValidatePasswordLengthConstraints(requirements);
+        }
+
+        private int ParseLengthSetting(string settingKey)
+        {
+            var lengthSetting = Settings[settingKey]?.Value;
+    
+            if (string.IsNullOrEmpty(lengthSetting))
             {
-                var parts = lengthPolicy.Split('-');
-                if (parts.Length == 2 && int.TryParse(parts[0], out int min) && int.TryParse(parts[1], out int max))
-                {
-                    requirements.MinLength = min;
-                    requirements.MaxLength = max;
-                }
-                else
-                {
-                    throw new ConfigurationErrorsException("Configuration error: 'requires-password-length' must be in format 'min-max', for example '8-20'");
-                }
+                return 0;
             }
-            
+    
+            if (int.TryParse(lengthSetting, out int length) && length >= 0)
+            {
+                return length;
+            }
+    
+            throw new ConfigurationErrorsException($"Configuration error: \"{settingKey}\" must be a positive integer");
+        }
+
+        private void ValidatePasswordLengthConstraints(PasswordRequirements requirements)
+        {
+            var hasMinLength = requirements.MinLength > 0;
+            var hasMaxLength = requirements.MaxLength > 0;
+    
+            if (hasMinLength && hasMaxLength && requirements.MinLength > requirements.MaxLength)
+            {
+                throw new ConfigurationErrorsException(
+                    "Configuration error: minimum password length cannot be greater than maximum password length");
+            }
         }
     }
 

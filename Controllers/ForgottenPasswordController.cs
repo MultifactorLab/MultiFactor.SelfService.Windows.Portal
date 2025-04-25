@@ -139,14 +139,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View("Reset", form);
             }
             
-            if (!_passwordPolicyService.IsPasswordValid(form.NewPassword, out string errorReason))
+            var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword);
+            if (!validationResult.IsValid)
             {
-                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
-                ModelState.AddModelError(nameof(form.NewPassword), errorReason);
+                _logger.Warning("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, validationResult);
+                ModelState.AddModelError(nameof(form.NewPassword), validationResult.ToString());
                 return View("Reset", form);
             }
 
-            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out errorReason))
+            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out string errorReason))
             {
                 _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);

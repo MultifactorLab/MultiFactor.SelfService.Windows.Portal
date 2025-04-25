@@ -76,15 +76,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 throw new PasswordChangingSessionExpired(User.Identity.Name);
             }
             
-            if (!_passwordPolicyService.IsPasswordValid(model.NewPassword, out string errorReason))
+            var validationResult = _passwordPolicyService.ValidatePassword(model.NewPassword);
+            if (!validationResult.IsValid)
             {
-                _logger.Error("Unable to change expired password for user '{u:l}'. Failed to set new password: {err:l}", userName.Value, errorReason);
-                ModelState.AddModelError(nameof(model.NewPassword), errorReason);
+                _logger.Warning("Unable to change expired password for user '{u:l}'. Failed to set new password: {err:l}", userName.Value, validationResult);
+                ModelState.AddModelError(nameof(model.NewPassword), validationResult.ToString());
                 return View(model);
             }
 
             var currentPassword = _dataProtectionService.Unprotect(encryptedPwd.Value);
-            if (!_activeDirectoryService.ChangeExpiredPassword(userName.Value, currentPassword, model.NewPassword, out errorReason))
+            if (!_activeDirectoryService.ChangeExpiredPassword(userName.Value, currentPassword, model.NewPassword, out string errorReason))
             {
                 ModelState.AddModelError(string.Empty, errorReason);
                 return View(model);
