@@ -1,7 +1,5 @@
-using System;
 using System.Configuration;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
-using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
 {

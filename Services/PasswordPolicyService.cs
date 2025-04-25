@@ -1,9 +1,6 @@
-
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
 using Resources;
-using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
