@@ -7,6 +7,28 @@ namespace MultiFactor.SelfService.Windows.Portal.Tests.Services
 {
     public class PasswordPolicyServiceTests
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("Qwerty")]
+        public void ValidatePassword_DefaultRequirements_ReturnsSuccess(string password)
+        {
+            // Arrange
+            var configuration = new Configuration
+            {
+                PasswordRequirements = new PasswordRequirements()
+            };
+            var service = new PasswordPolicyService(configuration);
+
+            // Act
+            var result = service.ValidatePassword(password);
+
+            // Assert
+            Assert.True(result.IsValid);
+            Assert.Null(result.ErrorMessage);
+        }
+        
         [Fact]
         public void ValidatePassword_TooShortPassword_ReturnsFailure()
         {
@@ -165,6 +187,5 @@ namespace MultiFactor.SelfService.Windows.Portal.Tests.Services
             Assert.True(result.IsValid);
             Assert.Null(result.ErrorMessage);
         }
-        
     }
 } 
