@@ -1,4 +1,5 @@
-﻿
+﻿using MultiFactor.SelfService.Windows.Portal.Configurations.Sections;
+
 namespace MultiFactor.SelfService.Windows.Portal.Models
 {
     public class Link
