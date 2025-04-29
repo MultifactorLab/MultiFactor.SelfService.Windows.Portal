@@ -255,6 +255,7 @@
     <Compile Include="Controllers\ExpiredPasswordController.cs" />
     <Compile Include="Controllers\ExchangeActiveSyncDevicesController.cs" />
     <Compile Include="Controllers\PasswordController.cs" />
+    <Compile Include="Controllers\UnlockController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
     <Compile Include="Core\Exceptions\ForbiddenException.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
@@ -300,6 +301,16 @@
     <Compile Include="Models\PersonalData.cs" />
     <Compile Include="Models\SingleSignOnDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\UserUnlock.Designer.cs">
+      <DependentUpon>UserUnlock.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Resources\UserUnlock.ru.Designer.cs">
+      <DependentUpon>UserUnlock.ru.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Resources\Shared_PasswordRequirementsPartial.ru.Designer.cs">
       <DependentUpon>Shared_PasswordRequirementsPartial.ru.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -495,6 +506,8 @@
     <Content Include="Content\js\jquery.validate.unobtrusive.min.js" />
     <Content Include="Views\Account\Authn.cshtml" />
     <Content Include="Views\Account\Identity.cshtml" />
+    <Content Include="Views\Unlock\Success.cshtml" />
+    <Content Include="Views\Unlock\Wrong.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -522,6 +535,16 @@
     <Content Include="Views\Shared\_PasswordRequirementsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\UserUnlock.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>UserUnlock.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\UserUnlock.ru.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>UserUnlock.ru.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Shared_PasswordRequirementsPartial.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Shared_PasswordRequirementsPartial.ru.Designer.cs</LastGenOutput>
@@ -598,6 +621,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Validation.ru.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Validation.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

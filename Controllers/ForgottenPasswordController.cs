@@ -9,6 +9,7 @@ using System;
 using System.DirectoryServices.AccountManagement;
 using System.Web;
 using System.Web.Mvc;
+using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -22,21 +23,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly TokenValidationService _tokenValidationService;
         private readonly DataProtectionService _dataProtectionService;
 
-        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient, 
-            ILogger logger, 
-            ActiveDirectoryService activeDirectory, 
+        public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient,
+            ILogger logger,
+            ActiveDirectoryService activeDirectory,
             TokenValidationService tokenValidationService,
             DataProtectionService dataProtectionService)
         {
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
-            _tokenValidationService = tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
-            _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
+            _tokenValidationService =
+                tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
+            _dataProtectionService =
+                dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
         }
 
         [HttpGet]
-        public ActionResult Index() => View();  
+        public ActionResult Index() => View();
 
         [HttpPost]
         [VerifyCaptcha]
@@ -59,11 +62,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
             }
 
-            var callback = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
+            ApiResponse<AccessPage> response = null;
+            string callbackUrl = null;
             try
             {
-                var response = _apiClient.StartResetPassword(form.Identity.Trim(), callback);
-                if (response.Success) return RedirectPermanent(response.Model.Url);
+                if (form.UnlockUser && Configuration.Current.AllowUserUnlock)
+                {
+                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "unlock/complete", 1);
+                    response = _apiClient.StartUnlockingUser(form.Identity.Trim(), callbackUrl);
+                }
+                else
+                {
+                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
+                    response = _apiClient.StartResetPassword(form.Identity.Trim(), callbackUrl);
+                }
+
+                if (response.Success)
+                    return RedirectPermanent(response.Model.Url);
 
                 _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
@@ -89,7 +104,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!token.MustResetPassword)
             {
-                _logger.Error("Invalid reset password session for user '{identity:l}': required claims not found", token.Identity);
+                _logger.Error("Invalid reset password session for user '{identity:l}': required claims not found",
+                    token.Identity);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
@@ -106,14 +122,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
+
             Response.Cookies.Add(cookie);
 
-            return View(new ResetPasswordForm 
-            { 
+            return View(new ResetPasswordForm
+            {
                 Identity = token.Identity
             });
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ConfirmReset(ResetPasswordForm form)
@@ -131,14 +148,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var sesionCookie = Request.Cookies[Constants.PWD_RECOVERY_COOKIE]?.Value;
             if (sesionCookie == null || _dataProtectionService.Unprotect(sesionCookie) != form.Identity)
             {
-                _logger.Error("Invalid reset password session for user '{identity:l}': session not found", form.Identity);
+                _logger.Error("Invalid reset password session for user '{identity:l}': session not found",
+                    form.Identity);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
 
             if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out var errorReason))
             {
-                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
+                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}",
+                    form.Identity, errorReason);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
@@ -158,6 +177,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
+
             return View();
         }
     }
