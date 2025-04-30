@@ -639,7 +639,7 @@ p {
     display: grid;
     grid-template-columns: 110px 110px 110px;
     margin: 0 auto;
-    max-height: 12em;
+    max-height: 14em;
     overflow: auto;
     scroll-behavior: smooth;
     scrollbar-width: thin;
@@ -647,7 +647,7 @@ p {
 }
 
 .showcase-link {
-    padding: 1em;
+    padding: 0.5em;
 }
 
 .showcase-link-image {
