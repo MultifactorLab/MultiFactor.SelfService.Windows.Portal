@@ -1,17 +1,32 @@
+using System.Collections.Generic;
+using System.Linq;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Sections;
+
 namespace MultiFactor.SelfService.Windows.Portal.Configurations.Models
 {
     public class PasswordRequirements
     {
-        public bool RequiresUpperCaseLetters { get; set; }
-
-        public bool RequiresLowerCaseLetters { get; set; }
-
-        public bool RequiresDigits { get; set; }
-
-        public bool RequiresSpecialSymbol { get; set; }
+        public PasswordRequirementElement UpperCaseLetters { get; set; }
+        public PasswordRequirementElement LowerCaseLetters { get; set; }
+        public PasswordRequirementElement Digits { get; set; }
+        public PasswordRequirementElement SpecialSymbols { get; set; }
+        public PasswordRequirementElement MinLength { get; set; }
+        public PasswordRequirementElement MaxLength { get; set; }
         
-        public int MinLength { get; set; }
-        
-        public int MaxLength { get; set; }
+        public IEnumerable<PasswordRequirementElement> NotifyingElements { get; set;}
+
+        public IEnumerable<PasswordRequirementElement> GetAllRequirements()
+        {
+            return new[]
+                {
+                    UpperCaseLetters,
+                    LowerCaseLetters,
+                    Digits,
+                    SpecialSymbols,
+                    MinLength,
+                    MaxLength
+                }
+                .Concat(NotifyingElements ?? Enumerable.Empty<PasswordRequirementElement>());
+        }
     }
 } 

@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Validations;
 
 namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
 {
@@ -10,102 +13,141 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
 
         public static PasswordRequirements GetRequirements()
         {
-            var section = (PasswordRequirementsSection)ConfigurationManager.GetSection("passwordRequirements");
+            var section = (PasswordRequirementsSection)ConfigurationManager.GetSection(Constants.Configuration.PasswordRequirements.SECTION_NAME);
             return section?.ToPasswordRequirements() ?? new PasswordRequirements();
         }
 
         private PasswordRequirements ToPasswordRequirements()
         {
-            var requirements = new PasswordRequirements
-            {
-                RequiresUpperCaseLetters = GetBoolSetting("requires-upper-case-letters"),
-                RequiresLowerCaseLetters = GetBoolSetting("requires-lower-case-letters"),
-                RequiresDigits = GetBoolSetting("requires-digits"),
-                RequiresSpecialSymbol = GetBoolSetting("requires-special-symbol")
-            };
+            var validator = new PasswordRequirementsSectionValidator(Settings);
+            var validConditions = Constants.Configuration.PasswordRequirements.GetAllKnownConstants();
+            validator.Validate(validConditions);
+            return InstantiateRequirements(validConditions);
+        }
 
-            ParsePasswordLength(requirements);
-            
+        private PasswordRequirements InstantiateRequirements(HashSet<string> validConditions)
+        {
+            var requirements = new PasswordRequirements();
+
+            foreach (var condition in validConditions)
+            {
+                var element = Settings[condition];
+                if (element != null)
+                {
+                    SetRequirementProperty(requirements, condition, element);
+                }
+            }
+
+            requirements.NotifyingElements = Settings.GetElements(x => string.IsNullOrEmpty(x.Condition));
             return requirements;
         }
-        
-        private bool GetBoolSetting(string key)
-        {
-            var value = Settings[key]?.Value;
-            if (string.IsNullOrEmpty(value))
-            {
-                return false;
-            }
-            
-            bool.TryParse(value, out bool result);
-            return result;
-        }
-        
-        private void ParsePasswordLength(PasswordRequirements requirements)
-        {
-            requirements.MinLength = ParseLengthSetting("requires-min-password-length");
-            requirements.MaxLength = ParseLengthSetting("requires-max-password-length");
-    
-            ValidatePasswordLengthConstraints(requirements);
-        }
 
-        private int ParseLengthSetting(string settingKey)
+        private void SetRequirementProperty(PasswordRequirements requirements, string condition, PasswordRequirementElement element)
         {
-            var lengthSetting = Settings[settingKey]?.Value;
-    
-            if (string.IsNullOrEmpty(lengthSetting))
+            switch (condition)
             {
-                return 0;
-            }
-    
-            if (int.TryParse(lengthSetting, out int length) && length >= 0)
-            {
-                return length;
-            }
-    
-            throw new ConfigurationErrorsException($"Configuration error: \"{settingKey}\" must be a positive integer");
-        }
-
-        private void ValidatePasswordLengthConstraints(PasswordRequirements requirements)
-        {
-            var hasMinLength = requirements.MinLength > 0;
-            var hasMaxLength = requirements.MaxLength > 0;
-    
-            if (hasMinLength && hasMaxLength && requirements.MinLength > requirements.MaxLength)
-            {
-                throw new ConfigurationErrorsException(
-                    "Configuration error: minimum password length cannot be greater than maximum password length");
+                case Constants.Configuration.PasswordRequirements.UPPER_CASE_LETTERS:
+                    requirements.UpperCaseLetters = element;
+                    break;
+                case Constants.Configuration.PasswordRequirements.LOWER_CASE_LETTERS:
+                    requirements.LowerCaseLetters = element;
+                    break;
+                case Constants.Configuration.PasswordRequirements.DIGITS:
+                    requirements.Digits = element;
+                    break;
+                case Constants.Configuration.PasswordRequirements.SPECIAL_SYMBOLS:
+                    requirements.SpecialSymbols = element;
+                    break;
+                case Constants.Configuration.PasswordRequirements.MIN_LENGTH:
+                    requirements.MinLength = element;
+                    break;
+                case Constants.Configuration.PasswordRequirements.MAX_LENGTH:
+                    requirements.MaxLength = element;
+                    break;
             }
         }
     }
-
+    
     public class PasswordRequirementElementCollection : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
         {
             return new PasswordRequirementElement();
         }
-        
+
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((PasswordRequirementElement)element).Key;
+            return (element as PasswordRequirementElement).Key;
         }
         
         public override ConfigurationElementCollectionType CollectionType => ConfigurationElementCollectionType.BasicMap;
 
-        protected override string ElementName => "add";
+        protected override string ElementName => "pwd-req";
 
         public new PasswordRequirementElement this[string key] => (PasswordRequirementElement)BaseGet(key);
+        
+        public IEnumerable<PasswordRequirementElement> GetElements(
+            Func<PasswordRequirementElement, bool> predicate = null)
+        {
+            foreach (var item in this)
+            {
+                var element = (PasswordRequirementElement)item;
+        
+                if (predicate == null || predicate(element))
+                {
+                    yield return element;
+                }
+            }
+        }
+
+        public void Add(PasswordRequirementElement element)
+        {
+            BaseAdd(element);
+        }
     }
 
-    
     public class PasswordRequirementElement : ConfigurationElement
     {
-        [ConfigurationProperty("key", IsRequired = true, IsKey = true)]
-        public string Key => (string)this["key"];
+        [ConfigurationProperty("key", IsKey = true)]
+        public string Key
+        {
+            get => string.IsNullOrEmpty(Condition) ? Guid.NewGuid().ToString() : Condition;
+            set => this["key"] = value;
+        }
+        
+        [ConfigurationProperty("condition")]
+        public string Condition 
+        { 
+            get => (string)this["condition"];
+            set => this["condition"] = value;
+        }
 
+        [ConfigurationProperty("value")]
+        public string Value 
+        { 
+            get => (string)this["value"];
+            set => this["value"] = value;
+        }
 
-        [ConfigurationProperty("value", IsRequired = true)]
-        public string Value => (string)this["value"];
+        [ConfigurationProperty("enabled", DefaultValue = false)]
+        public bool Enabled 
+        { 
+            get => (bool)this["enabled"];
+            set => this["enabled"] = value;
+        }
+        
+        [ConfigurationProperty("descriptionEn")]
+        public string DescriptionEn 
+        { 
+            get => (string)this["descriptionEn"];
+            set => this["descriptionEn"] = value;
+        }
+        
+        [ConfigurationProperty("descriptionRu")]
+        public string DescriptionRu 
+        { 
+            get => (string)this["descriptionRu"];
+            set => this["descriptionRu"] = value;
+        }
     }
 }

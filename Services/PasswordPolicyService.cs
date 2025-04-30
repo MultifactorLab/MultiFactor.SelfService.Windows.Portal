@@ -1,6 +1,6 @@
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
-using Resources;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Extensions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -15,41 +15,46 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         
         public PasswordValidationResult ValidatePassword(string password)
         {
-            if (_passwordRequirements.MinLength > 0 && password.Length < _passwordRequirements.MinLength)
+            if (_passwordRequirements.MinLength?.Enabled == true)
             {
-                return new PasswordValidationResult(false,
-                    string.Format(PasswordPolicy.MinLength, _passwordRequirements.MinLength));
+                if (int.TryParse(_passwordRequirements.MinLength.Value, out int minLength) && 
+                    password.Length < minLength)
+                {
+                    return new PasswordValidationResult(false, _passwordRequirements.MinLength.GetLocalizedMessage());
+                }
             }
 
-            if (_passwordRequirements.MaxLength > 0 && password.Length > _passwordRequirements.MaxLength)
+            if (_passwordRequirements.MaxLength?.Enabled == true)
             {
-                return new PasswordValidationResult(false,
-                    string.Format(PasswordPolicy.MaxLength, _passwordRequirements.MaxLength));                
+                if (int.TryParse(_passwordRequirements.MaxLength.Value, out int maxLength) && 
+                    password.Length > maxLength)
+                {
+                    return new PasswordValidationResult(false, _passwordRequirements.MaxLength.GetLocalizedMessage());
+                }
             }
 
-            if (_passwordRequirements.RequiresUpperCaseLetters && !ContainsUppercase(password))
+            if (_passwordRequirements.UpperCaseLetters?.Enabled == true && !ContainsUppercase(password))
             {
-                return new PasswordValidationResult(false, PasswordPolicy.RequiresUppercase);
+                return new PasswordValidationResult(false, _passwordRequirements.UpperCaseLetters.GetLocalizedMessage());
             }
 
-            if (_passwordRequirements.RequiresLowerCaseLetters && !ContainsLowercase(password))
+            if (_passwordRequirements.LowerCaseLetters?.Enabled == true && !ContainsLowercase(password))
             {
-                return  new PasswordValidationResult(false, PasswordPolicy.RequiresLowercase);
+                return new PasswordValidationResult(false, _passwordRequirements.LowerCaseLetters.GetLocalizedMessage());
             }
 
-            if (_passwordRequirements.RequiresDigits && !ContainsDigit(password))
+            if (_passwordRequirements.Digits?.Enabled == true && !ContainsDigit(password))
             {
-                return new PasswordValidationResult(false,PasswordPolicy.RequiresDigit);
+                return new PasswordValidationResult(false, _passwordRequirements.Digits.GetLocalizedMessage());
             }
 
-            if (_passwordRequirements.RequiresSpecialSymbol && !ContainsSpecialCharacter(password))
+            if (_passwordRequirements.SpecialSymbols?.Enabled == true && !ContainsSpecialCharacter(password))
             {
-                return new PasswordValidationResult(false,PasswordPolicy.RequiresSpecialChar);
+                return new PasswordValidationResult(false, _passwordRequirements.SpecialSymbols.GetLocalizedMessage());
             }
             
             return new PasswordValidationResult(true);
         }
-        
 
         private static bool ContainsUppercase(string password)
         {

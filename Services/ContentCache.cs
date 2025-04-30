@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Extensions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
@@ -62,8 +64,31 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         public string[] GetLines(ContentCategory category)
         {
             var culture = System.Threading.Thread.CurrentThread.CurrentCulture;
+            var configRequirements = GetPasswordRequirementsFromConfig(culture.TwoLetterISOLanguageName);
+            if (configRequirements.Any())
+            {
+                return configRequirements;
+            }
+            
             var key = GetKey(category, culture.TwoLetterISOLanguageName);
             return _loadedContent.Value.ContainsKey(key) ? _loadedContent.Value[key] : Array.Empty<string>();
+        }
+
+        private string[] GetPasswordRequirementsFromConfig(string culture)
+        {
+            var requirements = new List<string>();
+            foreach (var requirement in Configuration.Current.PasswordRequirements.GetAllRequirements())
+            {
+                if (requirement?.Enabled == true)
+                {
+                    var message = requirement.GetLocalizedMessage(culture);
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        requirements.Add(message);
+                    }
+                }
+            }
+            return requirements.ToArray();
         }
 
         private static string GetKey(ContentCategory category, string culture)
