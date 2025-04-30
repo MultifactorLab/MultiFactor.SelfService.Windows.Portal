@@ -638,6 +638,7 @@ p {
 .login .form-column .auth-details .showcase {
     display: grid;
     grid-template-columns: 110px 110px 110px;
+    margin: 0 auto;
     max-height: 12em;
     overflow: auto;
     scroll-behavior: smooth;
@@ -653,6 +654,10 @@ p {
     max-width: 4em;
     max-height: 4em;
     margin-bottom: 0.5em;
+}
+
+.showcase-no-top-padding {
+    padding-top: 0 !important;
 }
 
 .login .form-column .auth-details .auth-username p {
@@ -894,6 +899,12 @@ a.active .btn {
 a.active .btn:hover {
     background: #fff;
     color: #4082BC;
+}
+
+@media screen and (min-width: 1870px) {
+    html, body {
+        height: 100%;
+    }
 }
 
 @media screen and (max-width: 933px) {

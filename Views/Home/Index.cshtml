@@ -5,7 +5,7 @@
 }
 
 <div class="login">
-    <div class="form-column">
+    <div class="form-column @(Configuration.Current.Links.Length > 0 ? "showcase-no-top-padding" : "") ">
         @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
         {
             <div class="alert">
