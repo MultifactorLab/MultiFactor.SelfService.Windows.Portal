@@ -13,7 +13,6 @@
                 <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.PasswordExpirationDaysLeft</h5>
             </div>
         }
-        <div class="success-mark"></div>
         <div class="auth-details">
             @if (Configuration.Current.Links != null && Configuration.Current.Links.Length > 0)
             {
@@ -32,7 +31,7 @@
                     }
                 </div>
             }
-
+            <div class="success-mark"></div>
             <h2>@Resources.Home.Title</h2>
             <div class="auth-username">
                 <p>@Resources.Home.Greetings</p>

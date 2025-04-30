@@ -534,13 +534,13 @@ p {
 }
 
 .login .form-column {
-        display: flex;
-        flex-direction: column;
-        padding: 32px;
-        width: 440px;
-        border: 1px solid rgba(87, 154, 215, 0.2);
-        background: #ECF5FB;
-        border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+    width: 440px;
+    border: 1px solid rgba(87, 154, 215, 0.2);
+    background: #ECF5FB;
+    border-radius: 12px;
 }
 
 .login .form-column .success-mark {
@@ -549,6 +549,7 @@ p {
     align-self: center;
     width: 48px;
     height: 48px;
+    margin-bottom: 16px;
     background: url(../content/images/success.svg) center center no-repeat;
 }
 
@@ -635,6 +636,22 @@ p {
     text-align: center;
     margin-bottom: 16px;
     margin-top: 10px;
+}
+
+.login .form-column .auth-details .showcase {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    max-height: 15em;
+    overflow: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #579ad7 #fff;
+}
+
+.showcase-link {
+    padding: 1em;
 }
 
 .login .form-column .auth-details .auth-username p {
