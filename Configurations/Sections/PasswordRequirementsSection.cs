@@ -129,7 +129,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Configurations.Sections
             set => this["value"] = value;
         }
 
-        [ConfigurationProperty("enabled", DefaultValue = false)]
+        [ConfigurationProperty("enabled", DefaultValue = false, IsRequired = true)]
         public bool Enabled 
         { 
             get => (bool)this["enabled"];
