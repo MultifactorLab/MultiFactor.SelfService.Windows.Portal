@@ -63,7 +63,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             try
             {
                 var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
-                var identity = adValidationResult.GetIdentity(form.Identity, true);
+                var identity = adValidationResult.GetIdentityForPasswordRecovery(form.Identity);
                 var response = _apiClient.StartResetPassword(identity, callback);
                 if (response.Success) return RedirectPermanent(response.Model.Url);
 

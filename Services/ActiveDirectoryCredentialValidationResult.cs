@@ -110,21 +110,33 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return result;
         }
 
-        public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName, bool withoutCustomAttributes = false)
+        public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
         {
-            if (!withoutCustomAttributes)
+            if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity) && string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
             {
-                if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity) && string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
-                {
-                    throw new InvalidOperationException($"Failed to get overridden identity attribute '{Configuration.Current.UseAttributeAsIdentity}' for {userName}.");
-                }
-
-                if (!string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
-                {
-                    return adValidationResult.OverriddenIdentity;
-                }
+                throw new InvalidOperationException($"Failed to get overridden identity attribute '{Configuration.Current.UseAttributeAsIdentity}' for {userName}.");
             }
 
+            if (!string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
+            {
+                return adValidationResult.OverriddenIdentity;
+            }
+
+            var identity = userName;
+            if (!Configuration.Current.UseUpnAsIdentity) return identity;
+
+            if (string.IsNullOrEmpty(adValidationResult.Upn))
+            {
+                throw new InvalidOperationException($"Null UPN for user {userName}");
+            }
+
+            identity = adValidationResult.Upn;
+
+            return identity;
+        }
+
+        public static string GetIdentityForPasswordRecovery(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
+        {
             var identity = userName;
             if (!Configuration.Current.UseUpnAsIdentity) return identity;
 
