@@ -110,16 +110,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return result;
         }
 
-        public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
+        public static string GetIdentity(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName, bool withoutCustomAttributes = false)
         {
-            if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity) && string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
+            if (!withoutCustomAttributes)
             {
-                throw new InvalidOperationException($"Failed to get overridden identity attribute '{Configuration.Current.UseAttributeAsIdentity}' for {userName}.");
+                if (!string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity) && string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
+                {
+                    throw new InvalidOperationException($"Failed to get overridden identity attribute '{Configuration.Current.UseAttributeAsIdentity}' for {userName}.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
+                {
+                    return adValidationResult.OverriddenIdentity;
+                }
             }
-            if (!string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
-            {
-                return adValidationResult.OverriddenIdentity;
-            }
+
             var identity = userName;
             if (!Configuration.Current.UseUpnAsIdentity) return identity;
 
