@@ -134,7 +134,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         public bool EnablePasswordManagement { get; private set; }
         public bool EnablePasswordRecovery { get; private set; }
         public bool EnableExchangeActiveSyncDevicesManagement { get; private set; }
-
+        public bool AllowUserUnlock { get; private set; }
         private bool EnableCaptcha { get; set; }
         private CaptchaType CaptchaType { get; set; } = CaptchaType.Google;
         public string CaptchaKey { get; private set; }
@@ -182,6 +182,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var useActiveDirectoryUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_USER_PHONE);
             var useActiveDirectoryMobileUserPhoneSetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE);
             var enablePasswordManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_PASSWORD_MANAGEMENT);
+            var allowUserUnlock = ParseBoolean(appSettings, ConfigurationConstants.General.ALLOW_USER_UNLOCK);
             var enableExchangeActiveSyncServicesManagementSetting = ParseBoolean(appSettings, ConfigurationConstants.General.ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT);
             var useUpnAsIdentitySetting = ParseBoolean(appSettings, ConfigurationConstants.General.USE_UPN_AS_IDENTITY);
             var notifyPasswordExpirationDaysLeft = ReadNotifyPasswordExpirationDaysLeft(appSettings);
@@ -205,6 +206,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 LogLevel = logLevelSetting,
                 EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncServicesManagementSetting,
                 EnablePasswordManagement = enablePasswordManagementSetting,
+                AllowUserUnlock = allowUserUnlock,
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
