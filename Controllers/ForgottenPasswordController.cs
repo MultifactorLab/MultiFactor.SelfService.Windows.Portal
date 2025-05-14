@@ -22,20 +22,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ActiveDirectoryService _activeDirectory;
         private readonly TokenValidationService _tokenValidationService;
         private readonly DataProtectionService _dataProtectionService;
+        private readonly PasswordPolicyService _passwordPolicyService;
 
         public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient,
             ILogger logger,
             ActiveDirectoryService activeDirectory,
             TokenValidationService tokenValidationService,
-            DataProtectionService dataProtectionService)
+            DataProtectionService dataProtectionService,
+            PasswordPolicyService passwordPolicyService)
         {
-            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
-            _tokenValidationService =
-                tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
-            _dataProtectionService =
-                dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
+            _apiClient = apiClient;
+            _logger = logger;
+            _activeDirectory = activeDirectory;
+            _tokenValidationService = tokenValidationService;
+            _dataProtectionService = dataProtectionService;
+            _passwordPolicyService = passwordPolicyService;
         }
 
         [HttpGet]
@@ -153,8 +154,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
+            
+            var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword);
+            if (!validationResult.IsValid)
+            {
+                _logger.Warning("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, validationResult);
+                ModelState.AddModelError(nameof(form.NewPassword), validationResult.ToString());
+                return View("Reset", form);
+            }
 
-            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out var errorReason))
+            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out string errorReason))
             {
                 _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}",
                     form.Identity, errorReason);

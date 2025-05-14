@@ -6,6 +6,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
+using MultiFactor.SelfService.Windows.Portal.Configurations.Sections;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
@@ -154,6 +156,8 @@ namespace MultiFactor.SelfService.Windows.Portal
         
         public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
 
+        public PasswordRequirements PasswordRequirements { get; set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -209,7 +213,8 @@ namespace MultiFactor.SelfService.Windows.Portal
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
                 LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups,
-                PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode)
+                PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode),
+                PasswordRequirements = PasswordRequirementsSection.GetRequirements()
             };
             
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))
@@ -494,105 +499,6 @@ namespace MultiFactor.SelfService.Windows.Portal
             return PortalSettings?[ConfigurationConstants.General.LOGGING_FORMAT];
         }
     }
-
-    public class ValueElement : ConfigurationElement
-    {
-        [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-        public string Name
-        {
-            get { return (string)this["name"]; }
-        }
-    }
-
-    public class ValueElementCollection : ConfigurationElementCollection
-    {
-        protected override ConfigurationElement CreateNewElement()
-        {
-            return new ValueElement();
-        }
-
-
-        protected override object GetElementKey(ConfigurationElement element)
-        {
-            return ((ValueElement)element).Name;
-        }
-    }
-
-    public class ActiveDirectorySection : ConfigurationSection
-    {
-        [ConfigurationProperty("ExcludedDomains", IsRequired = false)]
-        public ValueElementCollection ExcludedDomains
-        {
-            get { return (ValueElementCollection)this["ExcludedDomains"]; }
-        }
-
-        [ConfigurationProperty("IncludedDomains", IsRequired = false)]
-        public ValueElementCollection IncludedDomains
-        {
-            get { return (ValueElementCollection)this["IncludedDomains"]; }
-        }
-
-        [ConfigurationProperty("requiresUserPrincipalName", IsKey = false, IsRequired = false)]
-        public bool RequiresUpn
-        {
-            get { return (bool)this["requiresUserPrincipalName"]; }
-        }
-    }
-
-    public class LinkShowcaseSection : ConfigurationSection
-    {
-        [ConfigurationProperty("", IsDefaultCollection = true)]
-        public LinkShowcaseElementCollection Links
-        {
-            get { return (LinkShowcaseElementCollection)this[""]; }
-        }
-    }
-
-
-    public class LinkShowcaseElementCollection : ConfigurationElementCollection
-    {
-        protected override ConfigurationElement CreateNewElement()
-        {
-            return new LinkElement();
-        }
-
-        protected override object GetElementKey(ConfigurationElement element)
-        {
-            return (element as LinkElement).Url;
-        }
-
-        public override ConfigurationElementCollectionType CollectionType
-        {
-            get { return ConfigurationElementCollectionType.BasicMap; }
-        }
-
-        protected override string ElementName
-        {
-            get { return "link"; }
-        }
-    }
-
-    public class LinkElement : ConfigurationElement
-    {
-        [ConfigurationProperty("url", IsRequired = true, IsKey = true)]
-        public string Url { get { return (string)this["url"]; } }
-
-        [ConfigurationProperty("title", IsRequired = true)]
-        public string Title { get { return (string)this["title"]; } }
-
-        [ConfigurationProperty("image", IsRequired = true)]
-        public string Image { get { return (string)this["image"]; } }
-
-        [ConfigurationProperty("newTab", IsRequired = false, DefaultValue = true)]
-        public bool OpenInNewTab 
-        {
-            get
-            {
-                return (bool)this["newTab"]; 
-            }
-        }
-    }
-
 
     public enum RequireCaptcha
     {

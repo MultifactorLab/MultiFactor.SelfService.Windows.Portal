@@ -53,6 +53,8 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
 
             services.AddSingleton<ContentCache>();
 
+            services.AddSingleton<PasswordPolicyService>();
+
             services.AddHttpClient();
         }
 

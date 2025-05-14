@@ -23,6 +23,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly DataProtectionService _dataProtectionService;
         private readonly JwtTokenProvider _tokenProvider;
         private readonly ILogger _logger;
+        private readonly PasswordPolicyService _passwordPolicyService;
 
         public ExpiredPasswordController(ApplicationCache applicationCache, 
             MultiFactorApiClient api, 
@@ -30,7 +31,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             ActiveDirectoryService activeDirectoryService,
             DataProtectionService dataProtectionService,
             JwtTokenProvider tokenProvider, 
-            ILogger logger)
+            ILogger logger,
+            PasswordPolicyService passwordPolicyService)
         {
             _applicationCache = applicationCache ?? throw new ArgumentNullException(nameof(applicationCache));
             _api = api ?? throw new ArgumentNullException(nameof(api));
@@ -39,6 +41,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
             _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _passwordPolicyService = passwordPolicyService ?? throw new ArgumentNullException(nameof(passwordPolicyService));
+            
         }
 
         [HttpGet]
@@ -70,6 +74,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (userName.IsEmpty || encryptedPwd.IsEmpty)
             {
                 throw new PasswordChangingSessionExpired(User.Identity.Name);
+            }
+            
+            var validationResult = _passwordPolicyService.ValidatePassword(model.NewPassword);
+            if (!validationResult.IsValid)
+            {
+                _logger.Warning("Unable to change expired password for user '{u:l}'. Failed to set new password: {err:l}", userName.Value, validationResult);
+                ModelState.AddModelError(nameof(model.NewPassword), validationResult.ToString());
+                return View(model);
             }
 
             var currentPassword = _dataProtectionService.Unprotect(encryptedPwd.Value);
