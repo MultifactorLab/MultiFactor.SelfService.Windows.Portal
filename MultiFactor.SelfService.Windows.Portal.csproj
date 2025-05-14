@@ -321,6 +321,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>PasswordPolicy.ru.resx</DependentUpon>
+	</Compile>
     <Compile Include="Resources\UserUnlock.Designer.cs">
       <DependentUpon>UserUnlock.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -559,6 +560,7 @@
     <EmbeddedResource Include="Resources\PasswordPolicy.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PasswordPolicy.ru.Designer.cs</LastGenOutput>
+	</EmbeddedResource>
     <EmbeddedResource Include="Resources\UserUnlock.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>UserUnlock.Designer.cs</LastGenOutput>
