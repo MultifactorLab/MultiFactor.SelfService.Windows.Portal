@@ -137,17 +137,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
         public static string GetIdentityForPasswordRecovery(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
         {
-            var identity = userName;
-            if (!Configuration.Current.UseUpnAsIdentity) return identity;
-
             if (string.IsNullOrEmpty(adValidationResult.Upn))
             {
                 throw new InvalidOperationException($"Null UPN for user {userName}");
             }
 
-            identity = adValidationResult.Upn;
-
-            return identity;
+            return adValidationResult.Upn;
         }
     }
 }
