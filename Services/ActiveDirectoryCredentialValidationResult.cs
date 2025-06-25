@@ -134,26 +134,5 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             return identity;
         }
-
-        public static string GetIdentityForPasswordRecovery(this ActiveDirectoryCredentialValidationResult adValidationResult, string userName)
-        {
-            var attr = Configuration.Current.UseAttributeAsIdentity;
-            if (!string.IsNullOrWhiteSpace(attr))
-            {
-                if (string.IsNullOrWhiteSpace(adValidationResult.OverriddenIdentity))
-                {
-                    throw new InvalidOperationException($"Missing overridden identity (attribute '{attr}') for user {userName}");
-                }
-
-                return adValidationResult.OverriddenIdentity;
-            }
-
-            if (string.IsNullOrEmpty(adValidationResult.Upn))
-            {
-                throw new InvalidOperationException($"Null UPN for user {userName}");
-            }
-
-            return adValidationResult.Upn;
-        }
     }
 }

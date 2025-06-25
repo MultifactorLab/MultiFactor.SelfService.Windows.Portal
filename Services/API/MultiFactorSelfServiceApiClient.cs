@@ -17,7 +17,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
         private readonly JwtTokenProvider _tokenProvider;
         private readonly ApiClient _apiClient;
 
-        public MultiFactorSelfServiceApiClient(Configuration settings, JwtTokenProvider tokenProvider, ApiClient apiClient)   
+        public MultiFactorSelfServiceApiClient(Configuration settings, JwtTokenProvider tokenProvider, ApiClient apiClient)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _tokenProvider = tokenProvider ?? throw new ArgumentNullException(nameof(tokenProvider));
@@ -25,29 +25,30 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
         }
 
         public UserProfile LoadUserProfile()
-        {  
+        {
             var result = _apiClient.Get<ApiResponse<UserProfile>>("/self-service", x => x.Authorization = GetBearerAuth());
             return result.Model;
         }
 
-        public ApiResponse<AccessPage> StartResetPassword(string identity, string callbackUrl)
+        public ApiResponse<AccessPage> StartResetPassword(string twoFaIdentity, string ldapIdentity, string callbackUrl)
         {
-            if (identity is null) throw new ArgumentNullException(nameof(identity));
+            if (twoFaIdentity is null) throw new ArgumentNullException(nameof(twoFaIdentity));
             if (callbackUrl is null) throw new ArgumentNullException(nameof(callbackUrl));
 
             // add netbios domain name to login if specified
             if (!string.IsNullOrEmpty(_settings.NetBiosName))
             {
-                identity = $"{_settings.NetBiosName}\\{identity}";
+                twoFaIdentity = $"{_settings.NetBiosName}\\{twoFaIdentity}";
             }
 
             var payload = new
             {
-                Identity = identity,
+                Identity = twoFaIdentity,
                 CallbackUrl = callbackUrl,
                 Claims = new Dictionary<string, string>
                 {
-                    { MultiFactorClaims.ResetPassword, "true" }
+                    { MultiFactorClaims.ResetPassword, "true" },
+                    { MultiFactorClaims.RawUserName, ldapIdentity }
                 }
             };
 
@@ -63,10 +64,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                 x => x.Authorization = GetBearerAuth());
         }
 
-        private string GetBearerAuth() => $"Bearer {_tokenProvider.GetToken()}"; 
+        private string GetBearerAuth() => $"Bearer {_tokenProvider.GetToken()}";
 
         private string GetBasicAuth()
-        {         
+        {
             var token = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_settings.MultiFactorApiKey}:{_settings.MultiFactorApiSecret}"));
             return $"Basic {token}";
         }

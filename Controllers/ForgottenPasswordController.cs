@@ -63,11 +63,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             try
             {
                 var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
-                var identity = adValidationResult.GetIdentityForPasswordRecovery(form.Identity);
-                var response = _apiClient.StartResetPassword(identity, callback);
+                var overriddenIdentity = adValidationResult.GetIdentity(form.Identity);
+                var response = _apiClient.StartResetPassword(overriddenIdentity, form.Identity, callback);
                 if (response.Success) return RedirectPermanent(response.Model.Url);
 
-                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", identity, response.Message);
+                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", overriddenIdentity, response.Message);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
@@ -96,9 +96,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return RedirectToAction("Wrong");
             }
 
+            var protectedIdentity = _dataProtectionService.Protect(token.Identity);
             var cookie = new HttpCookie(Constants.PWD_RECOVERY_COOKIE)
             {
-                Value = _dataProtectionService.Protect(token.Identity),
+                Value = protectedIdentity,
                 Expires = DateTime.Now.AddMinutes(5),
                 Path = "/",
                 Secure = true,
@@ -131,7 +132,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             var sesionCookie = Request.Cookies[Constants.PWD_RECOVERY_COOKIE]?.Value;
-            if (sesionCookie == null || _dataProtectionService.Unprotect(sesionCookie) != form.Identity)
+            var unprotectedIdentity = _dataProtectionService.Unprotect(sesionCookie);
+            if (sesionCookie == null || unprotectedIdentity != form.Identity)
             {
                 _logger.Error("Invalid reset password session for user '{identity:l}': session not found", form.Identity);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
