@@ -5,6 +5,7 @@ using System.DirectoryServices.Protocols;
 using System.Globalization;
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Models;
+using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Resources;
 using Serilog;
@@ -504,8 +505,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 _logger.Debug("Setting a new password for user '{user}' in '{dn:l}'", identity,
                     userProfile.BaseDn.DnToFqdn());
-                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
-                           ContextOptions.Negotiate))
+
+                using (var ctx = GetContext(userProfile.BaseDn.DnToFqdn()))
                 {
                     using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
                                userProfile.DistinguishedName))
@@ -531,6 +532,25 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
 
             return false;
+        }
+
+        private static PrincipalContext GetContext(string dn)
+        {
+            if (Configuration.Current.ActAs == null)
+            {
+                return new PrincipalContext(ContextType.Domain,
+                    dn,
+                    null,
+                    ContextOptions.Negotiate);
+            }
+
+           return new PrincipalContext(ContextType.Domain,
+                dn,
+                null,
+                ContextOptions.SimpleBind,
+                userName: Configuration.Current.ActAs.UserName,
+                password: Configuration.Current.ActAs.Password);
+
         }
         
         private static bool IsMemberOf(LdapProfile profile, string group)

@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
 using MultiFactor.SelfService.Windows.Portal.Core;
@@ -11,6 +12,7 @@ using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal
 {
+    using static MultiFactor.SelfService.Windows.Portal.Constants;
     using ConfigurationConstants = Constants.Configuration;
     public class Configuration
     {
@@ -156,6 +158,8 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public string UseAttributeAsIdentity { get; private set; }
 
+        public NetworkCredential ActAs { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -282,6 +286,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
+
+            SetActAsCredential(appSettings, configuration);
+
             Current = configuration;
         }
 
@@ -477,6 +484,25 @@ namespace MultiFactor.SelfService.Windows.Portal
 
                 configuration.PwdChangingSessionCacheSize = bytes;
             }
+        }
+
+        private static void SetActAsCredential(NameValueCollection appSettings, Configuration configuration)
+        {
+#if DEBUG
+            var actAs = appSettings[ConfigurationConstants.General.ACT_AS];
+            if (!string.IsNullOrWhiteSpace(actAs))
+            {
+                var cred = actAs.Split(':')
+                    .Select(x => x.Trim())
+                    .ToArray();
+                if (cred.Length == 2)
+                {
+                    configuration.ActAs = new NetworkCredential(cred[0], cred[1]);
+                }
+            }
+#else
+            configuration.ActAs = null;
+#endif
         }
 
         public static NameValueCollection PortalSettings

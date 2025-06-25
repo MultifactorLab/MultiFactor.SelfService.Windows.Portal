@@ -40,6 +40,9 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string ACTIVE_DIRECTORY_GROUP = "active-directory-group";
                 public const string NESTED_GROUPS_BASE_DN = "nested-groups-base-dn";
                 public const string USE_ATTRIBUTE_AS_IDENTITY = "use-attribute-as-identity";
+#if DEBUG
+                public const string ACT_AS = "act-as";
+# endif
             }
 
             public static class ObsoleteCaptcha

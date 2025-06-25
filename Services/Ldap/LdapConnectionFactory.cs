@@ -31,8 +31,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             var connection = new LdapConnection(domain);
             connection.SessionOptions.ProtocolVersion = 3;
             connection.SessionOptions.RootDseCache = true;
-            _logger.Debug("Start bind to {Domain} as a process user", domain);
-            connection.Bind();
+
+            if (Configuration.Current.ActAs == null)
+            {
+                _logger.Debug("Start bind to {Domain} as a process user", domain);
+                connection.Bind();
+            }
+            else
+            {
+                _logger.Debug("Start bind to {Domain} as a specified 'act-as' user", domain);
+                connection.Bind(Configuration.Current.ActAs);
+            }
             
             return connection;  
         }
