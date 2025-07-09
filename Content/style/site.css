@@ -5,7 +5,6 @@
  * -------------------------------------------------------------------
  */
 html {
-    height: 100%;
     font-family: sans-serif;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -141,6 +140,7 @@ input {
         -webkit-box-sizing: border-box;
         box-sizing: border-box;
         padding: 0;
+        appearance: auto !important;
     }
 
     input[type=number]::-webkit-inner-spin-button,
@@ -357,7 +357,6 @@ textarea {
 */
 html {
     font-size: 100%;
-    height: 100%;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
@@ -366,7 +365,6 @@ html {
 
 body {
     min-width: 320px;
-    height: 100%;
     margin: 0;
     color: #32454D;
     font: 15px/17px "SF UI Text", "Arial", "Helvetica", sans-serif;
@@ -533,13 +531,13 @@ p {
 }
 
 .login .form-column {
-        display: flex;
-        flex-direction: column;
-        padding: 32px;
-        width: 440px;
-        border: 1px solid rgba(87, 154, 215, 0.2);
-        background: #ECF5FB;
-        border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    padding: 32px;
+    width: 440px;
+    border: 1px solid rgba(87, 154, 215, 0.2);
+    background: #ECF5FB;
+    border-radius: 12px;
 }
 
 .login .form-column .success-mark {
@@ -548,6 +546,7 @@ p {
     align-self: center;
     width: 48px;
     height: 48px;
+    margin-bottom: 16px;
     background: url(../content/images/success.svg) center center no-repeat;
 }
 
@@ -634,6 +633,31 @@ p {
     text-align: center;
     margin-bottom: 16px;
     margin-top: 10px;
+}
+
+.login .form-column .auth-details .showcase {
+    display: grid;
+    grid-template-columns: 110px 110px 110px;
+    margin: 0 auto;
+    max-height: 14em;
+    overflow: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #579ad7 #fff;
+}
+
+.showcase-link {
+    padding: 0.5em;
+}
+
+.showcase-link-image {
+    max-width: 4em;
+    max-height: 4em;
+    margin-bottom: 0.5em;
+}
+
+.showcase-no-top-padding {
+    padding-top: 0 !important;
 }
 
 .login .form-column .auth-details .auth-username p {
@@ -877,6 +901,12 @@ a.active .btn:hover {
     color: #4082BC;
 }
 
+@media screen and (min-width: 1870px) {
+    html, body {
+        height: 100%;
+    }
+}
+
 @media screen and (max-width: 933px) {
     .login {
         position: relative;
@@ -884,20 +914,30 @@ a.active .btn:hover {
     }
 }
 
-@media screen and (max-width: 535px) {
-    .login {
-        padding: 0;
-    }
-
+@media screen and (max-width: 340px) {
     .login .form-column {
-        width: 400px !important;
-        max-width: 100%;
+        padding: 20px;
     }
 }
 
-@media screen and (max-height: 730px) {
-    html {
-        height: unset !important;
+@media screen and (max-width: 465px) {
+    .login {
+        margin: unset !important;
+    }
+
+    .login .form-column {
+        width: 100% !important;
+    }
+}
+
+@media screen and (max-width: 535px) {
+    .login {
+        padding: 0 5px;
+    }
+
+    .login .form-column {
+        width: 400px;
+        max-width: 100%;
     }
 }
 
@@ -927,4 +967,78 @@ a.active .btn:hover {
         -ms-transform: translateY(-50%);
         transform: translateY(-50%);
     }
+}
+
+.c-container {
+    display: flex;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-size: 15px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+    /* Hide the browser's default checkbox */
+    .c-container input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+/* Create a custom checkbox */
+.c-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    border-radius: 5px;
+    border: 2px solid #CCE0F2;
+}
+
+/* On mouse-over, add a grey background color */
+.c-container:hover input ~ .c-checkmark {
+    /*    background-color: #ccc;*/
+}
+
+/* When the checkbox is checked, add a blue background */
+.c-container input:checked ~ .c-checkmark {
+    background-color: #579AD7;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.c-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.c-container input:checked ~ .c-checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+.c-container .c-checkmark:after {
+    left: 5px;
+    top: 0.01px;
+    width: 5px;
+    height: 13px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.center-button {
+    justify-content: center;
+    display: flex;
+    align-items: center
 }

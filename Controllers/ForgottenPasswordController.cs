@@ -9,6 +9,7 @@ using System;
 using System.DirectoryServices.AccountManagement;
 using System.Web;
 using System.Web.Mvc;
+using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -21,18 +22,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ActiveDirectoryService _activeDirectory;
         private readonly TokenValidationService _tokenValidationService;
         private readonly DataProtectionService _dataProtectionService;
+        private readonly PasswordPolicyService _passwordPolicyService;
 
         public ForgottenPasswordController(MultiFactorSelfServiceApiClient apiClient,
             ILogger logger,
             ActiveDirectoryService activeDirectory,
             TokenValidationService tokenValidationService,
-            DataProtectionService dataProtectionService)
+            DataProtectionService dataProtectionService,
+            PasswordPolicyService passwordPolicyService)
         {
-            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _activeDirectory = activeDirectory ?? throw new ArgumentNullException(nameof(activeDirectory));
-            _tokenValidationService = tokenValidationService ?? throw new ArgumentNullException(nameof(tokenValidationService));
-            _dataProtectionService = dataProtectionService ?? throw new ArgumentNullException(nameof(dataProtectionService));
+            _apiClient = apiClient;
+            _logger = logger;
+            _activeDirectory = activeDirectory;
+            _tokenValidationService = tokenValidationService;
+            _dataProtectionService = dataProtectionService;
+            _passwordPolicyService = passwordPolicyService;
         }
 
         [HttpGet]
@@ -59,15 +63,26 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
             }
 
-            var callback = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
             try
             {
-                var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
-                var overriddenIdentity = adValidationResult.GetIdentity(form.Identity);
-                var response = _apiClient.StartResetPassword(overriddenIdentity, form.Identity, callback);
-                if (response.Success) return RedirectPermanent(response.Model.Url);
+                ApiResponse<AccessPage> response;
+                if (form.UnlockUser && Configuration.Current.AllowUserUnlock)
+                {
+                    var callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "unlock/complete", 1);
+                    response = _apiClient.StartUnlockingUser(form.Identity.Trim(), callbackUrl);
+                }
+                else
+                {
+                    var callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
+                    var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
+                    var overriddenIdentity = adValidationResult.GetIdentity(form.Identity);
+                    response = _apiClient.StartResetPassword(overriddenIdentity, form.Identity, callbackUrl);
+                }
 
-                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", overriddenIdentity, response.Message);
+                if (response.Success)
+                    return RedirectPermanent(response.Model.Url);
+
+                _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
@@ -91,7 +106,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!token.MustResetPassword)
             {
-                _logger.Error("Invalid reset password session for user '{identity:l}': required claims not found", token.Identity);
+                _logger.Error("Invalid reset password session for user '{identity:l}': required claims not found",
+                    token.Identity);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;
                 return RedirectToAction("Wrong");
             }
@@ -109,6 +125,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
+
             Response.Cookies.Add(cookie);
 
             return View(new ResetPasswordForm
@@ -135,14 +152,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var unprotectedIdentity = _dataProtectionService.Unprotect(sesionCookie);
             if (sesionCookie == null || unprotectedIdentity != form.Identity)
             {
-                _logger.Error("Invalid reset password session for user '{identity:l}': session not found", form.Identity);
+                _logger.Error("Invalid reset password session for user '{identity:l}': session not found",
+                    form.Identity);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
 
-            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out var errorReason))
+            var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword);
+            if (!validationResult.IsValid)
             {
-                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, errorReason);
+                _logger.Warning("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}", form.Identity, validationResult);
+                ModelState.AddModelError(nameof(form.NewPassword), validationResult.ToString());
+                return View("Reset", form);
+            }
+
+            if (!_activeDirectory.ResetPassword(form.Identity, form.NewPassword, out string errorReason))
+            {
+                _logger.Error("Unable to reset password for identity '{id:l}'. Failed to set new password: {err:l}",
+                    form.Identity, errorReason);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
@@ -162,6 +189,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 Response.Cookies.Remove(Constants.PWD_RECOVERY_COOKIE);
             }
+
             return View();
         }
     }

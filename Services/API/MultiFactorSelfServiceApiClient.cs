@@ -56,6 +56,31 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return result;
         }
 
+        public ApiResponse<AccessPage> StartUnlockingUser(string identity, string callbackUrl)
+        {
+            if (identity is null) throw new ArgumentNullException(nameof(identity));
+            if (callbackUrl is null) throw new ArgumentNullException(nameof(callbackUrl));
+
+            // add netbios domain name to login if specified
+            if (!string.IsNullOrEmpty(_settings.NetBiosName))
+            {
+                identity = $"{_settings.NetBiosName}\\{identity}";
+            }
+
+            var payload = new
+            {
+                Identity = identity,
+                CallbackUrl = callbackUrl,
+                Claims = new Dictionary<string, string>
+                {
+                    { MultiFactorClaims.UnlockUser, "true" }
+                }
+            };
+            
+            var result = _apiClient.Post<ApiResponse<AccessPage>>("/self-service/start-unlock-user", payload, x => x.Authorization = GetBasicAuth());
+            return result;
+        }
+
         public ApiResponse<AccessPage> CreateEnrollmentRequest()
         {
             return _apiClient.Post<ApiResponse<AccessPage>>(

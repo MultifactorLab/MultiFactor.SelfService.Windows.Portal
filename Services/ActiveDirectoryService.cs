@@ -90,7 +90,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 return ActiveDirectoryCredentialValidationResult.UnknownError(ex.Message);
             }
         }
-        
+
         /// <summary>
         /// Verify User Name and Password against Active Directory
         /// </summary>
@@ -141,7 +141,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         profile.BaseDn.Name);
                     return ActiveDirectoryCredentialValidationResult.UnknownError($"User '{user}' is not a member of any access group");
                 }
-                
+
                 _logger.Debug(
                     "User '{user:l}' is a member of the access group '{group:l}' in {domain:l}",
                     user.Name,
@@ -173,7 +173,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return ActiveDirectoryCredentialValidationResult.Ok()
                 .Fill(profile, _configuration);
         }
-        
+
         public IList<ExchangeActiveSyncDevice> SearchExchangeActiveSyncDevices(string userName)
         {
             var ret = new List<ExchangeActiveSyncDevice>();
@@ -505,8 +505,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
                 _logger.Debug("Setting a new password for user '{user}' in '{dn:l}'", identity,
                     userProfile.BaseDn.DnToFqdn());
-
-                using (var ctx = GetContext(userProfile.BaseDn.DnToFqdn()))
+                using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
+                           ContextOptions.Negotiate))
                 {
                     using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
                                userProfile.DistinguishedName))
@@ -552,12 +552,76 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 password: Configuration.Current.ActAs.Password);
 
         }
-        
+
+        public bool UnlockUser(string userName)
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentNullException(nameof(userName));
+            }
+
+            var identity = LdapIdentity.ParseUser(userName);
+
+            try
+            {
+                LdapProfile userProfile = LoadLdapProfile(identity);
+
+                _logger.Debug("Processing unlock operation for user '{user}' in '{dn:l}'", identity,
+                    userProfile.BaseDn.DnToFqdn());
+
+                UnlockUser(userProfile);
+
+                _logger.Information("User '{user}' is unlocked", identity);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Unlock operation for user '{user}' failed: {msg:l}", identity,
+                    ex.Message);
+            }
+
+            return false;
+        }
+
+        private void UnlockUser(LdapProfile userProfile)
+        {
+            using (var ctx = new PrincipalContext(ContextType.Domain, userProfile.BaseDn.DnToFqdn(), null,
+                       ContextOptions.Negotiate))
+            {
+                using (var user = UserPrincipal.FindByIdentity(ctx, IdentityType.DistinguishedName,
+                           userProfile.DistinguishedName))
+                {
+                    user.UnlockAccount();
+                    user.Save();
+                }
+            }
+        }
+
+        private LdapProfile LoadLdapProfile(LdapIdentity identity)
+        {
+            using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
+            {
+                var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+                var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
+                var forestSchema = forestSchemaLoader.Load(domain);
+
+                LdapProfile userProfile =
+                    new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
+                        identity);
+                if (userProfile == null)
+                {
+                    throw new NullReferenceException(nameof(userProfile));
+                }
+
+                return userProfile;
+            }
+        }
+
         private static bool IsMemberOf(LdapProfile profile, string group)
         {
             return profile.MemberOf?.Any(g => g.ToLower() == group.ToLower().Trim()) ?? false;
         }
-        
+
         private static DateTime ParseLdapDate(string dateString)
         {
             return DateTime

@@ -27,6 +27,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddTransient<HomeController>();
             services.AddTransient<PasswordController>();
             services.AddTransient<ForgottenPasswordController>();
+            services.AddTransient<UnlockController>();
             services.AddTransient<ErrorController>();
             services.AddTransient<LdapConnectionFactory>();
         }
@@ -52,6 +53,8 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
 
             services.AddSingleton<ContentCache>();
 
+            services.AddSingleton<PasswordPolicyService>();
+
             services.AddHttpClient();
         }
 
@@ -74,11 +77,11 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         
         private static void ConfigureHttpClients(ServiceCollection services)
         {
-            var handler = new HttpClientHandler();
+            WebProxy proxy = null;
             var proxySetting = Configuration.Current.MultiFactorApiProxy;
             if (!string.IsNullOrWhiteSpace(proxySetting))
             {
-                handler.Proxy = BuildProxy(proxySetting);
+                proxy = BuildProxy(proxySetting);
             }
 
             services
@@ -86,25 +89,25 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
                 {
                     client.BaseAddress = new Uri(Configuration.Current.MultiFactorApiUrl);
                 })
-                .ConfigurePrimaryHttpMessageHandler(() => handler);
+                .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
             
             services
                 .AddHttpClient(Constants.HttpClients.GoogleCaptcha, client =>
                 {
                     client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/");
                 })
-                .ConfigurePrimaryHttpMessageHandler(() => handler);
+                .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
             
             services
                 .AddHttpClient(Constants.HttpClients.YandexCaptcha, client =>
                 {
                     client.BaseAddress = new Uri("https://captcha-api.yandex.ru/");
                 })
-                .ConfigurePrimaryHttpMessageHandler(() => handler);
+                .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
             
             services
                 .AddHttpClient(Constants.HttpClients.MultifactorIdpApi)
-                .ConfigurePrimaryHttpMessageHandler(() => handler);
+                .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
         }
 
         private static void ConfigureYandexCaptchaApi(ServiceCollection services)
@@ -119,6 +122,13 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services
                 .AddTransient<GoogleReCaptcha2Api>()
                 .AddTransient<GoogleCaptchaHttpClientAdapterFactory>();
+        }
+        
+        private static HttpClientHandler CreateHttpClientHandler(WebProxy webProxy = null)
+        {
+            var handler = new HttpClientHandler();
+            handler.Proxy = webProxy;
+            return handler;
         }
         
         private static WebProxy BuildProxy(string proxyUri)
