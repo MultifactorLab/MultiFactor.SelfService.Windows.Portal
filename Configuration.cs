@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Web.Configuration;
 using MultiFactor.SelfService.Windows.Portal.Configurations.Models;
@@ -32,14 +33,14 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Only members of these groups required to pass 2fa to access (Optional)
         /// </summary>
         public string[] ActiveDirectory2FaGroup { get; private set; } = Array.Empty<string>();
-        
+
         /// <summary>
         /// Only members of these groups have access to the resource (Optional)
         /// </summary>
         public string[] ActiveDirectoryGroup { get; private set; } = Array.Empty<string>();
 
         public bool LoadActiveDirectoryNestedGroups { get; private set; } = true;
-        
+
         public string[] NestedGroupsBaseDn { get; private set; } = Array.Empty<string>();
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public bool NeedPrebindInfo()
         {
-            return UseUpnAsIdentity || ActiveDirectory2FaGroup.Any() || EnablePasswordManagement;
+            return UseUpnAsIdentity || !string.IsNullOrWhiteSpace(UseAttributeAsIdentity) || ActiveDirectory2FaGroup.Any() || EnablePasswordManagement;
         }
 
         /// <summary>
@@ -123,9 +124,9 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// Multifactor API Secret
         /// </summary>
         public string MultiFactorApiSecret { get; private set; }
-        
+
         public bool PreAuthnMode { get; private set; }
-        
+
         /// <summary>
         /// Logging level
         /// </summary>
@@ -153,8 +154,12 @@ namespace MultiFactor.SelfService.Windows.Portal
         public long? PwdChangingSessionCacheSize { get; private set; }
         public Link[] Links { get; private set; }
         public int NotifyOnPasswordExpirationDaysLeft { get; private set; }
-        
+
         public PrivacyModeDescriptor PrivacyModeDescriptor { get; private set; }
+
+        public string UseAttributeAsIdentity { get; private set; }
+
+        public NetworkCredential ActAs { get; private set; }
 
         public PasswordRequirements PasswordRequirements { get; set; }
 
@@ -192,7 +197,13 @@ namespace MultiFactor.SelfService.Windows.Portal
             var loadActiveDirectoryNestedGroups = ParseBoolean(appSettings, ConfigurationConstants.General.LOAD_AD_NESTED_GROUPS);
             var activeDirectoryGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_GROUP);
             var nestedGroupsBaseDn = GetValue(appSettings, ConfigurationConstants.General.NESTED_GROUPS_BASE_DN);
-            
+
+            var useAttributeAsIdentitySetting = GetValue(appSettings, ConfigurationConstants.General.USE_ATTRIBUTE_AS_IDENTITY);
+            if (useUpnAsIdentitySetting && !string.IsNullOrWhiteSpace(useAttributeAsIdentitySetting))
+            {
+                throw new ConfigurationErrorsException($"'use-upn-as-identity' and 'use-attribute-as-identity' settings cannot be specified together.");
+            }
+
             var configuration = new Configuration
             {
                 CompanyName = companyNameSetting,
@@ -210,13 +221,14 @@ namespace MultiFactor.SelfService.Windows.Portal
                 UseActiveDirectoryUserPhone = useActiveDirectoryUserPhoneSetting,
                 UseActiveDirectoryMobileUserPhone = useActiveDirectoryMobileUserPhoneSetting,
                 UseUpnAsIdentity = useUpnAsIdentitySetting,
+                UseAttributeAsIdentity = useAttributeAsIdentitySetting,
                 NotifyOnPasswordExpirationDaysLeft = notifyPasswordExpirationDaysLeft,
                 PreAuthnMode = preAuthnMode,
                 LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups,
                 PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode),
                 PasswordRequirements = PasswordRequirementsSection.GetRequirements()
             };
-            
+
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))
             {
                 configuration.ActiveDirectory2FaGroup = activeDirectory2FaGroupSetting
@@ -224,7 +236,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                     .Distinct()
                     .ToArray();
             }
-            
+
             if (!string.IsNullOrEmpty(nestedGroupsBaseDn))
             {
                 configuration.NestedGroupsBaseDn = nestedGroupsBaseDn
@@ -276,10 +288,13 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
 
             configuration.CaptchaProxy = appSettings[ConfigurationConstants.Captcha.CAPTCHA_PROXY];
-            
+
             ReadSignUpGroupsSettings(appSettings, configuration);
             ReadAppCacheSettings(appSettings, configuration);
             ReadPasswordRecoverySettings(appSettings, configuration);
+
+            SetActAsCredential(appSettings, configuration);
+
             Current = configuration;
         }
 
@@ -475,6 +490,25 @@ namespace MultiFactor.SelfService.Windows.Portal
 
                 configuration.PwdChangingSessionCacheSize = bytes;
             }
+        }
+
+        private static void SetActAsCredential(NameValueCollection appSettings, Configuration configuration)
+        {
+#if DEBUG
+            var actAs = appSettings[ConfigurationConstants.General.ACT_AS];
+            if (!string.IsNullOrWhiteSpace(actAs))
+            {
+                var cred = actAs.Split(':')
+                    .Select(x => x.Trim())
+                    .ToArray();
+                if (cred.Length == 2)
+                {
+                    configuration.ActAs = new NetworkCredential(cred[0], cred[1]);
+                }
+            }
+#else
+            configuration.ActAs = null;
+#endif
         }
 
         public static NameValueCollection PortalSettings

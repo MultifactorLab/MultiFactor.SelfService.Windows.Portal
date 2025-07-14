@@ -63,19 +63,20 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
             }
 
-            ApiResponse<AccessPage> response = null;
-            string callbackUrl = null;
             try
             {
+                ApiResponse<AccessPage> response;
                 if (form.UnlockUser && Configuration.Current.AllowUserUnlock)
                 {
-                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "unlock/complete", 1);
+                    var callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "unlock/complete", 1);
                     response = _apiClient.StartUnlockingUser(form.Identity.Trim(), callbackUrl);
                 }
                 else
                 {
-                    callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
-                    response = _apiClient.StartResetPassword(form.Identity.Trim(), callbackUrl);
+                    var callbackUrl = CallbackUrlFactory.BuildCallbackUrl(form.MyUrl, "reset");
+                    var adValidationResult = _activeDirectory.VerifyMembership(LdapIdentity.ParseUser(form.Identity));
+                    var overriddenIdentity = adValidationResult.GetIdentity(form.Identity);
+                    response = _apiClient.StartResetPassword(overriddenIdentity, form.Identity, callbackUrl);
                 }
 
                 if (response.Success)
@@ -111,9 +112,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return RedirectToAction("Wrong");
             }
 
+            var protectedIdentity = _dataProtectionService.Protect(token.Identity);
             var cookie = new HttpCookie(Constants.PWD_RECOVERY_COOKIE)
             {
-                Value = _dataProtectionService.Protect(token.Identity),
+                Value = protectedIdentity,
                 Expires = DateTime.Now.AddMinutes(5),
                 Path = "/",
                 Secure = true,
@@ -147,14 +149,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             var sesionCookie = Request.Cookies[Constants.PWD_RECOVERY_COOKIE]?.Value;
-            if (sesionCookie == null || _dataProtectionService.Unprotect(sesionCookie) != form.Identity)
+            var unprotectedIdentity = _dataProtectionService.Unprotect(sesionCookie);
+            if (sesionCookie == null || unprotectedIdentity != form.Identity)
             {
                 _logger.Error("Invalid reset password session for user '{identity:l}': session not found",
                     form.Identity);
                 ModelState.AddModelError(string.Empty, Resources.PasswordReset.Fail);
                 return View("Reset", form);
             }
-            
+
             var validationResult = _passwordPolicyService.ValidatePassword(form.NewPassword);
             if (!validationResult.IsValid)
             {

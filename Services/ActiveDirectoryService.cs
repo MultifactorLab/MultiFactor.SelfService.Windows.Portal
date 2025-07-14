@@ -5,6 +5,7 @@ using System.DirectoryServices.Protocols;
 using System.Globalization;
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Models;
+using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Resources;
 using Serilog;
@@ -89,7 +90,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 return ActiveDirectoryCredentialValidationResult.UnknownError(ex.Message);
             }
         }
-        
+
         /// <summary>
         /// Verify User Name and Password against Active Directory
         /// </summary>
@@ -140,7 +141,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         profile.BaseDn.Name);
                     return ActiveDirectoryCredentialValidationResult.UnknownError($"User '{user}' is not a member of any access group");
                 }
-                
+
                 _logger.Debug(
                     "User '{user:l}' is a member of the access group '{group:l}' in {domain:l}",
                     user.Name,
@@ -172,7 +173,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return ActiveDirectoryCredentialValidationResult.Ok()
                 .Fill(profile, _configuration);
         }
-        
+
         public IList<ExchangeActiveSyncDevice> SearchExchangeActiveSyncDevices(string userName)
         {
             var ret = new List<ExchangeActiveSyncDevice>();
@@ -533,6 +534,25 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return false;
         }
 
+        private static PrincipalContext GetContext(string dn)
+        {
+            if (Configuration.Current.ActAs == null)
+            {
+                return new PrincipalContext(ContextType.Domain,
+                    dn,
+                    null,
+                    ContextOptions.Negotiate);
+            }
+
+           return new PrincipalContext(ContextType.Domain,
+                dn,
+                null,
+                ContextOptions.SimpleBind,
+                userName: Configuration.Current.ActAs.UserName,
+                password: Configuration.Current.ActAs.Password);
+
+        }
+
         public bool UnlockUser(string userName)
         {
             if (string.IsNullOrEmpty(userName))
@@ -601,7 +621,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         {
             return profile.MemberOf?.Any(g => g.ToLower() == group.ToLower().Trim()) ?? false;
         }
-        
+
         private static DateTime ParseLdapDate(string dateString)
         {
             return DateTime

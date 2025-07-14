@@ -10,5 +10,6 @@
         public const string RawUserName = "rawUserName";
         public const string AdditionSsoStep = "additionSsoStep";
         public const string UnlockUser = "unlockUser";
+        public const string Name = "name";
     }
 }

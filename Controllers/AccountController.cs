@@ -72,7 +72,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var userName = User.Identity.Name;
 
             _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
-            return RedirectToMfa(userName, Request?.Url?.ToString(), sso.SamlSessionId, sso.OidcSessionId);
+            return RedirectToMfa(
+                identity: userName,
+                login: userName,
+                documentUrl: Request?.Url?.ToString(),
+                samlSessionId: sso.SamlSessionId,
+                oidcSessionId: sso.OidcSessionId
+            );
         }
 
         [HttpPost]
@@ -108,7 +114,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     return ByPassSamlSession(identity, sso.SamlSessionId);
                 }
 
-                return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId, adValidationResult);
+                return RedirectToMfa(
+                    identity: identity,
+                    login: model.UserName,
+                    documentUrl: model.MyUrl,
+                    samlSessionId: sso.SamlSessionId,
+                    oidcSessionId: sso.OidcSessionId,
+                    validationResult: adValidationResult
+                );
             }
 
             if (adValidationResult.UserMustChangePassword)
@@ -121,12 +134,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (Configuration.Current.EnablePasswordManagement)
                 {
                     var encryptedPassword = _dataProtectionService.Protect(model.Password.Trim());
-                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(identity),
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(model.UserName.Trim()),
                         model.UserName.Trim());
-                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(identity),
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(model.UserName.Trim()),
                         encryptedPassword);
 
-                    return RedirectToMfa(identity, model.MyUrl, null, null, adValidationResult);
+                    return RedirectToMfa(identity, model.UserName, model.MyUrl, null, null, adValidationResult);
                 }
 
                 _logger.Warning("User '{u:l}' must change password but password management is not enabled", identity);
@@ -164,6 +177,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             if (!userAuthenticated || !authenticateWindowsUser || !negotiateAuthentication)
             {
+
                 var identity = _applicationCache.GetIdentity(requestId);
                 return !identity.IsEmpty
                     ? View("Authn", identity.Value)
@@ -173,7 +187,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var userName = User.Identity.Name;
 
             _logger.Information("User '{user:l}' authenticated by NTLM/Kerberos", userName);
-            return RedirectToMfa(userName, Request?.Url?.ToString(), sso.SamlSessionId, sso.OidcSessionId);
+            return RedirectToMfa(
+                identity: userName,
+                login: userName,
+                documentUrl: Request?.Url?.ToString(),
+                samlSessionId: sso.SamlSessionId,
+                oidcSessionId: sso.OidcSessionId
+            );
         }
 
         [HttpPost]
@@ -204,18 +224,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             // 2fa before authn
             var identity = model.UserName;
-            // in common case 
+            // in common case
             if (!Configuration.Current.NeedPrebindInfo())
             {
-                return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId);
+                return RedirectToMfa(
+                    identity: identity,
+                    login: model.UserName,
+                    documentUrl: model.MyUrl,
+                    samlSessionId: sso.SamlSessionId,
+                    oidcSessionId: sso.OidcSessionId
+                );
             }
 
             var adResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName.Trim()));
 
-            if (Configuration.Current.UseUpnAsIdentity)
-            {
-                identity = adResult.Upn;
-            }
+            identity = adResult.GetIdentity(model.UserName.Trim());
 
             // sso session can skip 2fa, so go to pass entered
             if (adResult.IsBypass && sso.HasSamlSession())
@@ -223,7 +246,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 return View("Authn", model);
             }
 
-            return RedirectToMfa(identity, model.MyUrl, sso.SamlSessionId, sso.OidcSessionId, adResult);
+            return RedirectToMfa(
+                identity: identity,
+                login: model.UserName,
+                documentUrl: model.MyUrl,
+                samlSessionId: sso.SamlSessionId,
+                oidcSessionId: sso.OidcSessionId,
+                validationResult: adResult
+            );
         }
 
         [HttpPost]
@@ -268,19 +298,18 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                     // go to idp, return and render html form with saml assertion
                     return await GetSamlAssertion(model.AccessToken);
                 }
-                
+
                 _authService.SignIn(model.AccessToken);
                 return RedirectToAction("Index", "Home");
             }
 
             if (adValidationResult.UserMustChangePassword)
             {
-                // if we need upn, we MUST request it from AD one more time
+                // if we need upn or custom attribute, we MUST request it from AD one more time
                 // because for expired password bind is failed
-                if (Configuration.Current.UseUpnAsIdentity)
+                if (Configuration.Current.UseUpnAsIdentity || !string.IsNullOrWhiteSpace(Configuration.Current.UseAttributeAsIdentity))
                 {
-                    adValidationResult =
-                        _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
+                    adValidationResult = _activeDirectoryService.VerifyMembership(LdapIdentity.ParseUser(model.UserName));
                 }
 
                 var identity = adValidationResult.GetIdentity(model.UserName);
@@ -289,9 +318,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 if (Configuration.Current.EnablePasswordManagement)
                 {
                     var encryptedPassword = _dataProtectionService.Protect(model.Password.Trim());
-                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(identity),
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(model.UserName.Trim()),
                         model.UserName.Trim());
-                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(identity),
+                    _applicationCache.Set(ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(model.UserName.Trim()),
                         encryptedPassword);
                     // for change password redirect
                     _authService.SignIn(model.AccessToken);
@@ -332,7 +361,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             // 2fa before authn enable
             if (Configuration.Current.PreAuthnMode)
             {
-                // hence continue authentication flow 
+                // hence continue authentication flow
                 return RedirectToCredValidationAfter2FA(accessToken);
             }
 
@@ -379,8 +408,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             return RedirectToAction("Identity", "Account", routeValue);
         }
-        
-        private ActionResult RedirectToMfa(string login, string documentUrl, string samlSessionId, string oidcSessionId,
+
+        private ActionResult RedirectToMfa(string identity, string login, string documentUrl, string samlSessionId, string oidcSessionId,
             ActiveDirectoryCredentialValidationResult validationResult = null)
         {
             // public url from browser if we behind nginx or other proxy
@@ -405,7 +434,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (validationResult != null && validationResult.UserMustChangePassword)
             {
                 // if user must change pass, no add sso claims(even if they are present)
-                // otherwise callback url will be change and control will not return to ssp  
+                // otherwise callback url will be change and control will not return to ssp
                 claims.Add(MultiFactorClaims.ChangePassword, "true");
                 // if (Configuration.Current.PreAuthnMode && (oidcSessionId != null || samlSessionId != null))
                 // {
@@ -418,8 +447,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             {
                 if (samlSessionId != null) claims.Add(MultiFactorClaims.SamlSessionId, samlSessionId);
                 if (oidcSessionId != null) claims.Add(MultiFactorClaims.OidcSessionId, oidcSessionId);
-                
-                // MUST add this claims, otherwise callback url will be change and control will not return to ssp  
+
+                // MUST add this claims, otherwise callback url will be change and control will not return to ssp
                 if (Configuration.Current.PreAuthnMode && (oidcSessionId != null || samlSessionId != null))
                     claims.Add(MultiFactorClaims.AdditionSsoStep, "true");
             }
@@ -435,8 +464,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 validationResult?.Email,
                 validationResult?.Phone,
                 Configuration.Current.PrivacyModeDescriptor);
-            
-            var accessPage = _apiClient.CreateAccessRequest(login,
+
+            var accessPage = _apiClient.CreateAccessRequest(identity,
                 personalData.Name,
                 personalData.Email,
                 personalData.Phone,
@@ -451,7 +480,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             var bypassPage = _apiClient.CreateSamlBypassRequest(login, samlSessionId);
             return View("ByPassSamlSession", bypassPage);
         }
-        
+
         private async Task<ActionResult> GetSamlAssertion(string accessToken)
         {
             // no token verification because 'aud'=api_key and ssp_api_key!=saml_api_key
