@@ -18,6 +18,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -29,6 +30,19 @@ namespace MultiFactor.SelfService.Windows.Portal
     public class MvcApplication : HttpApplication
     {
         protected void Application_Start()
+        {
+            try
+            {
+                Start();
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = FlattenException(ex);
+                StartupLogger.Error(ex, "Unable to start: {Message:l}", errorMessage);
+            }
+        }
+
+        private void Start()
         {
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
@@ -70,7 +84,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                     Log.Logger.Debug(syslogInfoMessage);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Logger.Error(ex, "Unable to start");
                 throw;
@@ -122,21 +136,22 @@ namespace MultiFactor.SelfService.Windows.Portal
                 HandleUnauthError();
                 return;
             }
-            
+
             if (ex is PasswordChangingSessionExpired pwdEx)
             {
                 logger.Warning(ex, "Password changing session expired for user '{u:l}'", pwdEx.Identity);
                 HandleUnauthError();
                 return;
             }
-            
+
             if (ex is FeatureNotEnabledException featureEx)
             {
                 var rd = HttpContext.Current.Request.RequestContext.RouteData;
                 var action = rd.Values["action"] ?? "action";
                 var controller = rd.Values["controller"] ?? "controller";
                 var route = $"/{controller}/{action}".ToLower();
-                logger.Warning("Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.", route, featureEx.FeatureDescription);
+                logger.Warning("Unable to navigate to route '{r:l}' because required feature '{f:l}' is not enabled.",
+                    route, featureEx.FeatureDescription);
 
                 HttpContext.Current.Server.ClearError();
                 HttpContext.Current.Response.Clear();
@@ -226,37 +241,43 @@ namespace MultiFactor.SelfService.Windows.Portal
                         var serverIp = ResolveIP(uri.Host);
                         loggerConfiguration
                             .WriteTo
-                            .JsonUdpSyslog(serverIp, 
-                            port: uri.Port, 
-                            appName: sysLogAppName, 
-                            format: format, 
-                            outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
-                            facility: facility, 
-                            json: isJson);
-                        logMessage = $"Using UDP syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
+                            .JsonUdpSyslog(serverIp,
+                                port: uri.Port,
+                                appName: sysLogAppName,
+                                format: format,
+                                outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
+                                facility: facility,
+                                json: isJson);
+                        logMessage =
+                            $"Using UDP syslog server: {sysLogServer}, format: {format}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     case "tcp":
                         loggerConfiguration
                             .WriteTo
-                            .JsonTcpSyslog(uri.Host, 
-                                uri.Port, 
+                            .JsonTcpSyslog(uri.Host,
+                                uri.Port,
                                 certValidationCallback: ValidateServerCertificate,
-                                secureProtocols: sysLogUseTls ? System.Security.Authentication.SslProtocols.Tls12 : System.Security.Authentication.SslProtocols.None,
-                                appName: sysLogAppName, 
+                                secureProtocols: sysLogUseTls
+                                    ? System.Security.Authentication.SslProtocols.Tls12
+                                    : System.Security.Authentication.SslProtocols.None,
+                                appName: sysLogAppName,
                                 format: format,
                                 outputTemplate: !string.IsNullOrWhiteSpace(sysLogTemplate) ? sysLogTemplate : null,
-                                framingType: framer, 
-                                facility: facility, 
+                                framingType: framer,
+                                facility: facility,
                                 json: isJson);
-                        logMessage = $"Using TCP syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
+                        logMessage =
+                            $"Using TCP syslog server {sysLogServer}, format: {format}, framing: {framer}, facility: {facility}, appName: {sysLogAppName}";
                         break;
                     default:
-                        throw new NotImplementedException($"Unknown scheme {uri.Scheme} for syslog-server {sysLogServer}. Expected udp or tcp");
+                        throw new NotImplementedException(
+                            $"Unknown scheme {uri.Scheme} for syslog-server {sysLogServer}. Expected udp or tcp");
                 }
             }
         }
 
-        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) => true;
+        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain,
+            SslPolicyErrors sslPolicyErrors) => true;
 
         private static TEnum ParseSettingOrDefault<TEnum>(string setting, TEnum defaultValue) where TEnum : struct
         {
@@ -293,5 +314,25 @@ namespace MultiFactor.SelfService.Windows.Portal
             }
         }
 
+        static string FlattenException(Exception exception)
+        {
+            var stringBuilder = new StringBuilder();
+
+            var counter = 0;
+
+            while (exception != null)
+            {
+                if (counter++ > 0)
+                {
+                    var prefix = new string('-', counter) + ">\t";
+                    stringBuilder.Append(prefix);
+                }
+
+                stringBuilder.AppendLine(exception.Message);
+                exception = exception.InnerException;
+            }
+
+            return stringBuilder.ToString();
+        }
     }
 }
