@@ -120,6 +120,15 @@
   <data name="Generic" xml:space="preserve">
     <value>К сожалению, при обработке запроса произошла ошибка. Все данные записаны. &lt;br/&gt;Пожалуйста, сообщите администратору.</value>
   </data>
+  <data name="SessionExpiredButton" xml:space="preserve">
+    <value>На главную</value>
+  </data>
+  <data name="SessionExpiredDetails" xml:space="preserve">
+    <value>Пожалуйста, войдите ещё раз</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Сессия истекла</value>
+  </data>
   <data name="SomethingWentWrong" xml:space="preserve">
     <value>Что-то не так.</value>
   </data>

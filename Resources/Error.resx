@@ -120,6 +120,15 @@
   <data name="Generic" xml:space="preserve">
     <value>There was an error while processing the request. All data logged. &lt;br/&gt;Please inform administrator.</value>
   </data>
+  <data name="SessionExpiredButton" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="SessionExpiredDetails" xml:space="preserve">
+    <value>Please log in again</value>
+  </data>
+  <data name="SessionExpiredTitle" xml:space="preserve">
+    <value>Session expired</value>
+  </data>
   <data name="SomethingWentWrong" xml:space="preserve">
     <value>Something went wrong.</value>
   </data>
