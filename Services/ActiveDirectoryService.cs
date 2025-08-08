@@ -360,8 +360,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
         }
 
-        public bool ChangeValidPassword(string userName, string currentPassword, string newPassword,
-            out string errorReason)
+        public bool ChangeValidPassword(string userName, string currentPassword, string newPassword, out string errorReason)
         {
             var identity = LdapIdentity.ParseUser(userName);
             errorReason = null;
@@ -370,8 +369,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 LdapProfile userProfile;
 
-                using (var connection =
-                       _connectionFactory.Create(_configuration.Domain, identity.Name, currentPassword))
+                using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
                 {
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
                     var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
