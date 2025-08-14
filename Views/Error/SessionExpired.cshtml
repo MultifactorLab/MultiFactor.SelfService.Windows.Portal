@@ -1,0 +1,15 @@
+@using System.Globalization
+
+<div class="login">
+    <div class="form-column">
+        <h2>@Resources.Error.SessionExpiredTitle</h2>
+        <p>@Resources.Error.SessionExpiredDetails</p>
+        <ul class="action">
+            <li>
+                <a href="@Url.Action("Index", "Home")" class="center-button btn-primary w-100">
+                    @Resources.Error.SessionExpiredButton
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

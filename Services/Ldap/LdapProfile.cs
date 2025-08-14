@@ -33,8 +33,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             catch (ArgumentOutOfRangeException aore)
             {
                 // inconsistency between the parsing function and AD value
-                _logger.Warning(aore,
-                    "Something wrong with password expiration date: 'msDS-UserPasswordExpiryTimeComputed'={PasswordExpirationRawValue}",
+                _logger.Warning("Something wrong with password expiration date: 'msDS-UserPasswordExpiryTimeComputed'={PasswordExpirationRawValue}",
                     PasswordExpirationRawValue);
                 return DateTime.MaxValue;
             }

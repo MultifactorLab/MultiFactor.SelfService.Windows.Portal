@@ -144,6 +144,13 @@ namespace MultiFactor.SelfService.Windows.Portal
                 return;
             }
 
+            if (ex is HttpAntiForgeryException)
+            {
+                Server.ClearError();
+                Response.Redirect("~/Error/SessionExpired");
+                return;
+            }
+
             if (ex is FeatureNotEnabledException featureEx)
             {
                 var rd = HttpContext.Current.Request.RequestContext.RouteData;
