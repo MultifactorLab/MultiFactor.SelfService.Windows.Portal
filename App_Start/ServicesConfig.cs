@@ -43,6 +43,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddScoped<JwtTokenProvider>();
             services.AddSingleton<ApiClient>();
             services.AddScoped<MultiFactorSelfServiceApiClient>();
+            services.AddSingleton<ScopeInfoService>();
 
             services.AddSingleton<TokenValidationService>();
             services.AddSingleton<ActiveDirectoryService>();

@@ -64,7 +64,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
             catch (ForbiddenException ex)
             {
-                throw;
+                throw new AccessForbiddenException(ex.Message, ex);
             }
             catch (Exception ex)
             {

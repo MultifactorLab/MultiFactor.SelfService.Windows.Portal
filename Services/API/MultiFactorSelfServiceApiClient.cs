@@ -89,6 +89,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                 x => x.Authorization = GetBearerAuth());
         }
 
+        public ApiResponse<ScopeSupportInfoDto> GetScopeSupportInfo()
+        {
+            return _apiClient.Get<ApiResponse<ScopeSupportInfoDto>>("/self-service/support-info", x => x.Authorization = GetBasicAuth());
+        }
+
         private string GetBearerAuth() => $"Bearer {_tokenProvider.GetToken()}";
 
         private string GetBasicAuth()

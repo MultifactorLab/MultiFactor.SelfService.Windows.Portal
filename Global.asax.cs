@@ -131,6 +131,14 @@ namespace MultiFactor.SelfService.Windows.Portal
                 return;
             }
 
+            if (ex is AccessForbiddenException)
+            {
+                HttpContext.Current.Server.ClearError();
+                HttpContext.Current.Response.Clear();
+                HttpContext.Current.Response.Redirect("~/Error/AccessDenied");
+                return;
+            }
+            
             if (ex is ForbiddenException)
             {
                 HandleUnauthError();
