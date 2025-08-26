@@ -483,6 +483,7 @@
     <Compile Include="Syslog\SyslogLoggerJsonConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\images\alert_circle.svg" />
     <Content Include="Content\images\stage.svg" />
     <Content Include="Content\images\success.svg" />
     <Content Include="Content\js\qrcode.min.js" />
