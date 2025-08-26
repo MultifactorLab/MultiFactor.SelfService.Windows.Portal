@@ -69,7 +69,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Если вы считаете это неправильным, пожалуйста, обратитесь к администратору системы по контактам ниже.
+        ///   Looks up a localized string similar to Если вы считаете это неправильным, пожалуйста, обратитесь к администратору системы.
         /// </summary>
         public static string AccessDeniedMessage {
             get {

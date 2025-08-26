@@ -3,52 +3,52 @@ using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
 using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
-using Microsoft.Extensions.DependencyInjection;
+using MultiFactor.SelfService.Windows.Portal.Services.Caching;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services
 {
     public class ScopeInfoService
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly MultiFactorSelfServiceApiClient _apiClient;
+        private readonly ApplicationCache _cache;
         private readonly ILogger _logger;
-        private SupportInfo _supportInfo;
-        private bool _isInitialized;
-        private readonly object _lock = new object();
         
-        public ScopeInfoService(IServiceScopeFactory serviceScopeFactory, ILogger logger)
+        public ScopeInfoService(
+            MultiFactorSelfServiceApiClient apiClient, 
+            ApplicationCache cache, 
+            ILogger logger)
         {
-            _serviceScopeFactory = serviceScopeFactory;
+            _apiClient = apiClient;
+            _cache = cache;
             _logger = logger;
         }
         
-        public SupportInfo GetAdminInfo()
+        public SupportViewModel GetAdminInfo()
         {
-            if (!_isInitialized)
+            var cachedInfo = _cache.GetSupportInfo(Constants.SUPPORT_INFO);
+            if (!cachedInfo.IsEmpty)
             {
-                lock (_lock)
-                {
-                    if (_isInitialized) return _supportInfo;
-                    LoadScopeInfo();
-                }
+                return cachedInfo.Value;
             }
-            return _supportInfo;
+            
+            return LoadAndCacheScopeInfo();
         }
         
-        private void LoadScopeInfo()
+        private SupportViewModel LoadAndCacheScopeInfo()
         {
             try
             {
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var apiClient = scope.ServiceProvider.GetRequiredService<MultiFactorSelfServiceApiClient>();
-                    var apiResponse = apiClient.GetScopeSupportInfo();
-                    _supportInfo = ScopeSupportInfoDto.ToModel(apiResponse.Model);
-                    _isInitialized = true;
-                }
+                var apiResponse = _apiClient.GetScopeSupportInfo();
+                var supportInfo = ScopeSupportInfoDto.ToModel(apiResponse.Model);
+                _cache.SetSupportInfo(Constants.SUPPORT_INFO, supportInfo);
+                return supportInfo;
             }
             catch (Exception ex)
             {
                 _logger.Warning(ex, "Failed to load scope info: {Message}", ex.Message);
+                var emptyModel = SupportViewModel.EmptyModel();
+                _cache.SetSupportInfo(Constants.SUPPORT_INFO, emptyModel);
+                return emptyModel;
             }
         }
     }

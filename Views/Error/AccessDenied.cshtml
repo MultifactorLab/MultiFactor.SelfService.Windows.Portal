@@ -1,4 +1,4 @@
-@model MultiFactor.SelfService.Windows.Portal.Models.SupportInfo
+@model MultiFactor.SelfService.Windows.Portal.Models.SupportViewModel
 
 @{
     ViewBag.Title = Resources.Error.AccessDenied;
@@ -12,28 +12,25 @@
         <h2>@ViewBag.Title</h2>
         <p>@Resources.Error.AccessDeniedMessage</p>
         
-        @if (!string.IsNullOrEmpty(Model.AdminName) || 
-             !string.IsNullOrEmpty(Model.AdminEmail) || 
-             !string.IsNullOrEmpty(Model.AdminPhone))
+        @if (!Model.IsEmpty())
         {
             <div class="support-details">
-                @if (!string.IsNullOrEmpty(Model.AdminName))
+                @if (!string.IsNullOrWhiteSpace(Model.AdminName))
                 {
                     <p><strong>@Resources.Error.AdminName:</strong><br /> @Model.AdminName</p>
                 }
                 
-                @if (!string.IsNullOrEmpty(Model.AdminEmail))
+                @if (!string.IsNullOrWhiteSpace(Model.AdminEmail))
                 {
                     <p><strong>@Resources.Error.AdminEmail:</strong><br /> <a href="mailto:@Model.AdminEmail">@Model.AdminEmail</a></p>
                 }
                 
-                @if (!string.IsNullOrEmpty(Model.AdminPhone))
+                @if (!string.IsNullOrWhiteSpace(Model.AdminPhone))
                 {
                     <p><strong>@Resources.Error.AdminPhone:</strong><br /> <a href="tel:@Model.AdminPhone">@Model.AdminPhone</a></p>
                 }
             </div>
         }
-        
         <ul class="action">
             <li>
                 <a href="@Url.Action("Login", "Account")" class="center-button btn-primary w-100">

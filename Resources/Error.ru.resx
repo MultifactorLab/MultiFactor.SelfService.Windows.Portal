@@ -139,7 +139,7 @@
     <value>Отказано в доступе</value>
   </data>
   <data name="AccessDeniedMessage" xml:space="preserve">
-    <value>Если вы считаете это неправильным, пожалуйста, обратитесь к администратору системы по контактам ниже</value>
+    <value>Если вы считаете это неправильным, пожалуйста, обратитесь к администратору системы</value>
   </data>
   <data name="AdminName" xml:space="preserve">
     <value>Имя</value>

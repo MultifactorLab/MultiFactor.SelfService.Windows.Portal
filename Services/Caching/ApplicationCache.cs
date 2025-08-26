@@ -63,5 +63,34 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
         {
             return 18 + data.AccessToken.Length * 2 + data.UserName.Length * 2;
         }
+
+        public void SetSupportInfo(string key, SupportViewModel value)
+        {
+            var expiration = value.IsEmpty() 
+                ? _config.SupportInfoEmptyExpiration 
+                : _config.SupportInfoExpiration;
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(expiration)
+                .SetSize(GetDataSize(value));
+            _cache.Set(key, value, options);
+        }
+
+        public CachedItem<SupportViewModel> GetSupportInfo(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return CachedItem<SupportViewModel>.Empty;
+            return _cache.TryGetValue(key, out SupportViewModel value) 
+                ? new CachedItem<SupportViewModel>(value) 
+                : CachedItem<SupportViewModel>.Empty;
+        }
+        
+        private static long GetDataSize(SupportViewModel data)
+        {
+            if (data == null) return 18;
+            return 18 + 
+                (data.AdminName?.Length ?? 0) * 2 + 
+                (data.AdminEmail?.Length ?? 0) * 2 + 
+                (data.AdminPhone?.Length ?? 0) * 2;
+        }
     }
 }

@@ -69,7 +69,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If you believe this is incorrect, please contact the system administrator using the contacts below.
+        ///   Looks up a localized string similar to If you believe this is incorrect, please contact the system administrator.
         /// </summary>
         public static string AccessDeniedMessage {
             get {

@@ -139,7 +139,7 @@
     <value>Access denied</value>
   </data>
   <data name="AccessDeniedMessage" xml:space="preserve">
-    <value>If you believe this is incorrect, please contact the system administrator using the contacts below</value>
+    <value>If you believe this is incorrect, please contact the system administrator</value>
   </data>
   <data name="AdminName" xml:space="preserve">
     <value>Name</value>

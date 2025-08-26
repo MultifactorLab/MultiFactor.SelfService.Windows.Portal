@@ -11,6 +11,7 @@ namespace MultiFactor.SelfService.Windows.Portal
         public const string SESSION_EXPIRED_PASSWORD_CIPHER_KEY = "multifactor:expired-password:cipher";
         public const string CAPTCHA_TOKEN = "responseToken";
         public const string PWD_RECOVERY_COOKIE = "PSession";
+        public const string SUPPORT_INFO = "multifactor:support-info";
 
         public static readonly string WORKING_DIRECTORY = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 

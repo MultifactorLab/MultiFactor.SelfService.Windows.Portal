@@ -8,9 +8,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
         public string AdminEmail { get; set; }
         public string AdminPhone { get; set; }
 
-        public static SupportInfo ToModel(ScopeSupportInfoDto dto)
+        public static SupportViewModel ToModel(ScopeSupportInfoDto dto)
         {
-            return new SupportInfo(dto.AdminName, dto.AdminEmail, dto.AdminPhone);
+            return new SupportViewModel(dto.AdminName, dto.AdminEmail, dto.AdminPhone);
         }
     }    
 }
