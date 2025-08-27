@@ -45,7 +45,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
             catch (Exception ex)
             {
-                _logger.Warning(ex, "Failed to load scope info: {Message}", ex.Message);
+                _logger.Warning(ex, "Failed to load scope info: {Message:l}", ex.Message);
                 var emptyModel = SupportViewModel.EmptyModel();
                 _cache.SetSupportInfo(Constants.Configuration.SupportInfoCache.SUPPORT_INFO_CACHE_KEY, emptyModel);
                 return emptyModel;

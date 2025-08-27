@@ -55,13 +55,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
 
         private static long GetDataSize(string data)
         {
-            if (string.IsNullOrEmpty(data)) return 18;
-            return 18 + data.Length * 2;
+            return CalculateStringSize(data);
         }
         
         private static long GetDataSize(IdentityModel data)
         {
-            return 18 + data.AccessToken.Length * 2 + data.UserName.Length * 2;
+            return CalculateStringSize(data.AccessToken) +
+                   CalculateStringSize(data.UserName);
         }
 
         public void SetSupportInfo(string key, SupportViewModel value)
@@ -86,11 +86,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
         
         private static long GetDataSize(SupportViewModel data)
         {
-            if (data == null) return 18;
-            return 18 + 
-                (data.AdminName?.Length ?? 0) * 2 + 
-                (data.AdminEmail?.Length ?? 0) * 2 + 
-                (data.AdminPhone?.Length ?? 0) * 2;
+            return CalculateStringSize(data.AdminEmail) + 
+                   CalculateStringSize(data.AdminName) + 
+                   CalculateStringSize(data.AdminPhone);
+        }
+        
+        private static long CalculateStringSize(string s)
+        {
+            var headerSize = IntPtr.Size == 4 ? 14 : 22; // 32-bit ? 14 : 22
+            var size = headerSize + 2L * s.Length;
+            var alignment = IntPtr.Size == 4 ? 4 : 8; // 32-bit ? 4 : 8
+            return (long)Math.Ceiling(size / (double)alignment) * alignment;
         }
     }
 }
