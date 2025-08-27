@@ -50,7 +50,7 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddSingleton<DataProtectionService>();
             services.AddSingleton<MultiFactorApiClient>();
             services.AddSingleton<AuthService>();
-            services.AddPasswordChangingSessionCache();
+            services.AddApplicationCache();
 
             services.AddSingleton<ContentCache>();
 

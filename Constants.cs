@@ -11,7 +11,6 @@ namespace MultiFactor.SelfService.Windows.Portal
         public const string SESSION_EXPIRED_PASSWORD_CIPHER_KEY = "multifactor:expired-password:cipher";
         public const string CAPTCHA_TOKEN = "responseToken";
         public const string PWD_RECOVERY_COOKIE = "PSession";
-        public const string SUPPORT_INFO = "multifactor:support-info";
 
         public static readonly string WORKING_DIRECTORY = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
@@ -80,6 +79,12 @@ namespace MultiFactor.SelfService.Windows.Portal
             {
                 public const string LIFETIME = "pwd-changing-session-lifetime";
                 public const string SIZE = "pwd-changing-session-cache-size";
+            }
+
+            public static class SupportInfoCache
+            {
+                public const string SUPPORT_INFO_CACHE_KEY = "multifactor:support-info";
+                public const long SUPPORT_INFO_CACHE_SIZE = 1024 * 1024;
             }
 
             public static class PasswordRequirements

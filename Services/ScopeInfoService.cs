@@ -23,9 +23,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             _logger = logger;
         }
         
-        public SupportViewModel GetAdminInfo()
+        public SupportViewModel GetSupportInfo()
         {
-            var cachedInfo = _cache.GetSupportInfo(Constants.SUPPORT_INFO);
+            var cachedInfo = _cache.GetSupportInfo(Constants.Configuration.SupportInfoCache.SUPPORT_INFO_CACHE_KEY);
             if (!cachedInfo.IsEmpty)
             {
                 return cachedInfo.Value;
@@ -40,14 +40,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 var apiResponse = _apiClient.GetScopeSupportInfo();
                 var supportInfo = ScopeSupportInfoDto.ToModel(apiResponse.Model);
-                _cache.SetSupportInfo(Constants.SUPPORT_INFO, supportInfo);
+                _cache.SetSupportInfo(Constants.Configuration.SupportInfoCache.SUPPORT_INFO_CACHE_KEY, supportInfo);
                 return supportInfo;
             }
             catch (Exception ex)
             {
                 _logger.Warning(ex, "Failed to load scope info: {Message}", ex.Message);
                 var emptyModel = SupportViewModel.EmptyModel();
-                _cache.SetSupportInfo(Constants.SUPPORT_INFO, emptyModel);
+                _cache.SetSupportInfo(Constants.Configuration.SupportInfoCache.SUPPORT_INFO_CACHE_KEY, emptyModel);
                 return emptyModel;
             }
         }

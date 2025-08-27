@@ -16,7 +16,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         
         public ActionResult AccessDenied()
         {
-            var adminInfo = _scopeInfoService.GetAdminInfo();
+            var adminInfo = _scopeInfoService.GetSupportInfo();
             return View(adminInfo);
         }
     }

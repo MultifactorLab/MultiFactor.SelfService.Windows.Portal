@@ -10,7 +10,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
 
         public static SupportViewModel ToModel(ScopeSupportInfoDto dto)
         {
-            return new SupportViewModel(dto.AdminName, dto.AdminEmail, dto.AdminPhone);
+            return dto == null 
+                ? SupportViewModel.EmptyModel()
+                : new SupportViewModel(dto.AdminName, dto.AdminEmail, dto.AdminPhone);
         }
     }    
 }
