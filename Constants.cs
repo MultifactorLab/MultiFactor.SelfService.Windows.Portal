@@ -81,6 +81,12 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string SIZE = "pwd-changing-session-cache-size";
             }
 
+            public static class SupportInfoCache
+            {
+                public const string SUPPORT_INFO_CACHE_KEY = "multifactor:support-info";
+                public const long SUPPORT_INFO_CACHE_SIZE = 1024 * 1024;
+            }
+
             public static class PasswordRequirements
             {
                 public const string SECTION_NAME = "passwordRequirements";
