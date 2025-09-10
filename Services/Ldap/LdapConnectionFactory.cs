@@ -82,5 +82,42 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
             connection.Bind();
             return connection;  
         }
+        
+        /// <summary>
+        /// Creates new connection to a ldap domain, binds with the specified UPN credential using Basic/Simple auth type and returns it.
+        /// </summary>
+        /// <param name="domain">LDAP domain.</param>
+        /// <param name="upn">UPN</param>
+        /// <param name="password">Password.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public LdapConnection CreateBasicAuth(string domain, string upn, string password)
+        {
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                throw new ArgumentException($"'{nameof(domain)}' cannot be null or whitespace.", nameof(domain));
+            }
+
+            if (string.IsNullOrWhiteSpace(upn))
+            {
+                throw new ArgumentException($"'{nameof(upn)}' cannot be null or whitespace.", nameof(upn));
+            }
+
+            if (password is null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            
+            _logger.Debug("Start connection to {Domain}", domain);
+            var connection = new LdapConnection(domain);
+            connection.Credential = new NetworkCredential(upn, password);
+            connection.AuthType = AuthType.Basic;
+            connection.SessionOptions.ProtocolVersion = 3;
+            connection.SessionOptions.RootDseCache = true;
+            _logger.Debug("Start bind to {Domain} as '{User}'", domain, upn);
+            connection.Bind();
+            return connection;  
+        }
     }
 }

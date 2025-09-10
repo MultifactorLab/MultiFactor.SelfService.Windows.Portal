@@ -98,13 +98,43 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         {
             _logger.Debug("Verifying user '{User:l}' credential and status at {Domain:l}", userName,
                 _configuration.Domain);
-
-            using (_ = _connectionFactory.Create(_configuration.Domain, userName, password))
+            var user = LdapIdentity.ParseUser(userName);
+            if (user.Type == IdentityType.UserPrincipalName)
+            {
+                using (_ = _connectionFactory.CreateBasicAuth(_configuration.Domain, user.Name, password))
+                {
+                    _logger.Information("User '{User:l}' credential and status verified successfully in {Domain:l}",
+                        userName, _configuration.Domain);
+                }
+                return;
+            }
+            var userBindDn = GetExistedUserBindDn(user);
+            using (_ = _connectionFactory.CreateBasicAuth(_configuration.Domain, userBindDn, password))
             {
                 _logger.Information("User '{User:l}' credential and status verified successfully in {Domain:l}",
                     userName, _configuration.Domain);
             }
         }
+        
+        private string GetExistedUserBindDn(LdapIdentity user)
+        {
+            var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
+            using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
+            {
+                var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
+                var forestSchema = forestSchemaLoader.Load(domain);
+
+                var profile = new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
+                    user);
+                if (profile != null)
+                {
+                    return $"{user.Name}@{profile.BaseDn.DnToFqdn()}";
+                }
+                
+                _logger.Error("Unable to load profile for user '{user:l}'", user.Name);
+                throw new Exception($"Unable to load profile for user '{user.Name}'");
+            }
+        } 
 
         /// <summary>
         /// Retrieve additional attribute and verify policies against Active Directory
