@@ -108,7 +108,12 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 }
                 return;
             }
-            var userUpn = $"{user.Name}@{profile.BaseDn.DnToFqdn()}";
+
+            if (profile == null)
+            {
+                profile = GetUserLdapProfile(user);
+            }
+            var userUpn = string.IsNullOrWhiteSpace(profile.Upn) ? $"{user.Name}@{profile.BaseDn.DnToFqdn()}" : profile.Upn;
             using (_ = _connectionFactory.Create(_configuration.Domain, LdapIdentity.ParseUser(userUpn), password))
             {
                 _logger.Information("User '{User:l}' credential and status verified successfully in {Domain:l}",
@@ -141,7 +146,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         /// </summary>
         public ActiveDirectoryCredentialValidationResult VerifyMembership(LdapIdentity user, LdapProfile profile = null)
         {
-            profile = profile ?? GetUserLdapProfile(user);
+            if (profile == null)
+            {
+                profile = GetUserLdapProfile(user);
+            }
             if (_configuration.ActiveDirectoryGroup.Length > 0)
             {
                 var accessGroup = _configuration.ActiveDirectoryGroup.FirstOrDefault(group => IsMemberOf(profile, group));
