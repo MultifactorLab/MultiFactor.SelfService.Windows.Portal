@@ -1,4 +1,5 @@
 ﻿using System;
+using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices.Protocols;
 using System.Net;
 using Serilog;
@@ -50,72 +51,38 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
         /// Creates new connection to a ldap domain, binds with the specified credential using Negotiate auth type and returns it.
         /// </summary>
         /// <param name="domain">LDAP domain.</param>
-        /// <param name="userName">Username.</param>
+        /// <param name="identity">user LDAP identity</param>
         /// <param name="password">Password.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
-        public LdapConnection Create(string domain, string userName, string password)
+        public LdapConnection Create(string domain, LdapIdentity identity, string password)
         {
             if (string.IsNullOrWhiteSpace(domain))
             {
                 throw new ArgumentException($"'{nameof(domain)}' cannot be null or whitespace.", nameof(domain));
             }
 
-            if (string.IsNullOrWhiteSpace(userName))
+            if (string.IsNullOrWhiteSpace(identity.Name))
             {
-                throw new ArgumentException($"'{nameof(userName)}' cannot be null or whitespace.", nameof(userName));
+                throw new ArgumentException($"'{nameof(identity.Name)}' cannot be null or whitespace.", nameof(identity.Name));
             }
 
             if (password is null)
             {
                 throw new ArgumentNullException(nameof(password));
             }
-
             _logger.Debug("Start connection to {Domain}", domain);
             var connection = new LdapConnection(domain);
-            connection.Credential = new NetworkCredential(userName, password);
+            connection.Credential = new NetworkCredential(identity.Name, password);
+            if (identity.Type == IdentityType.UserPrincipalName)
+            {
+                connection.AuthType = AuthType.Basic;
+            }
             connection.SessionOptions.ProtocolVersion = 3;
             connection.SessionOptions.RootDseCache = true;
 
-            _logger.Debug("Start bind to {Domain} as '{User}'", domain, userName);
-            connection.Bind();
-            return connection;  
-        }
-        
-        /// <summary>
-        /// Creates new connection to a ldap domain, binds with the specified UPN credential using Basic/Simple auth type and returns it.
-        /// </summary>
-        /// <param name="domain">LDAP domain.</param>
-        /// <param name="upn">UPN</param>
-        /// <param name="password">Password.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
-        public LdapConnection CreateBasicAuth(string domain, string upn, string password)
-        {
-            if (string.IsNullOrWhiteSpace(domain))
-            {
-                throw new ArgumentException($"'{nameof(domain)}' cannot be null or whitespace.", nameof(domain));
-            }
-
-            if (string.IsNullOrWhiteSpace(upn))
-            {
-                throw new ArgumentException($"'{nameof(upn)}' cannot be null or whitespace.", nameof(upn));
-            }
-
-            if (password is null)
-            {
-                throw new ArgumentNullException(nameof(password));
-            }
-            
-            _logger.Debug("Start connection to {Domain}", domain);
-            var connection = new LdapConnection(domain);
-            connection.Credential = new NetworkCredential(upn, password);
-            connection.AuthType = AuthType.Basic;
-            connection.SessionOptions.ProtocolVersion = 3;
-            connection.SessionOptions.RootDseCache = true;
-            _logger.Debug("Start bind to {Domain} as '{User}'", domain, upn);
+            _logger.Debug("Start bind to {Domain} as '{User}'", domain, identity.Name);
             connection.Bind();
             return connection;  
         }
