@@ -33,18 +33,21 @@
 
                     @if (Configuration.Current.RequireCaptchaOnLogin)
                     {
-                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
-                        {
-                            <div class="g-recaptcha"
-                                 data-sitekey="@Configuration.Current.CaptchaKey"
-                                 data-callback="captchaCallback"
-                                 data-size="normal">
-                            </div>
-                        }
-                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-                        {
-                            <div id="yandex-captcha-container"></div>
-                        }
+                        <div class="captcha-wrapper">
+                            @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+                            {
+                                <div class="g-recaptcha"
+                                     data-sitekey="@Configuration.Current.CaptchaKey"
+                                     data-callback="captchaCallback"
+                                     data-size="normal">
+                                </div>
+                            }
+                            @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+                            {
+                                <div id="yandex-captcha-container"></div>
+                            }
+                        </div>
+                        
                     }
 
                 </div>
