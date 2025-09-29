@@ -5,7 +5,6 @@ using System.DirectoryServices.Protocols;
 using System.Globalization;
 using System.Linq;
 using MultiFactor.SelfService.Windows.Portal.Models;
-using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
 using Resources;
 using Serilog;
@@ -67,8 +66,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
 
             try
             {
-                VerifyCredentialOnly(userName, password);
-                return VerifyMembership(user);
+                var profile = GetUserLdapProfile(user);
+                VerifyCredentialOnly(userName, password, profile);
+                return VerifyMembership(user, profile);
             }
             catch (LdapException lex)
             {
@@ -94,41 +94,62 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
         /// <summary>
         /// Verify User Name and Password against Active Directory
         /// </summary>
-        private void VerifyCredentialOnly(string userName, string password)
+        private void VerifyCredentialOnly(string userName, string password, LdapProfile profile)
         {
             _logger.Debug("Verifying user '{User:l}' credential and status at {Domain:l}", userName,
                 _configuration.Domain);
+            var user = LdapIdentity.ParseUser(userName);
+            if (user.Type == IdentityType.UserPrincipalName)
+            {
+                using (_ = _connectionFactory.Create(_configuration.Domain, user, password))
+                {
+                    _logger.Information("User '{User:l}' credential and status verified successfully in {Domain:l}",
+                        userName, _configuration.Domain);
+                }
+                return;
+            }
 
-            using (_ = _connectionFactory.Create(_configuration.Domain, userName, password))
+            if (profile == null)
+            {
+                profile = GetUserLdapProfile(user);
+            }
+            var userUpn = string.IsNullOrWhiteSpace(profile.Upn) ? $"{user.Name}@{profile.BaseDn.DnToFqdn()}" : profile.Upn;
+            using (_ = _connectionFactory.Create(_configuration.Domain, LdapIdentity.ParseUser(userUpn), password))
             {
                 _logger.Information("User '{User:l}' credential and status verified successfully in {Domain:l}",
                     userName, _configuration.Domain);
             }
         }
-
-        /// <summary>
-        /// Retrieve additional attribute and verify policies against Active Directory
-        /// </summary>
-        public ActiveDirectoryCredentialValidationResult VerifyMembership(LdapIdentity user)
+        
+        private LdapProfile GetUserLdapProfile(LdapIdentity user)
         {
             var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
-
-            LdapProfile profile;
-
             using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
             {
                 var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
                 var forestSchema = forestSchemaLoader.Load(domain);
 
-                profile = new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
+                var profile = new ProfileLoader(forestSchema, _logger).LoadProfile(_configuration, connection, domain,
                     user);
-
-                if (profile == null)
+                if (profile != null)
                 {
-                    return ActiveDirectoryCredentialValidationResult.UnknownError("Unable to load profile");
+                    return profile;
                 }
+                
+                _logger.Error("Unable to load profile for user '{user:l}'", user.Name);
+                throw new Exception($"Unable to load profile for user '{user.Name}'");
             }
+        } 
 
+        /// <summary>
+        /// Retrieve additional attribute and verify policies against Active Directory
+        /// </summary>
+        public ActiveDirectoryCredentialValidationResult VerifyMembership(LdapIdentity user, LdapProfile profile = null)
+        {
+            if (profile == null)
+            {
+                profile = GetUserLdapProfile(user);
+            }
             if (_configuration.ActiveDirectoryGroup.Length > 0)
             {
                 var accessGroup = _configuration.ActiveDirectoryGroup.FirstOrDefault(group => IsMemberOf(profile, group));
@@ -360,8 +381,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
         }
 
-        public bool ChangeValidPassword(string userName, string currentPassword, string newPassword,
-            out string errorReason)
+        public bool ChangeValidPassword(string userName, string currentPassword, string newPassword, out string errorReason)
         {
             var identity = LdapIdentity.ParseUser(userName);
             errorReason = null;
@@ -370,8 +390,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             {
                 LdapProfile userProfile;
 
-                using (var connection =
-                       _connectionFactory.Create(_configuration.Domain, identity.Name, currentPassword))
+                using (var connection = _connectionFactory.CreateAsCurrentProcessUser(_configuration.Domain))
                 {
                     var domain = LdapIdentity.FqdnToDn(_configuration.Domain);
                     var forestSchemaLoader = new ForestSchemaLoader(_configuration, connection, _logger);
