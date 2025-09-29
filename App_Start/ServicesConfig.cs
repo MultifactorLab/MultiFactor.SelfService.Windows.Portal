@@ -43,13 +43,14 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddScoped<JwtTokenProvider>();
             services.AddSingleton<ApiClient>();
             services.AddScoped<MultiFactorSelfServiceApiClient>();
+            services.AddTransient<ScopeInfoService>();
 
             services.AddSingleton<TokenValidationService>();
             services.AddSingleton<ActiveDirectoryService>();
             services.AddSingleton<DataProtectionService>();
             services.AddSingleton<MultiFactorApiClient>();
             services.AddSingleton<AuthService>();
-            services.AddPasswordChangingSessionCache();
+            services.AddApplicationCache();
 
             services.AddSingleton<ContentCache>();
 

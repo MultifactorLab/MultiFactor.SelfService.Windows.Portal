@@ -1,0 +1,18 @@
+using MultiFactor.SelfService.Windows.Portal.Models;
+
+namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
+{
+    public class ScopeSupportInfoDto
+    {
+        public string AdminName { get; set; }
+        public string AdminEmail { get; set; }
+        public string AdminPhone { get; set; }
+
+        public static SupportViewModel ToModel(ScopeSupportInfoDto dto)
+        {
+            return dto == null 
+                ? SupportViewModel.EmptyModel()
+                : new SupportViewModel(dto.AdminName, dto.AdminEmail, dto.AdminPhone);
+        }
+    }    
+}

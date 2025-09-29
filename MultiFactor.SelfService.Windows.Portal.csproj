@@ -269,6 +269,7 @@
     <Compile Include="Controllers\UnlockController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
     <Compile Include="Core\Exceptions\ForbiddenException.cs" />
+    <Compile Include="Core\Exceptions\AccessForbiddenException.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CallbackUrlFactory.cs" />
@@ -301,6 +302,7 @@
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaApi.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaVerifier.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexHttpClientAdapterFactory.cs" />
+    <Compile Include="Models\SupportViewModel.cs" />
     <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
     <Compile Include="Models\ChangePasswordModel.cs" />
@@ -449,6 +451,7 @@
     <Compile Include="Services\API\DTO\AccessPage.cs" />
     <Compile Include="Services\API\DTO\BypassPage.cs" />
     <Compile Include="Services\API\DTO\ApiResponse.cs" />
+    <Compile Include="Services\API\DTO\ScopeSupportInfoDto.cs" />
     <Compile Include="Services\API\DTO\UserProfile.cs" />
     <Compile Include="Services\API\DTO\UserProfileAuthenticator.cs" />
     <Compile Include="Core\JwtTokenProvider.cs" />
@@ -472,6 +475,7 @@
     <Compile Include="Services\Ldap\ProfileLoader.cs" />
     <Compile Include="Services\Ldap\UserSearchResult.cs" />
     <Compile Include="Services\PasswordPolicyService.cs" />
+    <Compile Include="Services\ScopeInfoService.cs" />
     <Compile Include="Services\Token.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
     <Compile Include="Syslog\JsonRfc3164Formatter.cs" />
@@ -479,6 +483,7 @@
     <Compile Include="Syslog\SyslogLoggerJsonConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\images\alert_circle.svg" />
     <Content Include="Content\images\stage.svg" />
     <Content Include="Content\images\success.svg" />
     <Content Include="Content\js\qrcode.min.js" />
@@ -529,6 +534,7 @@
     <Content Include="Content\js\jquery.validate.unobtrusive.min.js" />
     <Content Include="Views\Account\Authn.cshtml" />
     <Content Include="Views\Account\Identity.cshtml" />
+    <Content Include="Views\Error\AccessDenied.cshtml" />
     <Content Include="Views\Unlock\Success.cshtml" />
     <Content Include="Views\Unlock\Wrong.cshtml" />
     <Content Include="Web.config" />

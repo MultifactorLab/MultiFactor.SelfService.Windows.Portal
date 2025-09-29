@@ -55,13 +55,48 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
 
         private static long GetDataSize(string data)
         {
-            if (string.IsNullOrEmpty(data)) return 18;
-            return 18 + data.Length * 2;
+            return CalculateStringSize(data);
         }
         
         private static long GetDataSize(IdentityModel data)
         {
-            return 18 + data.AccessToken.Length * 2 + data.UserName.Length * 2;
+            return CalculateStringSize(data.AccessToken) +
+                   CalculateStringSize(data.UserName);
+        }
+
+        public void SetSupportInfo(string key, SupportViewModel value)
+        {
+            var expiration = value.IsEmpty() 
+                ? _config.SupportInfoEmptyExpiration 
+                : _config.SupportInfoExpiration;
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(expiration)
+                .SetSize(GetDataSize(value));
+            _cache.Set(key, value, options);
+        }
+
+        public CachedItem<SupportViewModel> GetSupportInfo(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return CachedItem<SupportViewModel>.Empty;
+            return _cache.TryGetValue(key, out SupportViewModel value) 
+                ? new CachedItem<SupportViewModel>(value) 
+                : CachedItem<SupportViewModel>.Empty;
+        }
+        
+        private static long GetDataSize(SupportViewModel data)
+        {
+            return CalculateStringSize(data.AdminEmail) + 
+                   CalculateStringSize(data.AdminName) + 
+                   CalculateStringSize(data.AdminPhone);
+        }
+        
+        private static long CalculateStringSize(string s)
+        {
+            var headerSize = IntPtr.Size == 4 ? 14 : 22; // 32-bit ? 14 : 22
+            var size = headerSize + 2L * s.Length;
+            var alignment = IntPtr.Size == 4 ? 4 : 8; // 32-bit ? 4 : 8
+            return (long)Math.Ceiling(size / (double)alignment) * alignment;
         }
     }
 }

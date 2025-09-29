@@ -1,0 +1,42 @@
+@model MultiFactor.SelfService.Windows.Portal.Models.SupportViewModel
+
+@{
+    ViewBag.Title = Resources.Error.AccessDenied;
+}
+
+<div class="login" style="max-width: 400px; min-height: 450px;">
+    <div class="form-column">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="@Url.Content("~/Content/images/alert_circle.svg")" alt="Alert" width="64" height="64" />
+        </div>
+        <h2>@ViewBag.Title</h2>
+        <p>@Resources.Error.AccessDeniedMessage</p>
+        
+        @if (!Model.IsEmpty())
+        {
+            <div class="support-details">
+                @if (!string.IsNullOrWhiteSpace(Model.AdminName))
+                {
+                    <p><strong>@Resources.Error.AdminName:</strong><br /> @Model.AdminName</p>
+                }
+                
+                @if (!string.IsNullOrWhiteSpace(Model.AdminEmail))
+                {
+                    <p><strong>@Resources.Error.AdminEmail:</strong><br /> <a href="mailto:@Model.AdminEmail">@Model.AdminEmail</a></p>
+                }
+                
+                @if (!string.IsNullOrWhiteSpace(Model.AdminPhone))
+                {
+                    <p><strong>@Resources.Error.AdminPhone:</strong><br /> <a href="tel:@Model.AdminPhone">@Model.AdminPhone</a></p>
+                }
+            </div>
+        }
+        <ul class="action">
+            <li>
+                <a href="@Url.Action("Login", "Account")" class="center-button btn-primary w-100">
+                    @Resources.Error.BackToLogin
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
