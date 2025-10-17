@@ -484,6 +484,7 @@ p {
     flex-direction: column;
     justify-content: center;
     align-content: center;
+    max-inline-size: 100%;
 }
 
 #footer {
@@ -643,18 +644,14 @@ p {
 
 .login .form-column .auth-details .showcase {
     display: grid;
-    grid-template-columns: 110px 110px 110px;
+    grid-template-columns: repeat(auto-fit, minmax(4em, 1fr));
+    gap: 1em;
     min-block-size: 220px;
-    margin: 0 auto;
     max-height: 14em;
     overflow: auto;
     scroll-behavior: smooth;
     scrollbar-width: thin;
     scrollbar-color: #579ad7 #fff;
-}
-
-.showcase-link {
-    padding: 0.5em;
 }
 
 .showcase-link-image {
