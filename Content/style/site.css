@@ -361,6 +361,7 @@ html {
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    block-size: 100%;
 }
 
 body {
@@ -371,12 +372,16 @@ body {
     font-weight: normal;
     font-style: normal;
     background: linear-gradient(#2C6DA7, #62A6E2);
-    block-size: 100vh;
+    background-attachment: fixed;
+    min-block-size: 100dvh;
 }
 
 img {
+    display: flex;
     border-style: none;
     vertical-align: top;
+    flex: 1;
+    min-block-size: 0;
 }
 
 button, input, textarea, select {
@@ -479,6 +484,7 @@ p {
     flex-direction: column;
     justify-content: center;
     align-content: center;
+    max-inline-size: 100%;
 }
 
 #footer {
@@ -638,18 +644,14 @@ p {
 
 .login .form-column .auth-details .showcase {
     display: grid;
-    grid-template-columns: 110px 110px 110px;
+    grid-template-columns: repeat(auto-fit, minmax(4em, 1fr));
+    gap: 1em;
     min-block-size: 220px;
-    margin: 0 auto;
     max-height: 14em;
     overflow: auto;
     scroll-behavior: smooth;
     scrollbar-width: thin;
     scrollbar-color: #579ad7 #fff;
-}
-
-.showcase-link {
-    padding: 0.5em;
 }
 
 .showcase-link-image {
@@ -695,23 +697,18 @@ p {
     font-weight: 400;
 }
 
-#wrapper {
-    display: flex;
-    flex-direction: column;
-}
-
 .background-layout {
     display: flex;
     flex-direction: column;
     background: #fff;
     border-radius: 24px;
     margin: 32px;
-    height: 100%;
+    flex: 1;
 }
 
 .stage {
     display: flex;
-    height: inherit;
+    flex: 1;
     background: url(../content/images/stage.svg) center center no-repeat;
 }
 
@@ -902,12 +899,6 @@ a.active .btn:hover {
     color: #4082BC;
 }
 
-@media screen and (min-width: 1870px) {
-    html, body {
-        height: 100%;
-    }
-}
-
 @media screen and (max-width: 933px) {
     .login {
         position: relative;
@@ -939,6 +930,10 @@ a.active .btn:hover {
     .login .form-column {
         width: 400px;
         max-width: 100%;
+    }
+
+    .success-title {
+        width: 12.5em;
     }
 }
 
