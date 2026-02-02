@@ -329,7 +329,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>PasswordPolicy.ru.resx</DependentUpon>
-	</Compile>
+    </Compile>
     <Compile Include="Resources\UserUnlock.Designer.cs">
       <DependentUpon>UserUnlock.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -452,8 +452,8 @@
     <Compile Include="Services\API\DTO\BypassPage.cs" />
     <Compile Include="Services\API\DTO\ApiResponse.cs" />
     <Compile Include="Services\API\DTO\ScopeSupportInfoDto.cs" />
+    <Compile Include="Services\API\DTO\UserProfileAuthenticatorsDto.cs" />
     <Compile Include="Services\API\DTO\UserProfile.cs" />
-    <Compile Include="Services\API\DTO\UserProfileAuthenticator.cs" />
     <Compile Include="Core\JwtTokenProvider.cs" />
     <Compile Include="Services\API\MultiFactorSelfServiceApiClient.cs" />
     <Compile Include="Services\AuthService.cs" />
@@ -572,7 +572,7 @@
     <EmbeddedResource Include="Resources\PasswordPolicy.ru.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>PasswordPolicy.ru.Designer.cs</LastGenOutput>
-	</EmbeddedResource>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\UserUnlock.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>UserUnlock.Designer.cs</LastGenOutput>
