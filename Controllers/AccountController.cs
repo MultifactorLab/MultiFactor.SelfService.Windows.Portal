@@ -26,6 +26,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         private readonly ApplicationCache _applicationCache;
         private readonly AuthService _authService;
         private readonly MultiFactorApiClient _apiClient;
+        private readonly MultiFactorSelfServiceApiClient _selfServiceApiClient;
         private readonly IHttpClientFactory _httpFactory;
         private readonly ActiveDirectoryService _activeDirectoryService;
         private readonly DataProtectionService _dataProtectionService;
@@ -35,6 +36,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public AccountController(ApplicationCache applicationCache,
             AuthService authService,
             MultiFactorApiClient apiClient,
+            MultiFactorSelfServiceApiClient selfServiceApiClient,
             ActiveDirectoryService activeDirectoryService,
             DataProtectionService dataProtectionService,
             ILogger logger, IHttpClientFactory httpFactory)
@@ -42,6 +44,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             _applicationCache = applicationCache ?? throw new ArgumentNullException(nameof(applicationCache));
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _selfServiceApiClient = selfServiceApiClient ?? throw new ArgumentNullException(nameof(selfServiceApiClient));
             _activeDirectoryService =
                 activeDirectoryService ?? throw new ArgumentNullException(nameof(activeDirectoryService));
             _dataProtectionService =
@@ -224,9 +227,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
 
             // 2fa before authn
             var identity = model.UserName;
+            var authenticatorsResponse = _selfServiceApiClient.GetUserAuthenticators(identity);
+            if (!authenticatorsResponse.Success || !authenticatorsResponse.Model.GetAuthenticators().Any())
+            {
+                return View("Login", new LoginModel()
+                {
+                    UserName = identity
+                });
+            }
+
             // in common case
             if (!Configuration.Current.NeedPrebindInfo())
             {
+
                 return RedirectToMfa(
                     identity: identity,
                     login: model.UserName,

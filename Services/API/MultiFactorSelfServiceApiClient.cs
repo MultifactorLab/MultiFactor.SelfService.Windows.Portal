@@ -30,6 +30,19 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return result.Model;
         }
 
+        public ApiResponse<UserProfileAuthenticatorsDto> GetUserAuthenticators(string identity)
+        {
+            if (string.IsNullOrWhiteSpace(identity)) throw new ArgumentNullException(nameof(identity));
+
+            var payload = new
+            {
+                Identity = identity
+            };
+
+            var result = _apiClient.Post<ApiResponse<UserProfileAuthenticatorsDto>>("/self-service/user-authenticators", payload, x => x.Authorization = GetBasicAuth());
+            return result;
+        }
+
         public ApiResponse<AccessPage> StartResetPassword(string twoFaIdentity, string ldapIdentity, string callbackUrl)
         {
             if (twoFaIdentity is null) throw new ArgumentNullException(nameof(twoFaIdentity));
