@@ -40,7 +40,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
                 ? new CachedItem<IdentityModel>(value) 
                 : CachedItem<IdentityModel>.Empty;
         }
-        
+        public void SetPreauthenticationAuthn(string key, bool value)
+        {
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(_config.PreauthenticationAuthnExpiration)
+                .SetSize(1);
+            _cache.Set(key, value, options);
+        }
+
+        public CachedItem<bool> GetPreauthenticationAuthn(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return CachedItem<bool>.Empty;
+            return _cache.TryGetValue(key, out bool value)
+                ? new CachedItem<bool>(value)
+                : CachedItem<bool>.Empty;
+        }
+
         public CachedItem<string> Get(string key)
         {
             return _cache.TryGetValue(key, out string value) 

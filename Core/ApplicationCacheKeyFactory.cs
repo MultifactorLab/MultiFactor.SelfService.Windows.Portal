@@ -11,5 +11,10 @@
         {
             return $"{Constants.SESSION_EXPIRED_PASSWORD_CIPHER_KEY}:{identity}";
         }
+
+        public static string CreatePreAuthenticationAuthnSucceedKey(string identity)
+        {
+            return $"{Constants.PREAUTHENTICATION_AUTHN_SUCCEED_KEY}:{identity}";
+        }
     }
 }
