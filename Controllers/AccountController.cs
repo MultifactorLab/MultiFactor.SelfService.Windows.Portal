@@ -112,6 +112,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             if (adValidationResult.IsAuthenticated)
             {
                 var identity = adValidationResult.GetIdentity(model.UserName);
+
+                if (Configuration.Current.PreAuthnMode)
+                {
+                    _applicationCache.SetPreauthenticationAuthn(
+                        ApplicationCacheKeyFactory.CreatePreAuthenticationAuthnSucceedKey(identity),
+                        true);
+                }
+
                 if (sso.HasSamlSession() && adValidationResult.IsBypass)
                 {
                     return ByPassSamlSession(identity, sso.SamlSessionId);
@@ -392,6 +400,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(accessToken);
+
+            var authCacheResult = _applicationCache.GetPreauthenticationAuthn(ApplicationCacheKeyFactory.CreatePreAuthenticationAuthnSucceedKey(token.Subject));
+            if (!authCacheResult.IsEmpty && authCacheResult.Value)
+            {
+                _applicationCache.Remove(ApplicationCacheKeyFactory.CreatePreAuthenticationAuthnSucceedKey(token.Subject));
+                _authService.SignIn(accessToken);
+                return RedirectToAction("Index", "Home");
+            }
+
             var usernameClaims = token.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName);
 
             // for the password entry step

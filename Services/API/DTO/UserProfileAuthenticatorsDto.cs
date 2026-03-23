@@ -11,10 +11,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API.DTO
 
         public UserProfileAuthenticatorDto[] GetAuthenticators()
         {
-            return TotpAuthenticators
-                .Concat(TelegramAuthenticators)
-                .Concat(MobileAppAuthenticators)
-                .Concat(PhoneAuthenticators)
+            return Enumerable.Empty<UserProfileAuthenticatorDto>()
+                .Concat(TotpAuthenticators ?? Enumerable.Empty<UserProfileAuthenticatorDto>())
+                .Concat(TelegramAuthenticators ?? Enumerable.Empty<UserProfileAuthenticatorDto>())
+                .Concat(MobileAppAuthenticators ?? Enumerable.Empty<UserProfileAuthenticatorDto>())
+                .Concat(PhoneAuthenticators ?? Enumerable.Empty<UserProfileAuthenticatorDto>())
                 .ToArray();
         }
     }
