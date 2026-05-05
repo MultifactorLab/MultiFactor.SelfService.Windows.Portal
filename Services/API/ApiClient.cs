@@ -11,22 +11,26 @@ using System.Text.RegularExpressions;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.API
 {
+    [Obsolete]
     public class ApiClient
     {
         private readonly Configuration _configuration;
         private readonly ILogger _logger;
 
+        [Obsolete]
         public ApiClient(Configuration configuration, ILogger logger)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        [Obsolete]
         public TResponse Get<TResponse>(string path, Action<RequestOptions> configure = null) where TResponse : ApiResponse
         {
             return SendRequest<TResponse>(path, HttpMethod.Get, null, configure);
         }
 
+        [Obsolete]
         public TResponse Post<TResponse>(string path, object payload, Action<RequestOptions> configure = null) where TResponse : ApiResponse
         {
             var json = payload != null
@@ -35,6 +39,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return SendRequest<TResponse>(path, HttpMethod.Post, json, configure);
         }
 
+        [Obsolete]
         public TResponse Delete<TResponse>(string path, Action<RequestOptions> configure = null) where TResponse : ApiResponse
         {
             return SendRequest<TResponse>(path, HttpMethod.Delete, null, configure);

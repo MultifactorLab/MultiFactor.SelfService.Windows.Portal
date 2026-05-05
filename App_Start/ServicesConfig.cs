@@ -13,6 +13,29 @@ using System;
 using System.Net;
 using System.Net.Http;
 using MultiFactor.SelfService.Windows.Portal.Services.Ldap;
+using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorApi;
+using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi;
+using MultiFactor.SelfService.Windows.Portal.Options;
+using MultiFactor.SelfService.Windows.Portal.Stories.Authenticate;
+using MultiFactor.SelfService.Windows.Portal.Stories.ChangeExpiredPassword;
+using MultiFactor.SelfService.Windows.Portal.Stories.ChangeValidPassword;
+using MultiFactor.SelfService.Windows.Portal.Stories.CheckExpiredPasswordSession;
+using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfile;
+using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfileStory;
+using MultiFactor.SelfService.Windows.Portal.Stories.RecoverPassword;
+using MultiFactor.SelfService.Windows.Portal.Stories.SearchExchangeActiveSyncDevices;
+using MultiFactor.SelfService.Windows.Portal.Stories.SignIn;
+using MultiFactor.SelfService.Windows.Portal.Stories.SignOut;
+using MultiFactor.SelfService.Windows.Portal.Authentication;
+using MultiFactor.SelfService.Windows.Portal.Core.Authentication.AuthenticationClaims;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Ldap.PasswordChanging;
+using MultiFactor.SelfService.Windows.Portal.Core.Caching;
+using MultiFactor.SelfService.Windows.Portal.Integrations.Ldap.CredentialVerification;
+using MultiFactor.SelfService.Windows.Portal.Stories.SignIn.ClaimsSources;
+using MultiFactor.SelfService.Windows.Portal.Core.Authentication.AdditionalClaims.Description;
+using MultiFactor.SelfService.Windows.Portal.Core.Metadata;
+using MultiFactor.SelfService.Windows.Portal.Core.Authentication.AdditionalClaims.Description.Conditions;
+using MultiFactor.SelfService.Windows.Portal.Core.Authentication.AdditionalClaims;
 
 namespace MultiFactor.SelfService.Windows.Portal.App_Start
 {
@@ -36,9 +59,12 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
         {
             services.AddSingleton<IJsonDataSerializer, NewtonsoftJsonDataSerializer>();
             ConfigureHttpClients(services);
+            ConfigureApplicationSerivces(services);
             ConfigureGoogleApi(services);
             ConfigureYandexCaptchaApi(services);
             ConfigureCaptchaVerifier(services);
+            ConfigureCloudConfiguration(services);
+            ConfigureStories(services);
 
             services.AddScoped<JwtTokenProvider>();
             services.AddSingleton<ApiClient>();
@@ -51,6 +77,11 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             services.AddSingleton<MultiFactorApiClient>();
             services.AddSingleton<AuthService>();
             services.AddApplicationCache();
+
+            services.AddTransient<IMultiFactorApi, MultiFactorApi>()
+                .AddTransient<MultifactorHttpClientAdapterFactory>();
+            services.AddTransient<IMultifactorIdpApi, MultifactorIdpApi>()
+                .AddTransient<MultifactorIdpHttpClientAdapterFactory>();
 
             services.AddSingleton<ContentCache>();
 
@@ -107,7 +138,10 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
                 .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
             
             services
-                .AddHttpClient(Constants.HttpClients.MultifactorIdpApi)
+                .AddHttpClient(Constants.HttpClients.MultifactorIdpApi, client =>
+                {
+                    client.BaseAddress = new Uri(Configuration.Current.MultiFactorIdpApiUrl);
+                })
                 .ConfigurePrimaryHttpMessageHandler(() => CreateHttpClientHandler(proxy));
         }
 
@@ -131,7 +165,58 @@ namespace MultiFactor.SelfService.Windows.Portal.App_Start
             handler.Proxy = webProxy;
             return handler;
         }
-        
+        private static void ConfigureApplicationSerivces(ServiceCollection services)
+        {
+            services
+                .AddSingleton<SafeHttpContextAccessor>()
+                .AddSingleton<HttpClientTokenProvider>()
+                .AddSingleton<TokenVerifier>()
+                .AddSingleton<TokenClaimsAccessor>()
+                .AddSingleton<DataProtection>()
+                .AddSingleton<ICredentialVerifier, CredentialVerifierAdapter>()
+                .AddSingleton<UserPasswordChanger>()
+                .AddSingleton<ForgottenPasswordChanger>();
+
+            services.AddSingleton<IApplicationCache, Core.Caching.ApplicationCache>();
+
+            services
+                .AddSingleton<ClaimsProvider>()
+                .AddSingleton<IClaimsSource, MultiFactorClaimsSource>()
+                .AddSingleton<IClaimsSource, SsoClaimsSource>()
+                .AddSingleton<IClaimsSource, AdditionalClaimsSource>();
+
+            services.AddSingleton<AdditionalClaimDescriptorsProvider>();
+            services.AddSingleton<AdditionalClaimsMetadata>();
+
+            services.AddSingleton<IApplicationValuesContext, ClaimValuesContext>();
+            services.AddSingleton<ApplicationGlobalValuesProvider>();
+            services.AddSingleton<ClaimConditionEvaluator>();
+        }
+        private static void ConfigureStories(ServiceCollection services)
+        {
+            services
+                .AddTransient<SignInStory>()
+                .AddTransient<IdentityStory>()
+                .AddTransient<RedirectToCredValidationAfter2FaStory>()
+                .AddTransient<AuthnStory>()
+                .AddTransient<SignOutStory>()
+                .AddTransient<LoadProfileStory>()
+                .AddTransient<LoadIdpProfileStory>()
+                .AddTransient<FilterShowcaseLinksStory>()
+                .AddTransient<RecoverPasswordStory>()
+                .AddTransient<AuthenticateSessionStory>()
+                .AddTransient<CheckExpiredPasswordSessionStory>()
+                .AddTransient<ChangeExpiredPasswordStory>()
+                .AddTransient<ChangeValidPasswordStory>()
+                .AddTransient<SearchExchangeActiveSyncDevicesStory>();
+        }
+
+        private static void ConfigureCloudConfiguration(ServiceCollection services)
+        {
+            services.AddSingleton<IShowcaseSettingsOptions, ShowcaseSettingsOptions>();
+            services.AddSingleton<ShowcaseSettingsUpdater>();
+        }
+
         private static WebProxy BuildProxy(string proxyUri)
         {
             var uri = new Uri(proxyUri);

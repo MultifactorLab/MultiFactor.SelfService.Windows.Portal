@@ -2,15 +2,14 @@
 using MultiFactor.SelfService.Windows.Portal.Services.API.DTO;
 using System;
 using System.Collections.Generic;
-using System.Security.Principal;
 using System.Text;
-using System.Web.UI.WebControls;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.API
 {
     /// <summary>
     /// User self-service API
     /// </summary>
+    [Obsolete]
     public class MultiFactorSelfServiceApiClient
     {
         private readonly Configuration _settings;
@@ -24,12 +23,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         }
 
+        [Obsolete]
         public UserProfile LoadUserProfile()
         {
             var result = _apiClient.Get<ApiResponse<UserProfile>>("/self-service", x => x.Authorization = GetBearerAuth());
             return result.Model;
         }
 
+        [Obsolete]
         public ApiResponse<UserProfileAuthenticatorsDto> GetUserAuthenticators(string identity)
         {
             if (string.IsNullOrWhiteSpace(identity)) throw new ArgumentNullException(nameof(identity));
@@ -43,6 +44,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return result;
         }
 
+        [Obsolete]
         public ApiResponse<AccessPage> StartResetPassword(string twoFaIdentity, string ldapIdentity, string callbackUrl)
         {
             if (twoFaIdentity is null) throw new ArgumentNullException(nameof(twoFaIdentity));
@@ -69,6 +71,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             return result;
         }
 
+        [Obsolete]
         public ApiResponse<AccessPage> StartUnlockingUser(string identity, string callbackUrl)
         {
             if (identity is null) throw new ArgumentNullException(nameof(identity));
@@ -93,6 +96,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             var result = _apiClient.Post<ApiResponse<AccessPage>>("/self-service/start-unlock-user", payload, x => x.Authorization = GetBasicAuth());
             return result;
         }
+        [Obsolete]
 
         public ApiResponse<AccessPage> CreateEnrollmentRequest()
         {
@@ -102,6 +106,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
                 x => x.Authorization = GetBearerAuth());
         }
 
+        [Obsolete]
         public ApiResponse<ScopeSupportInfoDto> GetScopeSupportInfo()
         {
             return _apiClient.Get<ApiResponse<ScopeSupportInfoDto>>("/self-service/support-info", x => x.Authorization = GetBasicAuth());

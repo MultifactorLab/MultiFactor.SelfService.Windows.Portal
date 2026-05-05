@@ -125,6 +125,11 @@ namespace MultiFactor.SelfService.Windows.Portal
         /// </summary>
         public string MultiFactorApiSecret { get; private set; }
 
+        /// <summary>
+        /// Multifactor IDP API URL
+        /// </summary>
+        public string MultiFactorIdpApiUrl { get; private set; }
+
         public bool PreAuthnMode { get; private set; }
 
         /// <summary>
@@ -163,6 +168,9 @@ namespace MultiFactor.SelfService.Windows.Portal
 
         public PasswordRequirements PasswordRequirements { get; set; }
 
+        public string TokenValidation { get; private set; }
+        public string Environment { get; private set; }
+
         public static void Load()
         {
             var appSettings = PortalSettings;
@@ -181,6 +189,7 @@ namespace MultiFactor.SelfService.Windows.Portal
             var apiKeySetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_KEY);
             var apiProxySetting = GetValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_PROXY);
             var apiSecretSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_API_SECRET);
+            var idpApiUrlSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.MULTIFACTOR_IDP_API_URL);
             var logLevelSetting = GetRequiredValue(appSettings, ConfigurationConstants.General.LOGGING_LEVEL);
             var preAuthnMode = ParseBoolean(appSettings, ConfigurationConstants.General.PRE_AUTHN_MODE);
 
@@ -198,6 +207,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             var activeDirectoryGroupSetting = GetValue(appSettings, ConfigurationConstants.General.ACTIVE_DIRECTORY_GROUP);
             var nestedGroupsBaseDn = GetValue(appSettings, ConfigurationConstants.General.NESTED_GROUPS_BASE_DN);
 
+            var tokenValidation = GetValue(appSettings, ConfigurationConstants.General.TOKEN_VALIDATION);
+            var environment = GetValue(appSettings, ConfigurationConstants.General.ENVIRONMENT_KEY);
+
             var useAttributeAsIdentitySetting = GetValue(appSettings, ConfigurationConstants.General.USE_ATTRIBUTE_AS_IDENTITY);
             if (useUpnAsIdentitySetting && !string.IsNullOrWhiteSpace(useAttributeAsIdentitySetting))
             {
@@ -214,6 +226,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 MultiFactorApiKey = apiKeySetting,
                 MultiFactorApiSecret = apiSecretSetting,
                 MultiFactorApiProxy = apiProxySetting,
+                MultiFactorIdpApiUrl = idpApiUrlSetting,
                 LogLevel = logLevelSetting,
                 EnableExchangeActiveSyncDevicesManagement = enableExchangeActiveSyncServicesManagementSetting,
                 EnablePasswordManagement = enablePasswordManagementSetting,
@@ -226,7 +239,9 @@ namespace MultiFactor.SelfService.Windows.Portal
                 PreAuthnMode = preAuthnMode,
                 LoadActiveDirectoryNestedGroups = loadActiveDirectoryNestedGroups,
                 PrivacyModeDescriptor = PrivacyModeDescriptor.Create(privacyMode),
-                PasswordRequirements = PasswordRequirementsSection.GetRequirements()
+                PasswordRequirements = PasswordRequirementsSection.GetRequirements(),
+                TokenValidation = tokenValidation,
+                Environment = environment
             };
 
             if (!string.IsNullOrEmpty(activeDirectory2FaGroupSetting))

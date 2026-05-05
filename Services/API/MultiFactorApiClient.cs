@@ -13,6 +13,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
     /// <summary>
     /// 2F Authentication API
     /// </summary>
+    [Obsolete]
     public class MultiFactorApiClient
     {
         private readonly Configuration _settings;
@@ -24,6 +25,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        [Obsolete]
         public AccessPage CreateAccessRequest(string login, string displayName, string email, string phone, string postbackUrl, IDictionary<string, string> claims)
         {
             try
@@ -73,6 +75,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
         }
 
+        [Obsolete]
         public BypassPage CreateSamlBypassRequest(string login, string samlSessionId)
         {
             try
@@ -95,6 +98,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
         }
 
+        [Obsolete]
         public string RefreshAccessToken(string token, IDictionary<string, string> claims)
         {
             if (token is null) throw new ArgumentNullException(nameof(token));       
@@ -119,6 +123,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
             }
         }
 
+        [Obsolete]
         private TModel SendRequest<TModel>(string path, string payload)
         {
             //make sure we can communicate securely
