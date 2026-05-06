@@ -68,7 +68,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
             }
 
             VerifiedMembershipDto verifiedMembership = null;
-            var verifiedUsername = default(string);
+            var verifiedUsername = username;
             // Verify membership locally if prebind info is needed
             if (_settings.NeedPrebindInfo())
             {
