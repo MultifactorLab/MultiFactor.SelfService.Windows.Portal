@@ -25,6 +25,11 @@
                         @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? AccountLogin.UserNameUpn : AccountLogin.UserName })
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
+                    <div class="input">
+                        <span>@Resources.AccountLogin.Password</span>
+                        @Html.TextBoxFor(m => m.Password, new { placeholder = AccountLogin.Password })
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
                     @Html.ValidationSummary(true)
 
                     @if (Configuration.Current.RequireCaptchaOnLogin)

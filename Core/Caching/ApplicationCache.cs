@@ -65,6 +65,23 @@ namespace MultiFactor.SelfService.Windows.Portal.Core.Caching
                 : CachedItem<bool>.Empty;
         }
 
+        public void SetPreauthenticationIdentity(string key, IdentityModel value)
+        {
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(_config.AbsoluteExpiration)
+                .SetSize(GetDataSize(value));
+            _cache.Set(key, value, options);
+        }
+
+        public CachedItem<IdentityModel> GetPreauthenticationIdentity(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return CachedItem<IdentityModel>.Empty;
+            return _cache.TryGetValue(key, out IdentityModel value)
+                ? new CachedItem<IdentityModel>(value)
+                : CachedItem<IdentityModel>.Empty;
+        }
+
         public void Remove(string key)
         {
             _cache.Remove(key);
@@ -77,7 +94,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Core.Caching
 
         private static long GetDataSize(IdentityModel data)
         {
-            return CalculateStringSize(data.AccessToken) +
+            return CalculateStringSize(data.AccessToken ?? string.Empty) +
                    CalculateStringSize(data.UserName);
         }
 

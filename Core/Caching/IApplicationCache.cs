@@ -7,12 +7,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Core.Caching
     {
         void Set(string key, string value);
         CachedItem<string> Get(string key);
+        void Remove(string key);
         void SetIdentity(string key, IdentityModel value);
         CachedItem<IdentityModel> GetIdentity(string key);
-        void Remove(string key);
         void SetSupportInfo(string key, SupportViewModel value);
         CachedItem<SupportViewModel> GetSupportInfo(string key);
         void SetPreauthenticationAuthn(string key, bool value);
         CachedItem<bool> GetPreauthenticationAuthn(string key);
+        void SetPreauthenticationIdentity(string key, IdentityModel value);
+        CachedItem<IdentityModel> GetPreauthenticationIdentity(string key);
     }
 }

@@ -157,9 +157,26 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
 
                 var identity = _applicationCache.GetIdentity(requestId);
-                return !identity.IsEmpty
-                    ? View("Authn", identity.Value)
-                    : View(new IdentityModel());
+
+                if (identity.IsEmpty)
+                {
+                    return View(new IdentityModel());
+                }
+
+                if (!string.IsNullOrWhiteSpace(identity.Value.Password))
+                {
+                    try
+                    {
+                        return await _authnStory.ExecuteAsync(identity.Value);
+                    }
+                    catch (ModelStateErrorException authnEx)
+                    {
+                        ModelState.AddModelError(string.Empty, authnEx.Message);
+                        return View("Authn", identity.Value);
+                    }
+                }
+
+                return View("Authn", identity.Value);
             }
         }
 

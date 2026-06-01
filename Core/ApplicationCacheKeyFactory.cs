@@ -16,5 +16,10 @@
         {
             return $"{Constants.PREAUTHENTICATION_AUTHN_SUCCEED_KEY}:{identity}";
         }
+
+        public static string CreatePreAuthenticationIdentityKey(string identity)
+        {
+            return $"{Constants.PREAUTHENTICATION_IDENTITY_KEY}:{identity}";
+        }
     }
 }
