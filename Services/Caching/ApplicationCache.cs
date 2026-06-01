@@ -5,6 +5,7 @@ using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.Caching
 {
+    [Obsolete]
     public class ApplicationCache
     {
         private readonly IMemoryCache _cache;

@@ -1,6 +1,11 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
-using MultiFactor.SelfService.Windows.Portal.Services.API;
+using MultiFactor.SelfService.Windows.Portal.Models;
+using MultiFactor.SelfService.Windows.Portal.Stories;
+using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfile;
+using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfileStory;
+using MultiFactor.SelfService.Windows.Portal.ViewModels;
 using System;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
@@ -8,35 +13,43 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     [IsAuthorized]
     public class HomeController : ControllerBase
     {
-        private readonly MultiFactorSelfServiceApiClient _api;
+        private readonly LoadProfileStory _loadProfileStory;
+        private readonly FilterShowcaseLinksStory _filterShowcaseLinksStory;
 
-        public HomeController(MultiFactorSelfServiceApiClient api)
+        public HomeController(LoadProfileStory loadProfileStory, 
+            FilterShowcaseLinksStory filterShowcaseLinksStory)
         {
-            _api = api ?? throw new ArgumentNullException(nameof(api));
+            _loadProfileStory = loadProfileStory;
+            _filterShowcaseLinksStory = filterShowcaseLinksStory;
         }
 
-        public ActionResult Index()
+        public async Task<ActionResult> Index(SingleSignOnDto claims)
         {
-            if (Request.QueryString[MultiFactorClaims.SamlSessionId] != null)
+            var userProfile = await _loadProfileStory.ExecuteAsync();
+
+            if (claims.HasSamlSession())
             {
-                //re-login for saml authentication
-                return SignOut();
-            }
-            if (Request.QueryString[MultiFactorClaims.OidcSessionId] != null)
-            {
-                //re-login for oidc authentication
-                return SignOut();
+                return new RedirectToActionResult().ToActionResult("ByPassSamlSession", "Account", new { username = userProfile.Identity, samlSession = claims.SamlSessionId });
             }
 
-            var userProfile = _api.LoadUserProfile();
-            userProfile.EnablePasswordManagement = Configuration.Current.EnablePasswordManagement;
-            userProfile.EnableExchangeActiveSyncDevicesManagement = Configuration.Current.EnableExchangeActiveSyncDevicesManagement;
+            if (claims.HasOidcSession())
+            {
+                return new RedirectToActionResult().ToActionResult("ByPassOidcSession", "Account", new { username = userProfile.Identity, oidcSession = claims.OidcSessionId });
+            }
+
             var expiration = (DateTime?)HttpContext.Items["passwordExpirationDate"];
             if (expiration != null)
             {
                 userProfile.PasswordExpirationDaysLeft = (expiration - DateTime.Now).Value.Days;
             }
-            return View(userProfile);
+
+            var showcaseLinks = _filterShowcaseLinksStory.Execute(userProfile.Policy);
+            var model = new ShowcaseViewModel()
+            {
+                Profile = userProfile,
+                ShowcaseLinks = showcaseLinks
+            };
+            return View(model);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using MultiFactor.SelfService.Windows.Portal.Authentication;
+using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
@@ -54,16 +56,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 var identity = jwtSecurityToken.Subject;
                 var rawUserName = claimsPrincipal.Claims
                     .SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
-                
+
                 var unlockUser = claimsPrincipal.Claims
                     .FirstOrDefault(claim => claim.Type == MultiFactorClaims.UnlockUser)?.Value?.ToLower() == "true";
-                
+
                 var mustResetPassword =
                     claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword);
-                
+
                 var mustChangePassword =
                     claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword);
-                
+
                 token = new Token
                 {
                     Id = jwtSecurityToken.Id,
@@ -90,6 +92,63 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             }
 
             return false;
+        }
+
+        public TokenClaims Verify(string accessToken)
+        {
+            try
+            {
+                if (_jsonWebKeySet == null)
+                {
+                    _jsonWebKeySet = FetchJwks();
+                }
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    IssuerSigningKeys = _jsonWebKeySet.Keys,
+                    ValidAudience = _configuration.MultiFactorApiKey,
+                    ValidateIssuer = false,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidateTokenReplay = true,
+                };
+
+                var handler = new JwtSecurityTokenHandler();
+                var claimsPrincipal = handler.ValidateToken(accessToken, validationParameters, out var securityToken);
+                var jwtSecurityToken = (JwtSecurityToken)securityToken;
+
+                var rawUserName = claimsPrincipal.Claims
+                    .SingleOrDefault(claim => claim.Type == MultiFactorClaims.RawUserName)?.Value;
+                var identity = jwtSecurityToken.Subject;
+                var unlockUser = claimsPrincipal.Claims
+                                     .FirstOrDefault(claim => claim.Type == MultiFactorClaims.UnlockUser)
+                                     ?.Value?.ToLower() == "true";
+                var mustChangePassword =
+                    claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ChangePassword);
+                var mustResetPassword =
+                    claimsPrincipal.Claims.Any(claim => claim.Type == MultiFactorClaims.ResetPassword);
+                var samlClaim = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.SamlSessionId)?.Value;
+                var oidcClaim = claimsPrincipal.Claims.FirstOrDefault(claim => claim.Type == MultiFactorClaims.OidcSessionId)?.Value;
+                // use raw user name when possible couse multifactor may transform identity depend by settings
+                return new TokenClaims()
+                {
+                    Id = jwtSecurityToken.Id,
+                    Identity = identity,
+                    RawUserName = rawUserName,
+                    MustChangePassword = mustChangePassword,
+                    ValidTo = jwtSecurityToken.ValidTo,
+                    MustResetPassword = mustResetPassword,
+                    SamlClaim = samlClaim,
+                    OidcClaim = oidcClaim,
+                    MustUnlockUser = unlockUser
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error verifying token");
+                throw new UnauthorizedException("Error verifying token", ex);
+            }
         }
 
         private JsonWebKeySet FetchJwks()

@@ -10,8 +10,17 @@ namespace MultiFactor.SelfService.Windows.Portal
         public const string SESSION_EXPIRED_PASSWORD_USER_KEY = "multifactor:expired-password:user";
         public const string SESSION_EXPIRED_PASSWORD_CIPHER_KEY = "multifactor:expired-password:cipher";
         public const string PREAUTHENTICATION_AUTHN_SUCCEED_KEY = "multifactor:preauthentication-authn-succesd:user";
+        public const string TOKEN_VALIDATION = "TokenValidation:JsonWebKeySet";
+        public const string ENVIRONMENT_KEY = "Environment";
+        public const string PRODUCTION_ENV = "production";
         public const string CAPTCHA_TOKEN = "responseToken";
+
         public const string PWD_RECOVERY_COOKIE = "PSession";
+        public const string PWD_RENEWAL_PURPOSE = "PwdRenewal";
+
+        public const string CredentialVerificationResult = "CredentialVerificationResult";
+        public const string SsoClaims = "SsoClaims";
+        public const string LoadedLdapAttributes = "LoadedLdapAttributes";
 
         public static readonly string WORKING_DIRECTORY = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
@@ -28,6 +37,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string MULTIFACTOR_API_KEY = "multifactor-api-key";
                 public const string MULTIFACTOR_API_PROXY = "multifactor-api-proxy";
                 public const string MULTIFACTOR_API_SECRET = "multifactor-api-secret";
+                public const string MULTIFACTOR_IDP_API_URL = "multifactor-idp-api-url";
                 public const string LOGGING_LEVEL = "logging-level";
                 public const string USE_ACTIVE_DIRECTORY_USER_PHONE = "use-active-directory-user-phone";
                 public const string USE_ACTIVE_DIRECTORY_MOBILE_USER_PHONE = "use-active-directory-mobile-user-phone";
@@ -43,9 +53,35 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string ACTIVE_DIRECTORY_GROUP = "active-directory-group";
                 public const string NESTED_GROUPS_BASE_DN = "nested-groups-base-dn";
                 public const string USE_ATTRIBUTE_AS_IDENTITY = "use-attribute-as-identity";
+                public const string TOKEN_VALIDATION = "token-validation";
+                public const string ENVIRONMENT_KEY = "environment";
 #if DEBUG
                 public const string ACT_AS = "act-as";
 # endif
+            }
+
+            public static class MultiFactorClaims
+            {
+                public const string SamlSessionId = "samlSessionId";
+                public const string OidcSessionId = "oidcSessionId";
+                public const string AdditionSsoStep = "additionSsoStep";
+                public const string ChangePassword = "changePassword";
+                public const string PasswordExpirationDate = "passwordExpirationDate";
+                public const string ResetPassword = "resetPassword";
+                public const string RawUserName = "rawUserName";
+                public const string UnlockUser = "unlockUser";
+                public const string Name = "name";
+            }
+            public static class AuthenticationClaims
+            {
+                public const string AUTHENTICATION_METHODS_REFERENCES = "amr";
+                public const string PASSWORD_METHOD = "pwd";
+                public const string KERBEROS_METHOD = "kerberos";
+            }
+            public static class SsoMasterSessionTypes
+            {
+                public const string SamlSessionType = "saml";
+                public const string OidcSessionType = "oidc";
             }
 
             public static class ObsoleteCaptcha

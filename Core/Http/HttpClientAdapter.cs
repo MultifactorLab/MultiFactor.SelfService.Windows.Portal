@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
@@ -31,6 +32,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             if (resp.Content == null) return default;
 
             return await resp.Content.ReadAsStringAsync();
+        }
+
+        public async Task<byte[]> GetByteArrayAsync(string uri, IReadOnlyDictionary<string, string> headers = null)
+        {
+            var message = new HttpRequestMessage(HttpMethod.Get, uri);
+            HttpClientUtils.AddHeadersIfExist(message, headers);
+
+            var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
+            if (resp.Content == null) return default;
+
+            return await resp.Content.ReadAsByteArrayAsync();
         }
 
         public async Task<T> GetAsync<T>(string uri, IReadOnlyDictionary<string, string> headers = null)
@@ -68,6 +80,51 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             if (resp.Content == null) return default;
 
             return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+        }
+        public async Task<T> PostFormAsync<T>(
+            string uri,
+            IEnumerable<KeyValuePair<string, string>> formData,
+            IReadOnlyDictionary<string, string> headers = null,
+            bool deserializeWhenNonSuccessStatus = false)
+        {
+            var message = new HttpRequestMessage(HttpMethod.Post, uri);
+            HttpClientUtils.AddHeadersIfExist(message, headers);
+
+            if (formData != null)
+            {
+                message.Content = new FormUrlEncodedContent(formData);
+                message.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            }
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            if (deserializeWhenNonSuccessStatus)
+            {
+                var resp = await _client.SendAsync(message);
+
+                if (resp.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException();
+                }
+
+                if (resp.Content == null)
+                {
+                    return default;
+                }
+
+                var jsonResponse = await resp.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(jsonResponse))
+                {
+                    return default;
+                }
+
+                return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+            }
+
+            var successResp = await ExecuteHttpMethod(() => _client.SendAsync(message));
+            if (successResp.Content == null) return default;
+
+            return await _jsonDataSerializer.DeserializeAsync<T>(successResp.Content, "Response from API");
         }
 
         private async Task<HttpResponseMessage> ExecuteHttpMethod(Func<Task<HttpResponseMessage>> method)

@@ -2,6 +2,7 @@
 using MultiFactor.SelfService.Windows.Portal.App_Start;
 using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
+using MultiFactor.SelfService.Windows.Portal.Services;
 using MultiFactor.SelfService.Windows.Portal.Syslog;
 using Serilog;
 using Serilog.Core;
@@ -29,6 +30,8 @@ namespace MultiFactor.SelfService.Windows.Portal
 {
     public class MvcApplication : HttpApplication
     {
+        private static ShowcaseSettingsUpdater _showcaseSettingsUpdater;
+
         protected void Application_Start()
         {
             try
@@ -108,6 +111,9 @@ namespace MultiFactor.SelfService.Windows.Portal
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory(provider));
 
             RemoveSomeHeaders();
+
+            _showcaseSettingsUpdater = provider.GetRequiredService<ShowcaseSettingsUpdater>();
+            _showcaseSettingsUpdater.Start();
         }
 
         protected void Application_Error()

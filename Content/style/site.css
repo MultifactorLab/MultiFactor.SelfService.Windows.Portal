@@ -654,9 +654,17 @@ p {
     scrollbar-color: #579ad7 #fff;
 }
 
+.showcase-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .showcase-link-image {
     max-width: 4em;
     max-height: 4em;
+    min-width: 4em;
+    min-height: 4em;
     margin-bottom: 0.5em;
 }
 

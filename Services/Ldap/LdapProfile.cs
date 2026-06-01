@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap

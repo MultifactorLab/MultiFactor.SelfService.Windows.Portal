@@ -1,5 +1,8 @@
-﻿namespace MultiFactor.SelfService.Windows.Portal.Services.API
+﻿using System;
+
+namespace MultiFactor.SelfService.Windows.Portal.Services.API
 {
+    [Obsolete]
     public static class MultiFactorClaims
     {
         public const string SamlSessionId = "samlSessionId";

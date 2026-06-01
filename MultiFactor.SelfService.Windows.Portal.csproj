@@ -249,6 +249,9 @@
     <Compile Include="Attributes\RequiredFeatureAttribute.cs" />
     <Compile Include="Attributes\RequiredIfNotNullAttribute.cs" />
     <Compile Include="Attributes\VerifyCaptchaAttribute.cs" />
+    <Compile Include="Authentication\TokenClaims.cs" />
+    <Compile Include="Authentication\TokenVerifier.cs" />
+    <Compile Include="Authentication\TokenClaimsAccessor.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Configurations\Extensions\PasswordRequirementElementExtensions.cs" />
     <Compile Include="Configurations\Models\PasswordRequirements.cs" />
@@ -268,8 +271,29 @@
     <Compile Include="Controllers\PasswordController.cs" />
     <Compile Include="Controllers\UnlockController.cs" />
     <Compile Include="Core\AppAuthentication.cs" />
+    <Compile Include="Core\ApplicationGlobalValuesProvider.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\AdditionalClaimValueSources\AttributeClaimValueSource.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\AdditionalClaimValueSources\LiteralClaimValueSource.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\AdditionalClaimValueSources\ReservedValueClaimValueSource.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\Description\AdditionalClaimDescriptor.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\Description\AdditionalClaimDescriptorsProvider.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\Description\Conditions\ClaimCondition.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\Description\Conditions\ClaimConditionEvaluator.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\Description\Conditions\ClaimsConditionOperation.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\IApplicationValuesContext.cs" />
+    <Compile Include="Core\Authentication\AdditionalClaims\IClaimValueSource.cs" />
+    <Compile Include="Core\Authentication\AuthenticationClaims\ClaimsProvider.cs" />
+    <Compile Include="Core\Authentication\AuthenticationClaims\IClaimsSource.cs" />
+    <Compile Include="Core\Caching\ApplicationCache.cs" />
+    <Compile Include="Core\ClassPropertyAccessor.cs" />
+    <Compile Include="Core\DataProtection.cs" />
     <Compile Include="Core\Exceptions\ForbiddenException.cs" />
     <Compile Include="Core\Exceptions\AccessForbiddenException.cs" />
+    <Compile Include="Core\Http\HttpClientTokenProvider.cs" />
+    <Compile Include="Core\Caching\IApplicationCache.cs" />
+    <Compile Include="Core\LdapAttributesCaching\ILdapAttributesCache.cs" />
+    <Compile Include="Core\LdapAttributesCaching\LdapAttribute.cs" />
+    <Compile Include="Core\LdapAttributesCaching\LdapAttributesCache.cs" />
     <Compile Include="Core\LocalizationProvider.cs" />
     <Compile Include="Core\ApplicationCacheKeyFactory.cs" />
     <Compile Include="Core\CallbackUrlFactory.cs" />
@@ -282,12 +306,23 @@
     <Compile Include="Core\Http\GoogleCaptchaHttpClientAdapterFactory.cs" />
     <Compile Include="Core\Http\HttpClientUtils.cs" />
     <Compile Include="Core\Http\NewtonsoftJsonDataSerializer.cs" />
+    <Compile Include="Core\Metadata\AdditionalClaimsMetadata.cs" />
+    <Compile Include="Core\Metadata\GlobalValues\ApplicationGlobalValue.cs" />
+    <Compile Include="Core\Metadata\GlobalValues\ApplicationGlobalValuesMetadata.cs" />
+    <Compile Include="Core\OrdinalIgnoreCaseStringComparer.cs" />
     <Compile Include="Core\PrivacyMode.cs" />
     <Compile Include="Core\PrivacyModeDescriptor.cs" />
     <Compile Include="Core\SerializingSettings.cs" />
     <Compile Include="Core\CustomDependencyResolver.cs" />
     <Compile Include="Core\StartupLogger.cs" />
+    <Compile Include="Dto\ScopeSupportInfoDto.cs" />
+    <Compile Include="Exceptions\ModelStateErrorException.cs" />
+    <Compile Include="Extensions\ConfigurationExtensions.cs" />
+    <Compile Include="Extensions\HttpContextExtensions.cs" />
+    <Compile Include="Extensions\PortalSettingsAccess.cs" />
+    <Compile Include="Extensions\SafeHttpContextAccessorExtensions.cs" />
     <Compile Include="Extensions\SearchResponseExtensions.cs" />
+    <Compile Include="Extensions\UrlExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -302,6 +337,50 @@
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaApi.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexCaptchaVerifier.cs" />
     <Compile Include="Integrations\Captcha\Yandex\YandexHttpClientAdapterFactory.cs" />
+    <Compile Include="Integrations\Ldap\CredentialVerification\CredentialVerificationResult.cs" />
+    <Compile Include="Integrations\Ldap\CredentialVerification\CredentialVerifierAdapter.cs" />
+    <Compile Include="Integrations\Ldap\CredentialVerification\ICredentialVerifier.cs" />
+    <Compile Include="Integrations\Ldap\PasswordChanging\ForgottenPasswordChanger.cs" />
+    <Compile Include="Integrations\Ldap\PasswordChanging\PasswordChangingResult.cs" />
+    <Compile Include="Integrations\Ldap\PasswordChanging\UserPasswordChanger.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\AccessPage.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\ApiResponse.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\BypassPageDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\EnrollmentPageDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\ResetPasswordDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\ShowcaseSettingsDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\UnlockUserDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\UserProfileApiDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\UserProfileAuthenticatorsApiDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\UserProfileAuthenticatorsDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Dto\UserProfileDto.cs" />
+    <Compile Include="Integrations\MultiFactorApi\Exceptions\UnsuccessfulResponseException.cs" />
+    <Compile Include="Integrations\MultiFactorApi\IMultiFactorApi.cs" />
+    <Compile Include="Integrations\MultiFactorApi\MultiFactorApi.cs" />
+    <Compile Include="Integrations\MultiFactorApi\MultifactorHttpClientAdapterFactory.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\BypassOidcRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\BypassOidcResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\BypassSamlRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\BypassSamlResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\IdentityRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\IdentityResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\IdpApiResponse.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LoginCompletedRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LoginCompletedResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LoginRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LoginResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LogoutRequestDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\LogoutResponseDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\SsoMasterSessionDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\SspSettingsDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Dto\UserProfileIdpDto.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Enums\IdentityAction.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Enums\LoginAction.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\Enums\LoginCompletedAction.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\IMultifactorIdpApi.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\MultifactorIdpApi.cs" />
+    <Compile Include="Integrations\MultifactorIdpApi\MultifactorIdpHttpClientAdapterFactory.cs" />
+    <Compile Include="ModelBinding\Binders\MultiFactorClaimsDtoBinder.cs" />
     <Compile Include="Models\SupportViewModel.cs" />
     <Compile Include="Models\ExchangeActiveSyncDevice.cs" />
     <Compile Include="Models\ChangeExpiredPasswordModel.cs" />
@@ -314,6 +393,7 @@
     <Compile Include="Models\PasswordRecovery\EnterIdentityForm.cs" />
     <Compile Include="Models\PersonalData.cs" />
     <Compile Include="Models\SingleSignOnDto.cs" />
+    <Compile Include="Options\ShowcaseSettingsOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\PasswordChange.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -330,6 +410,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>PasswordPolicy.ru.resx</DependentUpon>
     </Compile>
+    <Compile Include="Resources\SharedResource.cs" />
     <Compile Include="Resources\UserUnlock.Designer.cs">
       <DependentUpon>UserUnlock.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -476,14 +557,40 @@
     <Compile Include="Services\Ldap\UserSearchResult.cs" />
     <Compile Include="Services\PasswordPolicyService.cs" />
     <Compile Include="Services\ScopeInfoService.cs" />
+    <Compile Include="Services\ShowcaseSettingsUpdaterService.cs" />
     <Compile Include="Services\Token.cs" />
     <Compile Include="Services\TokenValidationService.cs" />
+    <Compile Include="Settings\ShowcaseSettings.cs" />
+    <Compile Include="Stories\Authenticate\AuthenticateSessionStory.cs" />
+    <Compile Include="Stories\ChangeExpiredPassword\ChangeExpiredPasswordStory.cs" />
+    <Compile Include="Stories\ChangeValidPassword\ChangeValidPasswordStory.cs" />
+    <Compile Include="Stories\CheckExpiredPasswordSession\CheckExpiredPasswordSessionStory.cs" />
+    <Compile Include="Stories\FilterShowcaseLinks\FilterShowcaseLinksStory.cs" />
+    <Compile Include="Stories\LoadProfile\LoadIdpProfileStory.cs" />
+    <Compile Include="Stories\LoadProfile\LoadProfileStory.cs" />
+    <Compile Include="Stories\RecoverPassword\RecoverPasswordStory.cs" />
+    <Compile Include="Stories\RedirectToActionResult.cs" />
+    <Compile Include="Stories\SearchExchangeActiveSyncDevices\SearchExchangeActiveSyncDevicesStory.cs" />
+    <Compile Include="Stories\SignIn\AuthnStory.cs" />
+    <Compile Include="Stories\SignIn\ClaimsSources\AdditionalClaimsSource.cs" />
+    <Compile Include="Stories\SignIn\ClaimsSources\ClaimValuesContext.cs" />
+    <Compile Include="Stories\SignIn\ClaimsSources\MultiFactorClaimsSource.cs" />
+    <Compile Include="Stories\SignIn\ClaimsSources\SsoClaimsSource.cs" />
+    <Compile Include="Stories\SignIn\IdentityStory.cs" />
+    <Compile Include="Stories\SignIn\RedirectToCredValidationAfter2FaStory.cs" />
+    <Compile Include="Stories\SignIn\SignInStory.cs" />
+    <Compile Include="Stories\SignOut\SignOutStory.cs" />
+    <Compile Include="Stories\UnlockUser\UnlockUserStory.cs" />
     <Compile Include="Syslog\JsonRfc3164Formatter.cs" />
     <Compile Include="Syslog\JsonRfc5424Formatter.cs" />
     <Compile Include="Syslog\SyslogLoggerJsonConfigurationExtensions.cs" />
+    <Compile Include="ViewModels\ChangeExpiredPasswordViewModel.cs" />
+    <Compile Include="ViewModels\ChangePasswordViewModel.cs" />
+    <Compile Include="ViewModels\ShowcaseViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\images\alert_circle.svg" />
+    <Content Include="Content\images\ssoResource.svg" />
     <Content Include="Content\images\stage.svg" />
     <Content Include="Content\images\success.svg" />
     <Content Include="Content\js\qrcode.min.js" />
@@ -562,6 +669,7 @@
     <Content Include="Views\ForgottenPassword\Wrong.cshtml" />
     <Content Include="Views\ForgottenPassword\Done.cshtml" />
     <Content Include="Views\Shared\_PasswordRequirementsPartial.cshtml" />
+    <Content Include="Views\Account\ByPassSsoSession.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\PasswordPolicy.resx">
