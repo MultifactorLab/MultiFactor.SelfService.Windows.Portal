@@ -95,12 +95,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
                     return new RedirectToActionResult().ToActionResult("Login", "Account", null);
                 }
 
-                _applicationCache.SetIdentity(requestId,
-                    new IdentityModel
-                    {
-                        UserName = username,
-                        AccessToken = accessToken
-                    });
+                var cachedModel = _applicationCache.GetPreauthenticationIdentity(ApplicationCacheKeyFactory.CreatePreAuthenticationIdentityKey(username));
+                var identityModel = !cachedModel.IsEmpty
+                    ? cachedModel.Value
+                    : new IdentityModel();
+                _applicationCache.Remove(ApplicationCacheKeyFactory.CreatePreAuthenticationIdentityKey(username));
+
+                identityModel.UserName = username;
+                identityModel.AccessToken = accessToken;
+                _applicationCache.SetIdentity(requestId, identityModel);
 
                 object routeValue = new { requestId = requestId };
 

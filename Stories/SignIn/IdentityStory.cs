@@ -16,6 +16,8 @@ using System.Linq;
 using static MultiFactor.SelfService.Windows.Portal.Constants.Configuration;
 using System.Web.UI.WebControls;
 using MultiFactor.SelfService.Windows.Portal.Models;
+using MultiFactor.SelfService.Windows.Portal.Core.Caching;
+using MultiFactor.SelfService.Windows.Portal.Core;
 
 namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
 {
@@ -28,6 +30,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
         private readonly ILogger _logger;
         private readonly ClaimsProvider _claimsProvider;
         private readonly ICredentialVerifier _credentialVerifier;
+        private readonly AuthnStory _authnStory;
+        private readonly IApplicationCache _applicationCache;
 
         public IdentityStory(
             IMultiFactorApi multifactorApiClient,
@@ -36,7 +40,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
             Configuration settings,
             ILogger logger,
             ClaimsProvider claimsProvider,
-            ICredentialVerifier credentialVerifier)
+            ICredentialVerifier credentialVerifier,
+            AuthnStory authnStory,
+            IApplicationCache applicationCache)
         {
             _multifactorApiClient = multifactorApiClient;
             _idpApiClient = idpApiClient;
@@ -45,6 +51,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
             _logger = logger;
             _claimsProvider = claimsProvider;
             _credentialVerifier = credentialVerifier;
+            _authnStory = authnStory;
+            _applicationCache = applicationCache;
         }
 
         public async Task<ActionResult> ExecuteAsync(IdentityModel model, Dictionary<string, string> headers)
@@ -121,7 +129,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
             };
 
             var response = await _idpApiClient.IdentityAsync(request, headers);
-            return HandleIdentityResponse(response, model);
+            return await HandleIdentityResponse(response, model, verifiedUsername);
         }
 
         private IdentitySspSettingsDto BuildSspSettings()
@@ -137,7 +145,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
             };
         }
 
-        private ActionResult HandleIdentityResponse(IdentityResponseDto response, IdentityModel model)
+        private async Task<ActionResult> HandleIdentityResponse(IdentityResponseDto response, IdentityModel model, string verifiedUsername)
         {
             if (response.Action == IdentityAction.AccessDenied)
             {
@@ -153,6 +161,10 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
 
             if (response.Action == IdentityAction.MfaRequired && !string.IsNullOrWhiteSpace(response.RedirectUrl))
             {
+                _applicationCache.SetPreauthenticationIdentity(
+                    ApplicationCacheKeyFactory.CreatePreAuthenticationIdentityKey(verifiedUsername),
+                    model);
+
                 _logger.Debug("Redirecting user '{User}' to MFA page", model.UserName);
                 return new RedirectResult(response.RedirectUrl, true);
             }
@@ -162,10 +174,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
                 var identity = response.Username ?? model.UserName;
                 _logger.Information("Bypass second factor for user '{User}', showing password form", identity);
 
-                return new ViewResult
+                try
                 {
-                    ViewName = "Authn",
-                    ViewData = new ViewDataDictionary
+                    return await _authnStory.ExecuteAsync(model);
+                }
+                catch (ModelStateErrorException ex)
+                {
+                    var viewData = new ViewDataDictionary
                     {
                         Model = new IdentityModel
                         {
@@ -174,8 +189,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
                             MyUrl = model.MyUrl,
                             AccessToken = model.AccessToken
                         }
-                    }
-                };
+                    };
+                    viewData.ModelState.AddModelError(string.Empty, ex.Message);
+
+                    return new ViewResult
+                    {
+                        ViewName = "Authn",
+                        ViewData = viewData
+                    };
+                }
+
             }
 
             if (!string.IsNullOrWhiteSpace(response.RedirectUrl))
