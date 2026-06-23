@@ -103,7 +103,7 @@ public class SignInStory
             VerifiedCredentials = MapToVerifiedCredentialsDto(credentialResult),
             SamlSessionId = sso.SamlSessionId,
             OidcSessionId = sso.OidcSessionId,
-            LoginCompletedCallbackUrl = null,
+            LoginCompletedCallbackUrl = postbackUrl,
             AdditionalClaims = claims.ToDictionary(x => x.Key, x => x.Value),
             Settings = BuildSspSettings()
         };
