@@ -30,8 +30,13 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn.ClaimsSources
                 return claims;
             }
 
-            claims.Add(MultiFactorClaims.PasswordExpirationDate,
-                result.PasswordExpirationDate.ToString(CultureInfo.InvariantCulture));
+
+            if (result.PasswordExpirationDate > DateTime.MinValue
+                && result.PasswordExpirationDate < DateTime.MaxValue)
+            {
+                claims.Add(MultiFactorClaims.PasswordExpirationDate,
+                    result.PasswordExpirationDate.ToString(CultureInfo.InvariantCulture));
+            }
 
             return claims;
         }

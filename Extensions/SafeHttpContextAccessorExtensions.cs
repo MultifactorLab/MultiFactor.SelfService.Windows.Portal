@@ -19,6 +19,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Extensions
                 ?? CredentialVerificationResult.CreateBuilder(false).Build();
         }
 
+        public static void SafeSetCredVerificationResult(this SafeHttpContextAccessor accessor, CredentialVerificationResult result)
+        {
+            accessor.HttpContext.Items[Constants.CredentialVerificationResult] = result;
+        }
+
         public static ILdapAttributesCache SafeGetLdapAttributes(this SafeHttpContextAccessor accessor)
         {
             return accessor.HttpContext.Items[Constants.LoadedLdapAttributes] as ILdapAttributesCache
