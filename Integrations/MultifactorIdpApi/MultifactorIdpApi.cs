@@ -3,6 +3,7 @@ using MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorApi.Dto;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorApi.Exceptions;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi.Dto;
+using Serilog;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +51,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi
             }
             catch (Exception ex)
             {
-                return LoginResponseDto.Failed(ex.Message);
+                Log.Logger.Error(ex, "IDP LoginAsync failed");
+                return LoginResponseDto.Failed(ex.ToString());
             }
         }
 
@@ -81,7 +83,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi
             }
             catch (Exception ex)
             {
-                return IdentityResponseDto.Failed(ex.Message);
+                Log.Logger.Error(ex, "IDP IdentityAsync failed");
+                return IdentityResponseDto.Failed(ex.ToString());
             }
         }
 

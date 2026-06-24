@@ -1,5 +1,7 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
+using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -51,9 +53,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             HttpClientUtils.AddHeadersIfExist(message, headers);
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            if (resp.Content == null) return default;
-
-            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+            return await ReadAndDeserializeAsync<T>(resp);
         }
 
         public async Task<T> PostAsync<T>(string uri, object data = null, IReadOnlyDictionary<string, string> headers = null)
@@ -66,9 +66,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             }
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            if (resp.Content == null) return default;
-
-            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+            return await ReadAndDeserializeAsync<T>(resp);
         }
 
         public async Task<T> DeleteAsync<T>(string uri, IReadOnlyDictionary<string, string> headers = null)
@@ -77,9 +75,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             HttpClientUtils.AddHeadersIfExist(message, headers);
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            if (resp.Content == null) return default;
-
-            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+            return await ReadAndDeserializeAsync<T>(resp);
         }
         public async Task<T> PostFormAsync<T>(
             string uri,
@@ -107,24 +103,27 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
                     throw new UnauthorizedException();
                 }
 
-                if (resp.Content == null)
-                {
-                    return default;
-                }
-
-                var jsonResponse = await resp.Content.ReadAsStringAsync();
-                if (string.IsNullOrWhiteSpace(jsonResponse))
-                {
-                    return default;
-                }
-
-                return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
+                return await ReadAndDeserializeAsync<T>(resp);
             }
 
             var successResp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            if (successResp.Content == null) return default;
+            return await ReadAndDeserializeAsync<T>(successResp);
+        }
 
-            return await _jsonDataSerializer.DeserializeAsync<T>(successResp.Content, "Response from API");
+        private static async Task<T> ReadAndDeserializeAsync<T>(HttpResponseMessage response)
+        {
+            if (response?.Content == null)
+            {
+                return default;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return default;
+            }
+
+            return JsonConvert.DeserializeObject<T>(json, SerializingSettings.JsonSerializerSettings);
         }
 
         private async Task<HttpResponseMessage> ExecuteHttpMethod(Func<Task<HttpResponseMessage>> method)
