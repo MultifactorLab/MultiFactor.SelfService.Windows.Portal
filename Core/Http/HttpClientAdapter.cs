@@ -1,7 +1,5 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Abstractions.Http;
-using MultiFactor.SelfService.Windows.Portal.Core;
 using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
-using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -53,7 +51,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             HttpClientUtils.AddHeadersIfExist(message, headers);
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            return await ReadAndDeserializeAsync<T>(resp);
+            if (resp.Content == null) return default;
+
+            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
         }
 
         public async Task<T> PostAsync<T>(string uri, object data = null, IReadOnlyDictionary<string, string> headers = null)
@@ -66,7 +66,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             }
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            return await ReadAndDeserializeAsync<T>(resp);
+            if (resp.Content == null) return default;
+
+            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
         }
 
         public async Task<T> DeleteAsync<T>(string uri, IReadOnlyDictionary<string, string> headers = null)
@@ -75,7 +77,9 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             HttpClientUtils.AddHeadersIfExist(message, headers);
 
             var resp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            return await ReadAndDeserializeAsync<T>(resp);
+            if (resp.Content == null) return default;
+
+            return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
         }
         public async Task<T> PostFormAsync<T>(
             string uri,
@@ -103,27 +107,24 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
                     throw new UnauthorizedException();
                 }
 
-                return await ReadAndDeserializeAsync<T>(resp);
+                if (resp.Content == null)
+                {
+                    return default;
+                }
+
+                var jsonResponse = await resp.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(jsonResponse))
+                {
+                    return default;
+                }
+
+                return await _jsonDataSerializer.DeserializeAsync<T>(resp.Content, "Response from API");
             }
 
             var successResp = await ExecuteHttpMethod(() => _client.SendAsync(message));
-            return await ReadAndDeserializeAsync<T>(successResp);
-        }
+            if (successResp.Content == null) return default;
 
-        private static async Task<T> ReadAndDeserializeAsync<T>(HttpResponseMessage response)
-        {
-            if (response?.Content == null)
-            {
-                return default;
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return default;
-            }
-
-            return JsonConvert.DeserializeObject<T>(json, SerializingSettings.JsonSerializerSettings);
+            return await _jsonDataSerializer.DeserializeAsync<T>(successResp.Content, "Response from API");
         }
 
         private async Task<HttpResponseMessage> ExecuteHttpMethod(Func<Task<HttpResponseMessage>> method)
@@ -131,7 +132,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             // workaround for the .NET 4.6.2 version
-            var task = Task.Run(method);
+            var task = Task.Run(async () =>
+            {
+                var resp = await method();
+                if (resp.Content != null)
+                {
+                    await resp.Content.LoadIntoBufferAsync();
+                }
+                return resp;
+            });
             task.Wait();
 
             var response = task.Result;
