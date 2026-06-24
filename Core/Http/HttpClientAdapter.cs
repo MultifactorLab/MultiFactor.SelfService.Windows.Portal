@@ -130,13 +130,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            var response = await method().ConfigureAwait(false);
+            // workaround for the .NET 4.6.2 version
+            var task = Task.Run(method);
+            task.Wait();
 
-            string body = null;
-            if (response?.Content != null)
-            {
-                body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            }
+            var response = task.Result;
 
             try
             {
@@ -145,8 +143,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             }
             catch (HttpRequestException ex)
             {
-                _logger.Error(ex, "An error occurred while accessing the source. Status: {status}. Content: {content:l}. Exception message: {message:l}",
-                    (int)response.StatusCode, body, ex.Message);
+                var content = await HttpClientUtils.TryGetContent(response);
+                _logger.Error(ex, "An error occurred while accessing the source. Content: {content:l}. Exception message: {message:l}", content, ex.Message);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized) throw new UnauthorizedException();
                 throw;

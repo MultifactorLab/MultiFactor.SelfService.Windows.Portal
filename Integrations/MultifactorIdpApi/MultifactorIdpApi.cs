@@ -52,7 +52,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "IDP LoginAsync failed");
-                return LoginResponseDto.Failed(ex.ToString());
+                return LoginResponseDto.Failed(ex.Message);
             }
         }
 
@@ -84,7 +84,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, "IDP IdentityAsync failed");
-                return IdentityResponseDto.Failed(ex.ToString());
+                return IdentityResponseDto.Failed(ex.Message);
             }
         }
 
