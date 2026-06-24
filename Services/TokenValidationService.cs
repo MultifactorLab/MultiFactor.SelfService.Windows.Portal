@@ -4,6 +4,7 @@ using MultiFactor.SelfService.Windows.Portal.Core.Exceptions;
 using MultiFactor.SelfService.Windows.Portal.Services.API;
 using Serilog;
 using System;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
@@ -81,7 +82,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                         claim.Type == MultiFactorClaims.PasswordExpirationDate);
                 if (_configuration.NotifyOnPasswordExpirationDaysLeft > 0 && passwordExpirationDate?.Value != null)
                 {
-                    token.PasswordExpirationDate = DateTime.Parse(passwordExpirationDate.Value);
+                    if (DateTime.TryParse(passwordExpirationDate.Value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+                    {
+                        token.PasswordExpirationDate = parsed;
+                    }
+                    else
+                    {
+                        _logger.Warning("Failed to parse passwordExpirationDate claim value '{Value}'", passwordExpirationDate.Value);
+                    }
                 }
 
                 return true; //token valid
