@@ -127,35 +127,34 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             return await _jsonDataSerializer.DeserializeAsync<T>(successResp.Content, "Response from API");
         }
 
-        private Task<HttpResponseMessage> ExecuteHttpMethod(Func<Task<HttpResponseMessage>> method)
+        private async Task<HttpResponseMessage> ExecuteHttpMethod(Func<Task<HttpResponseMessage>> method)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-            // workaround for the .NET 4.6.2 version: avoids deadlock when called from sync
-            var result = Task.Run(async () =>
+            // workaround for the .NET 4.6.2 version
+            var task = Task.Run(method);
+            task.Wait();
+
+            var response = task.Result;
+
+            if (response.IsSuccessStatusCode)
             {
-                var resp = await method();
-                if (resp.Content != null)
-                {
-                    await resp.Content.LoadIntoBufferAsync();
-                }
+                return response;
+            }
 
-                try
-                {
-                    resp.EnsureSuccessStatusCode();
-                    return resp;
-                }
-                catch (HttpRequestException ex)
-                {
-                    var content = await HttpClientUtils.TryGetContent(resp);
-                    _logger.Error(ex, "An error occurred while accessing the source. Content: {content:l}. Exception message: {message:l}", content, ex.Message);
+            // We don't call EnsureSuccessStatusCode here because it disposes Content
+            // before throwing, which prevents us from reading the body for the log.
+            // Read body → log → dispose Content (to free the connection) → throw.
+            var content = await HttpClientUtils.TryGetContent(response);
+            _logger.Error("An error occurred while accessing the source. Status: {status}. Content: {content:l}",
+                (int)response.StatusCode, content);
 
-                    if (resp.StatusCode == HttpStatusCode.Unauthorized) throw new UnauthorizedException();
-                    throw;
-                }
-            }).GetAwaiter().GetResult();
+            response.Content?.Dispose();
 
-            return Task.FromResult(result);
+            if (response.StatusCode == HttpStatusCode.Unauthorized) throw new UnauthorizedException();
+
+            throw new HttpRequestException(
+                $"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
         }
     }
 }
