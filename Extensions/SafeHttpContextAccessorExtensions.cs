@@ -1,3 +1,4 @@
+using System;
 using MultiFactor.SelfService.Windows.Portal.Core.Http;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Ldap.CredentialVerification;
 using MultiFactor.SelfService.Windows.Portal.Core.LdapAttributesCaching;
@@ -21,6 +22,11 @@ namespace MultiFactor.SelfService.Windows.Portal.Extensions
 
         public static void SafeSetCredVerificationResult(this SafeHttpContextAccessor accessor, CredentialVerificationResult result)
         {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
             accessor.HttpContext.Items[Constants.CredentialVerificationResult] = result;
         }
 
