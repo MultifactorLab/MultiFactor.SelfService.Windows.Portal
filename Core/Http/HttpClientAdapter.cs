@@ -143,8 +143,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
             }
 
             // We don't call EnsureSuccessStatusCode here because it disposes Content
-            // before throwing, which prevents us from reading the body for the log.
-            // Read body → log → dispose Content (to free the connection) → throw.
+            // before throwing, which prevents us from reading the body for the log
             var content = await HttpClientUtils.TryGetContent(response);
             _logger.Error("An error occurred while accessing the source. Status: {status}. Content: {content:l}",
                 (int)response.StatusCode, content);
