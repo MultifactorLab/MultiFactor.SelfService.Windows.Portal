@@ -1,35 +1,34 @@
-﻿@using MultiFactor.SelfService.Windows.Portal.Helpers;
-
-@model MultiFactor.SelfService.Windows.Portal.Models.ChangeExpiredPasswordModel
+﻿@model MultiFactor.SelfService.Windows.Portal.Models.ChangeExpiredPasswordModel
 
 @{
     ViewBag.Title = Resources.PasswordChange.Title;
 }
+
 <div class="login">
     <div class="form-column">
         @using (Html.BeginForm("Change", "ExpiredPassword", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
-        <fieldset>
-            @Html.AntiForgeryToken()
-            @Html.Partial("_PasswordRequirementsPartial")
-            <br />
-            <div>
-                @Html.ValidationSummary(true)
-            </div>
-            <div class="form-row">
-                <div class="input">
-                    @Html.ToggleablePasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPassword)
+            <fieldset>
+                @Html.AntiForgeryToken()
+                @Html.Partial("_PasswordRequirementsPartial")
+                <br />
+                <div>
+                    @Html.ValidationSummary(true)
                 </div>
-                <div class="input">
-                    @Html.ToggleablePasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                <div class="form-row">
+                    <div class="input login-input login-input-password">
+                        @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.NewPassword)
+                    </div>
+                    <div class="input login-input login-input-password">
+                        @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
+                        @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                    </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <input type="submit" class="btn-primary w-100" value="@Resources.PasswordChange.Submit" />
-            </div>
-        </fieldset>
+                <div class="form-row">
+                    <input type="submit" class="btn-primary w-100" value="@Resources.PasswordChange.Submit" />
+                </div>
+            </fieldset>
         }
     </div>
 </div>

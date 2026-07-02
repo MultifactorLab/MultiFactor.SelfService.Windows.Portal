@@ -1,14 +1,23 @@
-﻿@using MultiFactor.SelfService.Windows.Portal.Services.API;
+﻿@using MultiFactor.SelfService.Windows.Portal.Services.API
 @using MultiFactor.SelfService.Windows.Portal.Core
-@using MultiFactor.SelfService.Windows.Portal.Helpers;
 @model MultiFactor.SelfService.Windows.Portal.Models.LoginModel
 
 @{
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+    var isCaptchaEnabled = Configuration.Current.RequireCaptchaOnLogin;
+    if (isCaptchaEnabled)
+    {
+        ViewBag.RenderCaptchaScripts = true;
+    }
 }
-<div action="#" class="login">
-    <div class="form-column">
-        <h2>@Resources.AccountLogin.Title</h2>
+
+<div action="#" class="login login-view">
+    <div class="login-header-plate">
+        <img src="@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+        <span class="login-header-title">@Resources.AccountLogin.Ssp</span>
+    </div>
+    <div class="form-column login-form-card">
+        <h2 class="login-title">@Resources.AccountLogin.Title</h2>
         @using (Html.BeginForm("Login", "Account", new
         {
             samlSessionId = Context.Request.QueryString[MultiFactorClaims.SamlSessionId] ?? string.Empty,
@@ -17,23 +26,20 @@
         {
             <fieldset>
                 @Html.AntiForgeryToken()
-                <p>@Resources.AccountLogin.Invitation</p>
-                <div class="form-row">
-                    <div class="input">
-                        <span>@Resources.AccountLogin.UserName</span>
+                <div class="form-row login-fields @(isCaptchaEnabled ? "mb-8" : "")">
+                    <div class="input login-input login-input-username username-help-host">
                         @Html.TextBoxFor(m => m.UserName, new { placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName })
+                        @Html.Partial("_UsernameHelpTooltip")
                         @Html.ValidationMessageFor(m => m.UserName)
                     </div>
-                    <div class="input">
-                        <span>@Resources.AccountLogin.Password</span>
-                        @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
+                    <div class="input login-input login-input-password">
+                        @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     @Html.ValidationSummary(true)
-
-                    @if (Configuration.Current.RequireCaptchaOnLogin)
+                    @if (isCaptchaEnabled)
                     {
-                        <div class="captcha-wrapper">
+                        <div class="captcha-wrapper login-captcha-wrapper">
                             @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
                             {
                                 <div class="g-recaptcha"
@@ -47,22 +53,12 @@
                                 <div id="yandex-captcha-container"></div>
                             }
                         </div>
-                        
                     }
-
                 </div>
-                @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
-                {
-                    <div class="form-row">
-                        <div class="bottom-field-link-r">
-                            <a href="@Url.Action("Index", "ForgottenPassword")" class="forgotten-pwd-link">@Resources.AccountLogin.ResetPassword</a>
-                        </div>
-                    </div>
-                }
-                <div class="form-row">
-                    <input type="hidden" name="myUrl" id="myUrl" />
 
-                    @if (Configuration.Current.RequireCaptchaOnLogin)
+                <div class="login-submit-row">
+                    <input type="hidden" name="myUrl" id="myUrl" />
+                    @if (isCaptchaEnabled)
                     {
                         <input type="hidden" name="responseToken" id="responseToken" />
                         <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.AccountLogin.Submit" id="submit" />
@@ -72,64 +68,54 @@
                         <input type="submit" class="btn-primary w-100" value="@Resources.AccountLogin.Submit" id="submit" />
                     }
                 </div>
+                @if (Configuration.Current.EnablePasswordRecovery && Configuration.Current.EnablePasswordManagement)
+                {
+                    <div class="d-flex content-center login-forgot-row">
+                        <a class="forgot" href="@Url.Action("Index", "ForgottenPassword")">@Resources.AccountLogin.ResetPassword</a>
+                    </div>
+                }
             </fieldset>
         }
     </div>
 </div>
 
-@section head {
-
-    @if (Configuration.Current.RequireCaptchaOnLogin)
-    {
-        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
-        {
-            <script src="https://www.google.com/recaptcha/api.js?hl=@LocalizationProvider.GetLanguage()" async defer></script>
+@section Scripts {
+    <script type="text/javascript">
+        function enableSubmit() {
+            $("form").find(':submit').removeAttr('disabled');
         }
-        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-        {
-            <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction"
-                    defer></script>
+
+        function captchaCallback(token) {
+            $('#responseToken').val(token);
+            enableSubmit();
         }
-    }
-}
 
-<script type="text/javascript">
-    function enableSubmit() {
-        $("form").find(':submit').removeAttr('disabled');
-    }
+        $(document).ready(function () {
+            $('#myUrl').val(document.location);
 
-    function captchaCallback(token) {
-        $('#responseToken').val(token);
-        enableSubmit();
-    }
-
-    $(document).ready(function(){
-        $('#myUrl').val(document.location);
-
-        $("form").submit(function () {
-            if ($(this).valid()) {
-                $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
-            }
+            $("form").submit(function () {
+                if ($(this).valid()) {
+                    $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
+                }
+            });
         });
-    });
 
-    @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-    {
-        <text>
-        function yandexCaptchaLoadFunction()
+        @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
         {
-            if (window.smartCaptcha)
+            <text>
+            function yandexCaptchaLoadFunction()
             {
-                const container = document.getElementById('yandex-captcha-container');
-                window.smartCaptcha.render(container, {
-                sitekey: '@Configuration.Current.CaptchaKey',
-                callback: captchaCallback,
-                hl: '@LocalizationProvider.GetLanguage()'
-                });
+                if (window.smartCaptcha)
+                {
+                    const container = document.getElementById('yandex-captcha-container');
+                    window.smartCaptcha.render(container, {
+                        sitekey: '@Configuration.Current.CaptchaKey',
+                        callback: captchaCallback,
+                        hl: '@LocalizationProvider.GetLanguage()'
+                    });
+                }
             }
+            </text>
         }
-        </text>
-    }
-</script>
-
-
+    </script>
+}

@@ -1,0 +1,7 @@
+<svg width="60" height="60" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="10" width="180" height="180" rx="10" ry="10" fill="#ffffff" stroke="#99c2e6" stroke-width="9"></rect>
+  <!-- Верхний текст -->
+  <text x="50%" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="#5a98d6">SSO</text>
+  <!-- Нижний текст -->
+  <text x="50%" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#5a98d6">resource</text>
+</svg>

@@ -156,4 +156,13 @@
   <data name="AuthnInvitation" xml:space="preserve">
     <value>Please enter password for account</value>
   </data>
+  <data name="Ssp" xml:space="preserve">
+    <value>Self-service Portal</value>
+  </data>
+  <data name="UserNameHint" xml:space="preserve">
+    <value>Username or email address. For example, {0} or {1}</value>
+  </data>
+  <data name="UserNameHintAriaLabel" xml:space="preserve">
+    <value>Username field hint</value>
+  </data>
 </root>

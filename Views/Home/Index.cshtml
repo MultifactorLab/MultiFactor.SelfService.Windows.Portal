@@ -1,57 +1,129 @@
-﻿@model MultiFactor.SelfService.Windows.Portal.ViewModels.ShowcaseViewModel
+﻿@using Microsoft.Extensions.DependencyInjection
+@using MultiFactor.SelfService.Windows.Portal.Core
+@model MultiFactor.SelfService.Windows.Portal.ViewModels.ShowcaseViewModel
 
 @{
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+
+    var showcaseEnabled = false;
+    var showcaseOptions = HttpContext.Current.GetRequestServices()
+        .GetService<global::MultiFactor.SelfService.Windows.Portal.Options.IShowcaseSettingsOptions>();
+    if (showcaseOptions != null && showcaseOptions.CurrentValue != null)
+    {
+        showcaseEnabled = showcaseOptions.CurrentValue.Enabled;
+    }
+
+    var avatarLetter = Model.Profile.Name != null && Model.Profile.Name.Length > 0
+        ? Model.Profile.Name[0].ToString()
+        : (Model.Profile.Identity != null && Model.Profile.Identity.Length > 0 ? Model.Profile.Identity[0].ToString() : "");
 }
 
-<div class="login">
-    <div class="form-column @(Configuration.Current.Links.Length > 0 ? "showcase-no-top-padding" : "") ">
-        @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.Profile.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
-        {
-            <div class="alert">
-                <h4>@Resources.Home.ShouldChangePassword</h4>
-                <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft</h5>
-            </div>
-        }
-         <div class="auth-details">
-        @if (Model.ShowcaseLinks != null && Model.ShowcaseLinks.Count > 0)
-        {
-            <div class="showcase">
-                @foreach (var link in Model.ShowcaseLinks)
-                {
-                    <a href="@link.Url" @(link.OpenInNewTab ? "target=_blank" : "")>
-                        <div class="showcase-link">
-                            <img class="showcase-link-image" src="~/@(string.IsNullOrWhiteSpace(link.Image) ? "content/images/ssoResource.svg" : ("content/images/showcase/" + link.Image))" />
+@if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.Profile.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
+{
+    <div class="alert">
+        <h4>@Resources.Home.ShouldChangePassword</h4>
+        <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft</h5>
+    </div>
+}
 
-                            <div class="link-title">
-                                @link.Title
-                            </div>
-                        </div>
-                    </a>
+@if (showcaseEnabled)
+{
+    <div class="apps-header">
+        <div class="apps-header-top">
+            <strong class="apps-logo">
+                <img src="@Configuration.Current.LogoUrl" alt="" />
+            </strong>
+            <div class="apps-header-actions">
+                @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn-header" })
+                @if (Model.Profile.EnablePasswordManagement)
+                {
+                    <a href="~/password/change" class="btn-header">@Resources.Home.ChangePassword</a>
                 }
+                @if (Model.Profile.EnableExchangeActiveSyncDevicesManagement)
+                {
+                    <a href="~/ExchangeActiveSyncDevices" class="btn-header">@Resources.Home.ManageActiveSyncDevices</a>
+                }
+                <a href="~/account/logout" class="btn-header btn-header-exit">@Resources.Home.Exit</a>
             </div>
-        }
-        <div class="success-mark"></div>
-        <h2 class="success-title">@Resources.Home.Title</h2>
-        <div class="auth-username">
-            <p>@Resources.Home.Greetings</p>
-            <p class="user-login">@(Model.Profile.Name ?? Model.Profile.Identity)</p>
+            <div class="apps-header-user">
+                <div class="user-avatar">
+                    <span class="avatar-letter">@avatarLetter</span>
+                </div>
+                <span class="user-name">@(Model.Profile.Name ?? Model.Profile.Identity)</span>
+                <a href="~/account/logout" class="btn-exit">
+                    <svg width="24" height="24" viewBox="0 0 15.5 17.5" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                        <path d="M10.75 0.75H0.75V14.75C0.75 15.2804 0.960714 15.7891 1.33579 16.1642C1.71086 16.5393 2.21957 16.75 2.75 16.75H10.75M11.75 11.75L14.75 8.75M14.75 8.75L11.75 5.75M14.75 8.75H4.75"
+                              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+            </div>
         </div>
     </div>
-
-        <ul class="action">
-            <li>
-                @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn btn-secondary" })
-            </li>
-            @if (Model.Profile.EnablePasswordManagement)
-            {
-                <li><a href="~/password/change" class="btn btn-secondary">@Resources.Home.ChangePassword</a></li>
-            }
-            @if (Model.Profile.EnableExchangeActiveSyncDevicesManagement)
-            {
-                <li><a href="~/ExchangeActiveSyncDevices" class="btn btn-secondary">@Resources.Home.ManageActiveSyncDevices</a></li>
-            }
-            <li><a href="~/account/logout" class="btn btn-secondary">@Resources.Home.Exit</a></li>
-        </ul>
+    <div class="apps-container">
+        <div class="apps-content">
+            <div class="apps-title-section">
+                <h2 class="apps-title">@Resources.Home.AvailableApps</h2>
+            </div>
+            <div class="apps-grid">
+                @if (Model.ShowcaseLinks != null && Model.ShowcaseLinks.Count > 0)
+                {
+                    foreach (var app in Model.ShowcaseLinks)
+                    {
+                        <a href="@app.Url" class="app-card" @(app.OpenInNewTab ? "target=_blank" : "")>
+                            <div class="app-card-image">
+                                <img src="~/@(string.IsNullOrWhiteSpace(app.Image) ? "Content/images/ssoResource.svg" : ("Content/images/showcase/" + app.Image))" alt="@app.Title" />
+                            </div>
+                            <div class="app-card-title">
+                                @app.Title
+                            </div>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div class="login">
+        <div class="login-header-plate">
+            <img src="@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+            <span class="login-header-title">@Resources.Home.Ssp</span>
+        </div>
+        <div class="form-column">
+            <div class="auth-details">
+                <div class="user-avatar-no-sso">
+                    <span class="avatar-letter">@avatarLetter</span>
+                </div>
+                <div class="auth-username">
+                    <p>@Resources.Home.Greetings</p>
+                    <h2 class="user-login">@(Model.Profile.Name ?? Model.Profile.Identity)</h2>
+                </div>
+            </div>
+            <ul class="action">
+                <li>
+                    <a target="_blank" href="~/Configure2Fa">
+                        <input type="button" class="w-100 btn-primary" value="@Resources.Home.Configure2FA" />
+                    </a>
+                </li>
+                @if (Model.Profile.EnablePasswordManagement)
+                {
+                    <li>
+                        <a href="~/password/change">
+                            <input type="button" class="w-100 btn-primary" value="@Resources.Home.ChangePassword" />
+                        </a>
+                    </li>
+                }
+                @if (Model.Profile.EnableExchangeActiveSyncDevicesManagement)
+                {
+                    <li>
+                        <a href="~/ExchangeActiveSyncDevices">
+                            <input type="button" class="w-100 btn-primary" value="@Resources.Home.ManageActiveSyncDevices" />
+                        </a>
+                    </li>
+                }
+                <li><a href="~/account/logout" class="btn btn-secondary">@Resources.Home.Exit</a></li>
+            </ul>
+        </div>
+    </div>
+}
