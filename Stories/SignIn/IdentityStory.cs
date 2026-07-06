@@ -92,6 +92,8 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
 
                 _logger.Information("User '{User}' membership verified successfully", username);
                 verifiedMembership = MapToVerifiedMembershipDto(membershipResult);
+
+                _contextAccessor.SafeSetCredVerificationResult(membershipResult);
             }
 
             var authenticators = await _multifactorApiClient.GetUserAuthenticatorsAsync(username);

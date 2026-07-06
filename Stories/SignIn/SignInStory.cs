@@ -92,6 +92,8 @@ public class SignInStory
 
         _logger.Information("User '{User}' credentials verified successfully", username);
 
+        _contextAccessor.SafeSetCredVerificationResult(credentialResult);
+
         var claims = _claimsProvider.GetClaims().ToDictionary(x => x.Key, x => x.Value);
         claims.Add(AuthenticationClaims.AUTHENTICATION_METHODS_REFERENCES, AuthenticationClaims.PASSWORD_METHOD);
 
