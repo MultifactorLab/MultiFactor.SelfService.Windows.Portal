@@ -10,7 +10,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorApi.Dto
         public string Email { get; set; }
         public UserProfilePolicyDto Policy { get; set; }
 
-        public int PasswordExpirationDaysLeft { get; set; }
+        public int? PasswordExpirationDaysLeft { get; set; }
         public bool EnablePasswordManagement { get; set; }
         public bool EnableExchangeActiveSyncDevicesManagement { get; set; }
 
