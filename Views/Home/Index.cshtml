@@ -6,11 +6,14 @@
 
 <div class="login">
     <div class="form-column @(Configuration.Current.Links.Length > 0 ? "showcase-no-top-padding" : "") ">
-        @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.Profile.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
+        @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0
+             && Model.Profile.PasswordExpirationDaysLeft.HasValue
+             && Model.Profile.PasswordExpirationDaysLeft.Value >= 0
+             && Model.Profile.PasswordExpirationDaysLeft.Value <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
         {
             <div class="alert">
                 <h4>@Resources.Home.ShouldChangePassword</h4>
-                <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft</h5>
+                <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft.Value</h5>
             </div>
         }
          <div class="auth-details">
