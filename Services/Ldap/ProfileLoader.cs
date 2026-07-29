@@ -37,8 +37,17 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.Ldap
 
             foreach (var attr in queryAttributes.Where(x => !x.Equals("memberof", StringComparison.OrdinalIgnoreCase)))
             {
-                var value = result.Entry.Attributes[attr]?.GetValues(typeof(string)).Cast<string>().ToArray() ?? Array.Empty<string>();
-                profileAttributes.Add(attr, value);
+                var dAttr = result.Entry.Attributes[attr];
+                if (string.Equals(attr, "objectGUID", StringComparison.OrdinalIgnoreCase))
+                {
+                    var value = dAttr.GetValues(typeof(byte[]));
+                    profileAttributes.Add(attr, value.Select(v => new Guid((byte[])v).ToString()).ToList());
+                }
+                else
+                {
+                    var value = dAttr?.GetValues(typeof(string)).Cast<string>().ToArray() ?? Array.Empty<string>();
+                    profileAttributes.Add(attr, value);
+                }
             }
 
             //groups
