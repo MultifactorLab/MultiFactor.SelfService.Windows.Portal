@@ -1,5 +1,4 @@
 ﻿@using System
-@using Microsoft.Extensions.DependencyInjection
 @using MultiFactor.SelfService.Windows.Portal.Core
 @using MultiFactor.SelfService.Windows.Portal.Services.API
 @{
@@ -14,16 +13,7 @@
             && (action == "index" || action == "reset" || action == "done" || action == "wrong"));
 
     var isHome = controller == "home" && action == "index";
-    var showcaseEnabled = false;
-    if (isHome)
-    {
-        var showcaseOptions = HttpContext.Current.GetRequestServices()
-            .GetService<global::MultiFactor.SelfService.Windows.Portal.Options.IShowcaseSettingsOptions>();
-        if (showcaseOptions != null && showcaseOptions.CurrentValue != null)
-        {
-            showcaseEnabled = showcaseOptions.CurrentValue.Enabled;
-        }
-    }
+    var showcaseEnabled = isHome && ViewBag.ShowcaseEnabled is bool && (bool)ViewBag.ShowcaseEnabled;
 }
 <!DOCTYPE html>
 <html>

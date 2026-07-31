@@ -3,8 +3,27 @@
 
 // Password visibility toggle for all password fields.
 (function () {
-    const eyeOpenIcon = '/Content/images/password-eye-open.svg';
-    const eyeClosedIcon = '/Content/images/password-eye-closed.svg';
+    // Resolve icons relative to this script so virtual-directory hosts (e.g. /ssp) work.
+    function resolveContentRoot() {
+        const current = document.currentScript && document.currentScript.src;
+        if (current) {
+            return current.replace(/\/js\/[^/?#]*([?#].*)?$/, '');
+        }
+
+        const scripts = document.getElementsByTagName('script');
+        for (let i = scripts.length - 1; i >= 0; i--) {
+            const src = scripts[i].src || '';
+            if (/\/Content\/js\/site\.js([?#]|$)/i.test(src)) {
+                return src.replace(/\/js\/[^/?#]*([?#].*)?$/, '');
+            }
+        }
+
+        return '';
+    }
+
+    const contentRoot = resolveContentRoot();
+    const eyeOpenIcon = contentRoot + '/images/password-eye-open.svg';
+    const eyeClosedIcon = contentRoot + '/images/password-eye-closed.svg';
 
     function updateToggleState(input, button, icon) {
         const isPasswordVisible = input.type === 'text';

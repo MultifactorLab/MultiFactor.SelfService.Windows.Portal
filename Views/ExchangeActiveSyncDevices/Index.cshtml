@@ -1,62 +1,131 @@
-﻿@model IList<MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDevice>
+﻿@using System.Web
+@using MultiFactor.SelfService.Windows.Portal.Core
+@model IList<MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDevice>
 
 @{
-    ViewBag.Title = Resources.ExchangeActiveSyncDevices.Header;
+    ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+    const int pageSize = 8;
+    var deviceIndex = 0;
 }
 
-<div class="login">
-    <div class="form-column" style="width: unset">
-        <div class="info">
-            @Html.Raw(@Resources.ExchangeActiveSyncDevices.Instruction1)
+
+<div class="eas-devices-view">
+    <div class="eas-devices-shell">
+        <div class="eas-header-plate">
+            <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="eas-header-logo" />
+            <span class="eas-header-title">@Resources.Home.Ssp</span>
         </div>
-        <br />
-        @if (Model.Count == 0)
-        {
-            <p>@Resources.ExchangeActiveSyncDevices.NothingFound</p>
-        }
-        else
-        {
-            <table class="authenticators">
-                <thead>
-                    <tr>
-                        <th>@Resources.ExchangeActiveSyncDevices.DeviceAndId</th>
-                        <th>@Resources.ExchangeActiveSyncDevices.WhenCreated</th>
-                        <th>@Resources.ExchangeActiveSyncDevices.State</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                @foreach (var device in Model)
+
+        <div class="eas-content-card">
+            <div class="eas-toolbar">
+                <p class="eas-instruction">@Resources.ExchangeActiveSyncDevices.Instruction1</p>
+                <a href="~/" class="btn-primary eas-done-btn">@Resources.ExchangeActiveSyncDevices.Ok</a>
+            </div>
+
+            @if (Model.Count == 0)
+            {
+                <p class="eas-empty">@Resources.ExchangeActiveSyncDevices.NothingFound</p>
+            }
+            else
+            {
+                <div class="eas-table-wrap eas-desktop-only">
+                    <div class="eas-table-head">
+                        <div class="eas-col-device">@Resources.ExchangeActiveSyncDevices.DeviceAndId</div>
+                        <div class="eas-col-meta">
+                            <span class="eas-col-date">@Resources.ExchangeActiveSyncDevices.WhenCreated</span>
+                            <span class="eas-col-state-head">@Resources.ExchangeActiveSyncDevices.State</span>
+                            <span class="eas-col-action-head" aria-hidden="true"></span>
+                        </div>
+                    </div>
+
+                    @foreach (var device in Model)
+                    {
+                        var isInactive = device.AccessState == MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Blocked;
+                        var batch = deviceIndex / pageSize;
+                        var rowClass = "eas-table-row" + (isInactive ? " eas-device-inactive" : "");
+                        if (batch > 0)
+                        {
+                            rowClass += " eas-device-hidden eas-device-batch-" + batch;
+                        }
+                        deviceIndex++;
+                        <div class="@rowClass" data-device-id="@device.MsExchDeviceId">
+                            <div class="eas-col-device">
+                                <span class="eas-device-name">@device.DisplayName</span>
+                                <span class="eas-device-id">@device.MsExchDeviceId</span>
+                            </div>
+                            <div class="eas-col-meta">
+                                <span class="eas-col-date">@device.WhenCreated.ToString("dd.MM.yyyy")</span>
+                                <span class="eas-state-label">@device.AccessStateName</span>
+                                <span class="eas-state-action">
+                                    @RenderDeviceActions(device)
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                deviceIndex = 0;
+                <div class="eas-mobile-list eas-mobile-only">
+                    <div class="eas-mobile-head">@Resources.ExchangeActiveSyncDevices.DeviceAndId</div>
+
+                    @foreach (var device in Model)
+                    {
+                        var isInactive = device.AccessState == MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Blocked;
+                        var batch = deviceIndex / pageSize;
+                        var cardClass = "eas-mobile-card" + (isInactive ? " eas-device-inactive" : "");
+                        if (batch > 0)
+                        {
+                            cardClass += " eas-device-hidden eas-device-batch-" + batch;
+                        }
+                        deviceIndex++;
+                        <div class="@cardClass" data-device-id="@device.MsExchDeviceId">
+                            <div class="eas-mobile-device">
+                                <span class="eas-device-id">@device.MsExchDeviceId</span>
+                                <span class="eas-device-name">@device.DisplayName</span>
+                            </div>
+                            <div class="eas-mobile-meta">
+                                <div class="eas-mobile-meta-item">
+                                    <span class="eas-mobile-meta-label">@Resources.ExchangeActiveSyncDevices.WhenCreated</span>
+                                    <span class="eas-mobile-meta-value">@device.WhenCreated.ToString("dd.MM.yyyy")</span>
+                                </div>
+                                <div class="eas-mobile-meta-item">
+                                    <span class="eas-mobile-meta-label">@Resources.ExchangeActiveSyncDevices.State</span>
+                                    <span class="eas-mobile-meta-value eas-state-label">@device.AccessStateName</span>
+                                </div>
+                            </div>
+                            <div class="eas-mobile-action">
+                                @RenderDeviceActions(device)
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                if (Model.Count > pageSize)
                 {
-                    <tr>
-                        <td>@device.DisplayName<br /><small>@device.MsExchDeviceId</small></td>
-                        <td>@device.WhenCreated.ToShortDateString()</td>
-                        <td>@device.AccessStateName</td>
-                        <td>
-                            @{
-                                switch (device.AccessState)
-                                {
-                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Allowed:
-                                        <a href="#" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
-                                        break;
-                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Blocked:
-                                        <a href="#" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
-                                        break;
-                                    case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Quarantined:
-                                        <a href="#" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
-                                        <a href="#" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
-                                        break;
-                                }
-                            }
-                        </td>
-                    </tr>
+                    <button type="button" class="eas-show-more" id="eas-show-more" data-page-size="@pageSize">@Resources.ExchangeActiveSyncDevices.ShowMore</button>
                 }
-            </table>
-        }
-        <div class="pt-4">
-            <a href="~/" class="btn-primary d-flex w-100 content-center">@Resources.ExchangeActiveSyncDevices.Ok</a>
+            }
         </div>
     </div>
 </div>
+
+@helper RenderDeviceActions(MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDevice device)
+{
+    switch (device.AccessState)
+    {
+        case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Allowed:
+            <a href="#" class="eas-action-link" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
+            break;
+        case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Blocked:
+            <a href="#" class="eas-action-link" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
+            break;
+        case MultiFactor.SelfService.Windows.Portal.Models.ExchangeActiveSyncDeviceAccessState.Quarantined:
+            <a href="#" class="eas-action-link" onclick="return approve('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Allow</a>
+            <a href="#" class="eas-action-link" onclick="return reject('@device.MsExchDeviceId');">@Resources.ExchangeActiveSyncDevices.Block</a>
+            break;
+    }
+}
+
 @using (Html.BeginForm("Approve", "ExchangeActiveSyncDevices", FormMethod.Post, new { Id = "approve-form" }))
 {
     @Html.AntiForgeryToken()
@@ -67,18 +136,36 @@
     @Html.AntiForgeryToken()
     <input type="hidden" id="reject-form-deviceId" name="deviceId" />
 }
-<script type="text/javascript">
-    function approve(deviceId) {
-        if (confirm('@Resources.ExchangeActiveSyncDevices.AllowConfirm')) {
-            $('#approve-form-deviceId').val(deviceId);
-            $('#approve-form').submit();
-        }
-    }
-    function reject(deviceId) {
-        if (confirm('@Resources.ExchangeActiveSyncDevices.BlockConfirm')) {
-            $('#reject-form-deviceId').val(deviceId);
-            $('#reject-form').submit();
-        }
-    }
-</script>
 
+@section Scripts {
+    <script type="text/javascript">
+        function approve(deviceId) {
+            if (confirm('@HttpUtility.JavaScriptStringEncode(Resources.ExchangeActiveSyncDevices.AllowConfirm)')) {
+                $('#approve-form-deviceId').val(deviceId);
+                $('#approve-form').submit();
+            }
+            return false;
+        }
+
+        function reject(deviceId) {
+            if (confirm('@HttpUtility.JavaScriptStringEncode(Resources.ExchangeActiveSyncDevices.BlockConfirm)')) {
+                $('#reject-form-deviceId').val(deviceId);
+                $('#reject-form').submit();
+            }
+            return false;
+        }
+
+        $(document).ready(function () {
+            var nextBatch = 1;
+
+            $('#eas-show-more').on('click', function () {
+                $('.eas-device-batch-' + nextBatch).removeClass('eas-device-hidden');
+                nextBatch++;
+
+                if ($('.eas-device-hidden').length === 0) {
+                    $(this).hide();
+                }
+            });
+        });
+    </script>
+}

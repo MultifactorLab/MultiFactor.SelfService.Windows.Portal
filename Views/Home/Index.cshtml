@@ -1,17 +1,10 @@
-﻿@using Microsoft.Extensions.DependencyInjection
-@using MultiFactor.SelfService.Windows.Portal.Core
+﻿@using MultiFactor.SelfService.Windows.Portal.Core
 @model MultiFactor.SelfService.Windows.Portal.ViewModels.ShowcaseViewModel
 
 @{
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 
-    var showcaseEnabled = false;
-    var showcaseOptions = HttpContext.Current.GetRequestServices()
-        .GetService<global::MultiFactor.SelfService.Windows.Portal.Options.IShowcaseSettingsOptions>();
-    if (showcaseOptions != null && showcaseOptions.CurrentValue != null)
-    {
-        showcaseEnabled = showcaseOptions.CurrentValue.Enabled;
-    }
+    var showcaseEnabled = ViewBag.ShowcaseEnabled is bool && (bool)ViewBag.ShowcaseEnabled;
 
     var avatarLetter = Model.Profile.Name != null && Model.Profile.Name.Length > 0
         ? Model.Profile.Name[0].ToString()
@@ -31,7 +24,7 @@
     <div class="apps-header">
         <div class="apps-header-top">
             <strong class="apps-logo">
-                <img src="@Configuration.Current.LogoUrl" alt="" />
+                <img src="~/@Configuration.Current.LogoUrl" alt="" />
             </strong>
             <div class="apps-header-actions">
                 @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn-header" })
@@ -87,7 +80,7 @@ else
 {
     <div class="login">
         <div class="login-header-plate">
-            <img src="@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+            <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
             <span class="login-header-title">@Resources.Home.Ssp</span>
         </div>
         <div class="form-column">

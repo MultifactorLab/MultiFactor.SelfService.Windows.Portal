@@ -70,7 +70,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 return;
             }
 
-            var localFolder = HostingEnvironment.MapPath("~/content/images/showcase");
+            var localFolder = HostingEnvironment.MapPath("~/Content/images/showcase");
 
             if (!Directory.Exists(localFolder))
             {

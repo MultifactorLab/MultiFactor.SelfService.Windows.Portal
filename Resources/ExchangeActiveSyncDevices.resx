@@ -118,45 +118,48 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Allow" xml:space="preserve">
-    <value>Allow</value>
+    <value>Enable</value>
   </data>
   <data name="AllowConfirm" xml:space="preserve">
-    <value>Allow this device?</value>
+    <value>Enable mail on this device?</value>
   </data>
   <data name="AllowedState" xml:space="preserve">
-    <value>Allowed</value>
+    <value>Working</value>
   </data>
   <data name="Block" xml:space="preserve">
-    <value>Block</value>
+    <value>Disable</value>
   </data>
   <data name="BlockConfirm" xml:space="preserve">
-    <value>Block this device?</value>
+    <value>Disable mail on this device?</value>
   </data>
   <data name="BlockedState" xml:space="preserve">
-    <value>Blocked</value>
+    <value>Not working</value>
   </data>
   <data name="DeviceAndId" xml:space="preserve">
-    <value>Device / ID</value>
+    <value>Device/ID</value>
   </data>
   <data name="Header" xml:space="preserve">
     <value>ActiveSync devices</value>
   </data>
   <data name="Instruction1" xml:space="preserve">
-    <value>The list contains mobile devices with your mail.&lt;br/&gt;If you have received an email that your device is in quarantine, check the ID before turning it on.</value>
+    <value>The list contains mobile devices with your mail. If you have received an email that your device is in quarantine, check the ID before enabling.</value>
   </data>
   <data name="NothingFound" xml:space="preserve">
     <value>Nothing found</value>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>Ok</value>
+    <value>Done</value>
   </data>
   <data name="QuarantinedState" xml:space="preserve">
     <value>Quarantined</value>
   </data>
+  <data name="ShowMore" xml:space="preserve">
+    <value>Show more</value>
+  </data>
   <data name="State" xml:space="preserve">
-    <value>State</value>
+    <value>Status</value>
   </data>
   <data name="WhenCreated" xml:space="preserve">
-    <value>When created</value>
+    <value>Date connected</value>
   </data>
 </root>
