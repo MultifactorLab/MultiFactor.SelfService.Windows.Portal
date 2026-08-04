@@ -1,5 +1,6 @@
 ﻿using MultiFactor.SelfService.Windows.Portal.Attributes;
 using MultiFactor.SelfService.Windows.Portal.Models;
+using MultiFactor.SelfService.Windows.Portal.Options;
 using MultiFactor.SelfService.Windows.Portal.Stories;
 using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfile;
 using MultiFactor.SelfService.Windows.Portal.Stories.LoadProfileStory;
@@ -15,12 +16,15 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
     {
         private readonly LoadProfileStory _loadProfileStory;
         private readonly FilterShowcaseLinksStory _filterShowcaseLinksStory;
+        private readonly IShowcaseSettingsOptions _showcaseSettings;
 
         public HomeController(LoadProfileStory loadProfileStory, 
-            FilterShowcaseLinksStory filterShowcaseLinksStory)
+            FilterShowcaseLinksStory filterShowcaseLinksStory,
+            IShowcaseSettingsOptions showcaseSettings)
         {
             _loadProfileStory = loadProfileStory;
             _filterShowcaseLinksStory = filterShowcaseLinksStory;
+            _showcaseSettings = showcaseSettings;
         }
 
         public async Task<ActionResult> Index(SingleSignOnDto claims)
@@ -44,6 +48,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
             }
 
             var showcaseLinks = _filterShowcaseLinksStory.Execute(userProfile.Policy);
+            ViewBag.ShowcaseEnabled = _showcaseSettings.CurrentValue?.Enabled ?? false;
             var model = new ShowcaseViewModel()
             {
                 Profile = userProfile,

@@ -167,5 +167,17 @@ namespace Resources {
                 return ResourceManager.GetString("WrongUserNameOrPassword", resourceCulture);
             }
         }
+        
+        public static string Back {
+            get {
+                return ResourceManager.GetString("Back", resourceCulture);
+            }
+        }
+        
+        public static string Ssp {
+            get {
+                return ResourceManager.GetString("Ssp", resourceCulture);
+            }
+        }
     }
 }

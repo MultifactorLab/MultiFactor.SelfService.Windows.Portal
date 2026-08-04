@@ -3,61 +3,82 @@
 
 @{
     ViewBag.Title = Resources.PasswordReset.Title;
+    var isCaptchaEnabled = Configuration.Current.CaptchaConfigured;
+    if (isCaptchaEnabled)
+    {
+        ViewBag.RenderCaptchaScripts = true;
+    }
 }
-<div class="login">
-    <div class="form-column">
-        <h2>@Resources.PasswordReset.Title</h2>
+
+<div class="login login-view restore-password-view">
+    <div class="login-header-plate">
+        <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+        <span class="login-header-title">@Resources.PasswordReset.Ssp</span>
+    </div>
+    <div class="form-column login-form-card restore-password-card">
+        <a href="@Url.Action("Login", "Account")" class="restore-back">
+            <span class="restore-back-box">
+                <svg class="restore-back-image" width="20" height="14" viewBox="0 0 20 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M19.3222 7.17895C19.3222 6.96611 19.2504 6.78795 19.1067 6.64445C18.9632 6.50078 18.785 6.42895 18.5722 6.42895L3.16645 6.42895L7.5127 2.06745C7.65104 1.92895 7.7212 1.75903 7.7232 1.5577C7.72504 1.35653 7.65162 1.18153 7.50295 1.0327C7.36445 0.894362 7.19045 0.825195 6.98095 0.825195C6.77129 0.825195 6.5972 0.894362 6.4587 1.03269L0.945202 6.5462C0.851702 6.63986 0.785704 6.73861 0.747204 6.84244C0.708704 6.94628 0.689453 7.05844 0.689453 7.17894C0.689453 7.29944 0.708704 7.41161 0.747204 7.51544C0.785704 7.61928 0.851702 7.71803 0.945202 7.81169L6.46845 13.3347C6.60679 13.4732 6.7782 13.5424 6.9827 13.5424C7.1872 13.5424 7.36387 13.4732 7.5127 13.3347C7.6677 13.186 7.74362 13.0079 7.74045 12.8002C7.73729 12.5925 7.66137 12.4143 7.5127 12.2654L3.17595 7.92895L18.5722 7.92895C18.785 7.92895 18.9632 7.85711 19.1067 7.71345C19.2504 7.56995 19.3222 7.39178 19.3222 7.17895Z" fill="currentColor"></path>
+                </svg>
+                <span class="restore-back-text">@Resources.PasswordReset.Back</span>
+            </span>
+        </a>
+        <h2 class="login-title restore-title">@Resources.PasswordReset.Title</h2>
         @using (Html.BeginForm("Index", "ForgottenPassword", FormMethod.Post))
         {
             <fieldset>
                 @Html.AntiForgeryToken()
-                <p>@Resources.PasswordReset.EnterLogin</p>
-                <div class="form-row">
-                    <div class="input">
-                        @Html.TextBoxFor(m => m.Identity,
-                            new
-                            {
-                                placeholder = Configuration.Current.RequiresUpn ? Resources.AccountLogin.UserNameUpn : Resources.AccountLogin.UserName,
-                                autocomplete = "off"
-                            })
+                <p class="restore-description">@Resources.PasswordReset.EnterLogin</p>
+                <div class="form-row login-fields restore-fields">
+                    <div class="input login-input restore-login-input username-help-host">
+                        @Html.TextBoxFor(m => m.Identity, new
+                        {
+                            placeholder = Configuration.Current.RequiresUpn
+                                ? Resources.AccountLogin.UserNameUpn
+                                : Resources.AccountLogin.UserName,
+                            autocomplete = "off"
+                        })
+                        @Html.Partial("_UsernameHelpTooltip")
                         @Html.ValidationMessageFor(m => m.Identity)
                     </div>
                     @Html.ValidationSummary(true)
                     @if (Configuration.Current.AllowUserUnlock)
                     {
-                        <label class="c-container">
-                            @Resources.UserUnlock.CheckboxMessage
+                        <label class="c-container restore-unlock-row">
                             @Html.CheckBoxFor(x => x.UnlockUser)
-                            <span class="c-checkmark"></span>
+                            <span class="c-checkmark" aria-hidden="true"></span>
+                            <span class="c-container-label">@Resources.UserUnlock.CheckboxMessage</span>
                         </label>
                     }
-                    @if (Configuration.Current.CaptchaConfigured)
+                    @if (isCaptchaEnabled)
                     {
-                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
-                        {
-                            <div class="g-recaptcha"
-                                 data-sitekey="@Configuration.Current.CaptchaKey"
-                                 data-callback="captchaCallback"
-                                 data-size="normal">
-                            </div>
-                        }
-
-                        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-                        {
-                            <div id="yandex-captcha-container"></div>
-                        }
+                        <div class="captcha-wrapper login-captcha-wrapper restore-captcha-wrapper">
+                            @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+                            {
+                                <div class="g-recaptcha"
+                                     data-sitekey="@Configuration.Current.CaptchaKey"
+                                     data-callback="captchaCallback"
+                                     data-size="normal">
+                                </div>
+                            }
+                            @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+                            {
+                                <div id="yandex-captcha-container"></div>
+                            }
+                        </div>
                     }
                 </div>
-                <div class="form-row">
-                    <input type="hidden" name="myUrl" id="myUrl"/>
-                    @if (Configuration.Current.CaptchaConfigured)
+                <div class="form-row restore-submit-row">
+                    <input type="hidden" name="myUrl" id="myUrl" />
+                    @if (isCaptchaEnabled)
                     {
-                        <input type="hidden" name="responseToken" id="responseToken"/>
-                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit"/>
+                        <input type="hidden" name="responseToken" id="responseToken" />
+                        <input type="submit" class="btn-primary w-100" disabled="disabled" value="@Resources.PasswordReset.Next" id="submit" />
                     }
                     else
                     {
-                        <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Next" id="submit"/>
+                        <input type="submit" class="btn-primary w-100" value="@Resources.PasswordReset.Next" id="submit" />
                     }
                 </div>
             </fieldset>
@@ -65,59 +86,42 @@
     </div>
 </div>
 
-@section head {
-    @if (Configuration.Current.CaptchaConfigured)
-    {
-        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
-        {
-            <script src="https://www.google.com/recaptcha/api.js?hl=@LocalizationProvider.GetLanguage()" async defer></script>
+@section Scripts {
+    <script type="text/javascript">
+        function enableSubmit() {
+            $("form").find(':submit').removeAttr('disabled');
         }
 
-        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-        {
-            <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction"
-                    defer></script>
+        function captchaCallback(token) {
+            $('#responseToken').val(token);
+            enableSubmit();
         }
-    }
-}
 
-<script type="text/javascript">
-    function enableSubmit() {
-        $("form").find(':submit').removeAttr('disabled');
-    }
-
-    function captchaCallback(token) {
-        $('#responseToken').val(token);
-        enableSubmit();
-    }
-
-        $(document).ready(function(){
-        $('#myUrl').val(document.location);
-
-        $("form").submit(function () {
-            if ($(this).valid()) {
-                $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
-            }
-        });
+        $(document).ready(function () {
+            $('#myUrl').val(document.location);
+            $("form").submit(function () {
+                if ($(this).valid()) {
+                    $(this).find(':submit').attr('disabled', 'disabled').val('@Resources.AccountLogin.PleaseWait');
+                }
+            });
         });
 
-
-
-    @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
-    {
-        <text>
-        function yandexCaptchaLoadFunction()
+        @if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
         {
-            if (window.smartCaptcha)
+            <text>
+            function yandexCaptchaLoadFunction()
             {
-                const container = document.getElementById('yandex-captcha-container');
-                window.smartCaptcha.render(container, {
-                sitekey: '@Configuration.Current.CaptchaKey',
-                callback: captchaCallback,
-                hl: '@LocalizationProvider.GetLanguage()'
-                });
+                if (window.smartCaptcha)
+                {
+                    const container = document.getElementById('yandex-captcha-container');
+                    window.smartCaptcha.render(container, {
+                        sitekey: '@Configuration.Current.CaptchaKey',
+                        callback: captchaCallback,
+                        hl: '@LocalizationProvider.GetLanguage()'
+                    });
+                }
             }
+            </text>
         }
-        </text>
-    }
-</script>
+    </script>
+}

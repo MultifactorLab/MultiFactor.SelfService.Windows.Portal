@@ -156,4 +156,13 @@
   <data name="AuthnInvitation" xml:space="preserve">
     <value>Введите пароль для учетной записи</value>
   </data>
+  <data name="Ssp" xml:space="preserve">
+    <value>Портал самообслуживания</value>
+  </data>
+  <data name="UserNameHint" xml:space="preserve">
+    <value>Имя пользователя или адрес электронной почты. Например, {0} или {1}</value>
+  </data>
+  <data name="UserNameHintAriaLabel" xml:space="preserve">
+    <value>Подсказка для поля имени пользователя</value>
+  </data>
 </root>

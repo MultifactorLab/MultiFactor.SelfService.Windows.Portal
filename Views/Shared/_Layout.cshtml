@@ -1,5 +1,19 @@
-﻿@{
-    ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+﻿@using System
+@using MultiFactor.SelfService.Windows.Portal.Core
+@using MultiFactor.SelfService.Windows.Portal.Services.API
+@{
+    ViewBag.Title = ViewBag.Title ?? string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
+
+    var controller = ((string)ViewContext.RouteData.Values["controller"] ?? string.Empty).ToLowerInvariant();
+    var action = ((string)ViewContext.RouteData.Values["action"] ?? string.Empty).ToLowerInvariant();
+
+    var useAuthBackground =
+        (controller == "account" && action == "login")
+        || (controller == "forgottenpassword"
+            && (action == "index" || action == "reset" || action == "done" || action == "wrong"));
+
+    var isHome = controller == "home" && action == "index";
+    var showcaseEnabled = isHome && ViewBag.ShowcaseEnabled is bool && (bool)ViewBag.ShowcaseEnabled;
 }
 <!DOCTYPE html>
 <html>
@@ -7,30 +21,35 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <meta name="viewport" content="width=device-width" />
-    @Styles.Render("~/content/css")
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/jqueryval")
-    @RenderSection("head", false)
     <title>@ViewBag.Title</title>
+    @RenderSection("head", false)
+    <link rel="stylesheet" href="~/Content/style/site.css" />
+    @if (ViewBag.RenderCaptchaScripts == true)
+    {
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Google))
+        {
+            <script src="https://www.google.com/recaptcha/api.js?hl=@LocalizationProvider.GetLanguage()" async defer></script>
+        }
+        if (Configuration.Current.IsCaptchaEnabled(CaptchaType.Yandex))
+        {
+            <script src="https://captcha-api.yandex.ru/captcha.js?render=onload&onload=yandexCaptchaLoadFunction" defer></script>
+        }
+    }
 </head>
-<body>
+<body class="@(useAuthBackground ? "auth-form-background" : "")">
     <div id="wrapper">
         <div class="background-layout">
-            <header id="header">
-                <strong class="logo">
-                    <img src="@Configuration.Current.LogoUrl" style="max-height:100px" />
-                </strong>
-                <h1>@ViewBag.Title</h1>
-            </header>
-            <div class="stage">
-                <main id="main">
-                    @RenderBody()
-                </main>
-            </div>
+            <main id="main" class="@(isHome && showcaseEnabled ? "" : "content-center")">
+                @RenderBody()
+            </main>
             <footer id="footer">
-                <em class="copyright">&copy; @Configuration.Current.CompanyName @DateTime.Now.Year</em>
+                <img class="footer-icon" src="~/Content/images/footer.svg" alt="" />
             </footer>
-            </div>
         </div>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="~/Content/js/site.js"></script>
+    @RenderSection("Scripts", false)
 </body>
 </html>

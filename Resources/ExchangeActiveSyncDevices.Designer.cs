@@ -61,7 +61,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Allow.
+        ///   Ищет локализованную строку, похожую на Enable.
         /// </summary>
         public static string Allow {
             get {
@@ -169,7 +169,16 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на State.
+        ///   Ищет локализованную строку, похожую на Show more.
+        /// </summary>
+        public static string ShowMore {
+            get {
+                return ResourceManager.GetString("ShowMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Status.
         /// </summary>
         public static string State {
             get {

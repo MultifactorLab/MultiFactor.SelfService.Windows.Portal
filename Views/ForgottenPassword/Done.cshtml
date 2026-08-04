@@ -3,14 +3,16 @@
     ViewBag.Title = string.Format(Resources.Global.SiteName, Configuration.Current.CompanyName);
 }
 
-<div class="login">
-    <div class="form-column">
-        <h2>@Resources.PasswordReset.Success</h2>
-        <p>
+<div class="login login-view restore-done-view">
+    <div class="login-header-plate">
+        <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+        <span class="login-header-title">@Resources.PasswordReset.Ssp</span>
+    </div>
+    <div class="form-column login-form-card restore-done-card">
+        <h2 class="login-title restore-done-title">@Resources.PasswordReset.Success</h2>
+        <p class="restore-done-description">
             @Resources.PasswordReset.Info
         </p>
-        <ul class="action">
-            <li><a href="~/" class="btn-primary w-100">@Resources.PasswordReset.Ok</a></li>
-        </ul>
+        <a href="~/" class="btn-primary w-100 restore-done-button">@Resources.PasswordReset.Ok</a>
     </div>
 </div>

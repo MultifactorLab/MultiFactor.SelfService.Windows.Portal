@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Allow" xml:space="preserve">
-    <value>включить</value>
+    <value>Включить</value>
   </data>
   <data name="AllowConfirm" xml:space="preserve">
     <value>Включить почту на устройстве?</value>
@@ -127,16 +127,16 @@
     <value>Работает</value>
   </data>
   <data name="Block" xml:space="preserve">
-    <value>отключить</value>
+    <value>Отключить</value>
   </data>
   <data name="BlockConfirm" xml:space="preserve">
     <value>Отключить почту на устройстве?</value>
   </data>
   <data name="BlockedState" xml:space="preserve">
-    <value>Отключен</value>
+    <value>Не работает</value>
   </data>
   <data name="DeviceAndId" xml:space="preserve">
-    <value>Устройство / ID</value>
+    <value>Устройство/ID</value>
   </data>
   <data name="Header" xml:space="preserve">
     <value>Почта на мобильном</value>
@@ -152,6 +152,9 @@
   </data>
   <data name="QuarantinedState" xml:space="preserve">
     <value>Ожидает подтверждения</value>
+  </data>
+  <data name="ShowMore" xml:space="preserve">
+    <value>Показать еще</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Статус</value>

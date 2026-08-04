@@ -121,5 +121,17 @@ namespace Resources {
                 return ResourceManager.GetString("ShouldChangePassword", resourceCulture);
             }
         }
+        
+        public static string Ssp {
+            get {
+                return ResourceManager.GetString("Ssp", resourceCulture);
+            }
+        }
+        
+        public static string AvailableApps {
+            get {
+                return ResourceManager.GetString("AvailableApps", resourceCulture);
+            }
+        }
     }
 }

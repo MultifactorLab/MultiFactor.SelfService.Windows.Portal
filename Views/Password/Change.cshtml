@@ -1,39 +1,52 @@
-﻿@using MultiFactor.SelfService.Windows.Portal.Helpers;
-@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
+﻿@model MultiFactor.SelfService.Windows.Portal.Models.ChangePasswordModel
 
 @{
     ViewBag.Title = Resources.PasswordChange.Title;
 }
-<div class="login">
-    <div class="form-column">
-        <h2>@Resources.PasswordChange.Title</h2>
+
+<div class="login login-view password-change-view">
+    <div class="login-header-plate">
+        <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+        <span class="login-header-title">@Resources.PasswordChange.Ssp</span>
+    </div>
+    <div class="form-column login-form-card password-change-card">
+        <a href="~/" class="restore-back">
+            <span class="restore-back-box">
+                <svg class="restore-back-image" width="20" height="14" viewBox="0 0 20 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M19.3222 7.17895C19.3222 6.96611 19.2504 6.78795 19.1067 6.64445C18.9632 6.50078 18.785 6.42895 18.5722 6.42895L3.16645 6.42895L7.5127 2.06745C7.65104 1.92895 7.7212 1.75903 7.7232 1.5577C7.72504 1.35653 7.65162 1.18153 7.50295 1.0327C7.36445 0.894362 7.19045 0.825195 6.98095 0.825195C6.77129 0.825195 6.5972 0.894362 6.4587 1.03269L0.945202 6.5462C0.851702 6.63986 0.785704 6.73861 0.747204 6.84244C0.708704 6.94628 0.689453 7.05844 0.689453 7.17894C0.689453 7.29944 0.708704 7.41161 0.747204 7.51544C0.785704 7.61928 0.851702 7.71803 0.945202 7.81169L6.46845 13.3347C6.60679 13.4732 6.7782 13.5424 6.9827 13.5424C7.1872 13.5424 7.36387 13.4732 7.5127 13.3347C7.6677 13.186 7.74362 13.0079 7.74045 12.8002C7.73729 12.5925 7.66137 12.4143 7.5127 12.2654L3.17595 7.92895L18.5722 7.92895C18.785 7.92895 18.9632 7.85711 19.1067 7.71345C19.2504 7.56995 19.3222 7.39178 19.3222 7.17895Z" fill="currentColor"></path>
+                </svg>
+                <span class="restore-back-text">@Resources.PasswordChange.Back</span>
+            </span>
+        </a>
+        <h2 class="login-title password-change-title">@Resources.PasswordChange.Title</h2>
         @using (Html.BeginForm("Change", "Password", new { ReturnUrl = Request.QueryString["ReturnUrl"] }, FormMethod.Post))
         {
-        <fieldset>
-            @Html.AntiForgeryToken()
-            @Html.Partial("_PasswordRequirementsPartial")
-            <br />
-            <div>
-                @Html.ValidationSummary(true)
-            </div>
-            <div class="form-row">
-                <div class="input">
-                    @Html.ToggleablePasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.Password)
+            <fieldset>
+                @Html.AntiForgeryToken()
+                <div class="password-change-description">
+                    @Html.Partial("_PasswordRequirementsPartial")
                 </div>
-                <div class="input">
-                    @Html.ToggleablePasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPassword)
+                <div class="password-change-validation">
+                    @Html.ValidationSummary(true)
                 </div>
-                <div class="input">
-                    @Html.ToggleablePasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
-                    @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                <div class="form-row login-fields password-change-fields">
+                    <div class="input login-input password-change-input">
+                        @Html.TextBoxFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off", type = "text" })
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
+                    <div class="input login-input password-change-input">
+                        @Html.TextBoxFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off", type = "text" })
+                        @Html.ValidationMessageFor(m => m.NewPassword)
+                    </div>
+                    <div class="input login-input password-change-input">
+                        @Html.TextBoxFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off", type = "text" })
+                        @Html.ValidationMessageFor(m => m.NewPasswordAgain)
+                    </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <input type="submit" class="btn-primary w-100" value="@Resources.PasswordChange.Submit" />
-            </div>
-        </fieldset>
+                <div class="form-row password-change-submit-row">
+                    <input type="submit" class="btn-primary w-100" value="@Resources.PasswordChange.Submit" />
+                </div>
+            </fieldset>
         }
     </div>
 </div>
