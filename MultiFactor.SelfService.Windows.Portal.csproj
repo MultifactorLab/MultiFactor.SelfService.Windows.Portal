@@ -653,6 +653,7 @@
     <Content Include="Views\Account\Authn.cshtml" />
     <Content Include="Views\Account\Identity.cshtml" />
     <Content Include="Views\Error\AccessDenied.cshtml" />
+    <Content Include="Views\Error\SessionExpired.cshtml" />
     <Content Include="Views\Unlock\Success.cshtml" />
     <Content Include="Views\Unlock\Wrong.cshtml" />
     <Content Include="Web.config" />

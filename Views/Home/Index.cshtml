@@ -11,14 +11,6 @@
         : (Model.Profile.Identity != null && Model.Profile.Identity.Length > 0 ? Model.Profile.Identity[0].ToString() : "");
 }
 
-@if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0 && Model.Profile.PasswordExpirationDaysLeft <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
-{
-    <div class="alert">
-        <h4>@Resources.Home.ShouldChangePassword</h4>
-        <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft</h5>
-    </div>
-}
-
 @if (showcaseEnabled)
 {
     <div class="apps-header">
@@ -83,6 +75,18 @@ else
             <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
             <span class="login-header-title">@Resources.Home.Ssp</span>
         </div>
+         @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0
+             && Model.Profile.PasswordExpirationDaysLeft.HasValue
+             && Model.Profile.PasswordExpirationDaysLeft.Value >= 0
+             && Model.Profile.PasswordExpirationDaysLeft.Value <= Configuration.Current.NotifyOnPasswordExpirationDaysLeft)
+        {
+        <div class="form-column">
+            <div class="alert">
+                <h4>@Resources.Home.ShouldChangePassword</h4>
+                <h5>@Resources.Home.PasswordExpirationDaysLeft: @Model.Profile.PasswordExpirationDaysLeft.Value</h5>
+            </div>
+        </div>
+        }
         <div class="form-column">
             <div class="auth-details">
                 <div class="user-avatar-no-sso">

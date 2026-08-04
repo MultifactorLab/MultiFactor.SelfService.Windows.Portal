@@ -137,19 +137,21 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.Google.ReCaptcha
 
             var response = task.Result;
 
-            try
+            if (response.IsSuccessStatusCode)
             {
-                response.EnsureSuccessStatusCode();
                 return response;
             }
-            catch (HttpRequestException ex)
-            {
-                var content = await HttpClientUtils.TryGetContent(response);
-                _logger.Error(ex, "An error occurred while accessing the source. Content: {content:l}. Exception message: {message:l}", content, ex.Message);
 
-                if (response.StatusCode == HttpStatusCode.Unauthorized) throw new UnauthorizedException();
-                throw;
-            }
+            var content = await HttpClientUtils.TryGetContent(response);
+            _logger.Error("An error occurred while accessing the source. Status: {status}. Content: {content:l}",
+                (int)response.StatusCode, content);
+
+            response.Content?.Dispose();
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized) throw new UnauthorizedException();
+
+            throw new HttpRequestException(
+                $"Response status code does not indicate success: {(int)response.StatusCode} ({response.ReasonPhrase}).");
         }
     }
 }
