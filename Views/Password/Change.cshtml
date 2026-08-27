@@ -31,15 +31,15 @@
                 </div>
                 <div class="form-row login-fields password-change-fields">
                     <div class="input login-input password-change-input">
-                        @Html.TextBoxFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off", type = "text" })
+                        @Html.PasswordFor(m => m.Password, new { placeholder = Resources.PasswordChange.CurrentPassword, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
                     <div class="input login-input password-change-input">
-                        @Html.TextBoxFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off", type = "text" })
+                        @Html.PasswordFor(m => m.NewPassword, new { placeholder = Resources.PasswordChange.NewPassword, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.NewPassword)
                     </div>
                     <div class="input login-input password-change-input">
-                        @Html.TextBoxFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off", type = "text" })
+                        @Html.PasswordFor(m => m.NewPasswordAgain, new { placeholder = Resources.PasswordChange.ConfirmPassword, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.NewPasswordAgain)
                     </div>
                 </div>

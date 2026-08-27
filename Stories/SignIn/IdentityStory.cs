@@ -142,6 +142,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
                 RequiresUserPrincipalName = _settings.RequiresUpn,
                 NeedPrebindInfo = _settings.NeedPrebindInfo(),
                 UseUpnAsIdentity = _settings.UseUpnAsIdentity,
+                PrivacyMode = _settings.PrivacyModeDescriptor.ToString(),
                 NetBiosName = _settings.NetBiosName,
                 SignUpGroups = _settings.SignUpGroups
             };
@@ -168,7 +169,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
                     model);
 
                 _logger.Debug("Redirecting user '{User}' to MFA page", model.UserName);
-                return new RedirectResult(response.RedirectUrl, true);
+                return new RedirectResult(response.RedirectUrl, false);
             }
 
             if (response.Action == IdentityAction.ShowAuthn)
@@ -205,7 +206,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.SignIn
 
             if (!string.IsNullOrWhiteSpace(response.RedirectUrl))
             {
-                return new RedirectResult(response.RedirectUrl, true);
+                return new RedirectResult(response.RedirectUrl, false);
             }
 
             throw new ModelStateErrorException("WrongUserNameOrPassword");

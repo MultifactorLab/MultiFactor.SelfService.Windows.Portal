@@ -2,6 +2,7 @@ using System;
 using MultiFactor.SelfService.Windows.Portal.Core.Http;
 using MultiFactor.SelfService.Windows.Portal.Integrations.Ldap.CredentialVerification;
 using MultiFactor.SelfService.Windows.Portal.Core.LdapAttributesCaching;
+using MultiFactor.SelfService.Windows.Portal.ModelBinding.Binders;
 using MultiFactor.SelfService.Windows.Portal.Models;
 
 namespace MultiFactor.SelfService.Windows.Portal.Extensions
@@ -10,8 +11,16 @@ namespace MultiFactor.SelfService.Windows.Portal.Extensions
     {
         public static SingleSignOnDto SafeGetSsoClaims(this SafeHttpContextAccessor accessor)
         {
-            return accessor.HttpContext.Items[Constants.SsoClaims] as SingleSignOnDto
-                ?? new SingleSignOnDto();
+            var context = accessor.HttpContext;
+            var sso = context.Items[Constants.SsoClaims] as SingleSignOnDto;
+            if (sso != null)
+            {
+                return sso;
+            }
+
+            sso = MultiFactorClaimsDtoBinder.FromRequest(context.Request);
+            context.Items[Constants.SsoClaims] = sso;
+            return sso;
         }
 
         public static CredentialVerificationResult SafeGetCredVerificationResult(this SafeHttpContextAccessor accessor)
