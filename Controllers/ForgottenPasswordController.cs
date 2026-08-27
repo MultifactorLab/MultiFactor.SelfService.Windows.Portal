@@ -80,7 +80,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 }
 
                 if (response.Success)
-                    return RedirectPermanent(response.Model.Url);
+                    return Redirect(response.Model.Url);
 
                 _logger.Error("Unable to recover password for user '{u:l}': {m:l}", form.Identity, response.Message);
                 TempData["reset-password-error"] = Resources.PasswordReset.ErrorMessage;

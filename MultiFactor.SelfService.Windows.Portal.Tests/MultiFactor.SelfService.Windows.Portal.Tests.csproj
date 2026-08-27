@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="UnitTest1.cs" />
   </ItemGroup>
 

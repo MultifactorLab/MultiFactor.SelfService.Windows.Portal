@@ -34,7 +34,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Stories.Authenticate
             {
                 throw new ArgumentNullException(nameof(accessToken));
             }
-            _logger.Debug("Received MFA token: {accessToken:l}", accessToken);
+            _logger.Debug("Received MFA token");
 
             var request = new LoginCompletedRequestDto
             {

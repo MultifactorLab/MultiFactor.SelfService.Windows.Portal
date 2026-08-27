@@ -123,6 +123,7 @@ public class SignInStory
             RequiresUserPrincipalName = _settings.RequiresUpn,
             PasswordManagementEnabled = _settings.EnablePasswordManagement,
             NeedPrebindInfo = _settings.NeedPrebindInfo(),
+            PrivacyMode = _settings.PrivacyModeDescriptor.ToString(),
             NetBiosName = _settings.NetBiosName,
             SignUpGroups = _settings.SignUpGroups
         };
@@ -152,7 +153,7 @@ public class SignInStory
             }
 
             _logger.Debug("Redirecting user to MFA page");
-            return new RedirectResult(response.RedirectUrl, true);
+            return new RedirectResult(response.RedirectUrl, false);
         }
 
         if (response.Action == LoginAction.BypassSaml)
@@ -197,7 +198,7 @@ public class SignInStory
 
             if (!string.IsNullOrWhiteSpace(response.RedirectUrl))
             {
-                return new RedirectResult(response.RedirectUrl, true);
+                return new RedirectResult(response.RedirectUrl, false);
             }
 
             return new RedirectToActionResult().ToActionResult("Change", "ExpiredPassword", null);
@@ -205,7 +206,7 @@ public class SignInStory
 
         if (!string.IsNullOrWhiteSpace(response.RedirectUrl))
         {
-            return new RedirectResult(response.RedirectUrl, true);
+            return new RedirectResult(response.RedirectUrl, false);
         }
 
         throw new ModelStateErrorException("WrongUserNameOrPassword");

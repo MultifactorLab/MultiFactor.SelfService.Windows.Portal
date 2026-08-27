@@ -56,7 +56,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error("Failed to update settings", ex);
+                    _logger.Error("Failed to update settings: {error}", ex.Message);
                 }
 
                 await Task.Delay(_period, ct);

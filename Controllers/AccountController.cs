@@ -41,6 +41,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         public AccountController(ApplicationCache applicationCache,
             AuthService authService,
             MultiFactorApiClient apiClient,
+            IMultifactorIdpApi multifactorIdpApi,
             LoadProfileStory loadProfileStory,
             SignInStory signInStory,
             IdentityStory identityStory,
@@ -52,6 +53,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         {
             _applicationCache = applicationCache ?? throw new ArgumentNullException(nameof(applicationCache));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _multifactorIdpApi = multifactorIdpApi ?? throw new ArgumentNullException(nameof(multifactorIdpApi));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _loadProfileStory = loadProfileStory;
@@ -308,7 +310,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
                 postbackUrl,
                 claims);
 
-            return RedirectPermanent(accessPage.Url);
+            return Redirect(accessPage.Url);
         }
 
         [HttpGet]

@@ -19,7 +19,6 @@
                 <p>@Resources.AccountLogin.AuthnInvitation <b>@Model.UserName</b></p>
                 <div class="form-row">
                     <div class="input login-input login-input-password">
-                        <span>@Resources.AccountLogin.Password</span>
                         @Html.PasswordFor(m => m.Password, new { placeholder = Resources.AccountLogin.Password, autocomplete = "off" })
                         @Html.ValidationMessageFor(m => m.Password)
                     </div>
