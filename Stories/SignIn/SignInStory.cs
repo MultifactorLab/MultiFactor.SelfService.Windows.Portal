@@ -190,10 +190,10 @@ public class SignInStory
                 model.Password.Trim(),
                 Constants.PWD_RENEWAL_PURPOSE);
             _applicationCache.Set(
-                ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(model.UserName),
+                ApplicationCacheKeyFactory.CreateExpiredPwdUserKey(adValidationResult.Username),
                 model.UserName.Trim());
             _applicationCache.Set(
-                ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(model.UserName),
+                ApplicationCacheKeyFactory.CreateExpiredPwdCipherKey(adValidationResult.Username),
                 encryptedPassword);
 
             if (!string.IsNullOrWhiteSpace(response.RedirectUrl))

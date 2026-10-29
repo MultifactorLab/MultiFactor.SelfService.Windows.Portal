@@ -99,7 +99,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services.API
         }
 
         [Obsolete]
-        public string RefreshAccessToken(string token, IDictionary<string, string> claims)
+        public virtual string RefreshAccessToken(string token, IDictionary<string, string> claims)
         {
             if (token is null) throw new ArgumentNullException(nameof(token));       
             if (claims is null) throw new ArgumentNullException(nameof(claims));

@@ -17,7 +17,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public void SignIn(string accessToken)
+        public virtual void SignIn(string accessToken)
         {
             if (!_tokenValidationService.VerifyToken(accessToken, out var token))
             {
