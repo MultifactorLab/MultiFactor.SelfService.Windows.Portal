@@ -6,6 +6,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi.
         Authenticated,
         BypassSaml,
         BypassOidc,
-        ChangePassword
+        ChangePassword,
+        AccessDenied
     }
 }

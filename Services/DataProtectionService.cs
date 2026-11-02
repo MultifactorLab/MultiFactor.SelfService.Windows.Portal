@@ -18,7 +18,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return ToBase64(ProtectedData.Protect(StringToBytes(data), AdditionalEntropy, DataProtectionScope.LocalMachine));
         }
 
-        public string Unprotect(string data)
+        public virtual string Unprotect(string data)
         {
             if (string.IsNullOrEmpty(data)) throw new ArgumentNullException(data);
             return BytesToString(ProtectedData.Unprotect(FromBase64(data), AdditionalEntropy, DataProtectionScope.LocalMachine));

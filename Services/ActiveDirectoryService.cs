@@ -438,7 +438,7 @@ namespace MultiFactor.SelfService.Windows.Portal.Services
             return false;
         }
 
-        public bool ChangeExpiredPassword(string userName, string currentPassword, string newPassword,
+        public virtual bool ChangeExpiredPassword(string userName, string currentPassword, string newPassword,
             out string errorReason)
         {
             var identity = LdapIdentity.ParseUser(userName);
