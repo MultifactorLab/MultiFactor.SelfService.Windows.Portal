@@ -1,9 +1,21 @@
 using System;
+using System.Web.Mvc;
 
 namespace MultiFactor.SelfService.Windows.Portal.Extensions
 {
     public static class UrlExtensions
     {
+        public static string CompanyLogoUrl(this UrlHelper urlHelper)
+        {
+            var logoUrl = Configuration.Current.LogoUrl;
+            if (!logoUrl.StartsWith("~") && !logoUrl.StartsWith("/") && !Uri.IsWellFormedUriString(logoUrl, UriKind.Absolute))
+            {
+                logoUrl = "~/" + logoUrl;
+            }
+
+            return urlHelper.Content(logoUrl);
+        }
+
         public static string BuildRelativeUrl(this string currentPath, string relPath, int removeSegments = 0)
         {
             if (currentPath is null)

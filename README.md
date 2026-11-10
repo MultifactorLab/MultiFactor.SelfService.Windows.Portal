@@ -81,6 +81,8 @@ Portal settings are stored in the ```web.config``` file in XML format.
 
   <!-- Logging level: 'Debug', 'Info', 'Warn', 'Error' -->
   <add key="logging-level" value="Info" />
+  <!-- [Optional] Log files directory, default is App_Data\Logs -->
+  <!--add key="logging-path" value="C:\ProgramData\MultiFactor\SelfService\Logs"/-->
 
   <!-- Enable captcha validation -->
   <add key="enable-captcha" value="false"/>
@@ -116,7 +118,7 @@ If the ```use-active-directory-mobile-user-phone``` option is enabled, the compo
 
 ## Logs
 
-The Self-Service Portal logs are located in the ```Logs``` directory. If they are not there, make sure that the directory is writable by the ```IIS AppPool\DefaultAppPool``` local user.
+The Self-Service Portal logs are located in the ```App_Data\Logs``` directory, which IIS never serves over HTTP. Another directory can be set with the ```logging-path``` parameter (an absolute path or a path relative to the portal directory). Do not keep logs, certificates or other service files in publicly served directories of the site. If the logs are not there, make sure that the directory is writable by the ```IIS AppPool\DefaultAppPool``` local user.
 
 ## Access Portal
 

@@ -79,6 +79,8 @@ MultiFactor SelfService Portal &mdash; веб-сайт, портал самоо�
 
   <!-- Уровень логирования: 'Debug', 'Info', 'Warn', 'Error' -->
   <add key="logging-level" value="Info" />
+  <!-- [Опционально] Папка для журналов, по умолчанию App_Data\Logs -->
+  <!--add key="logging-path" value="C:\ProgramData\MultiFactor\SelfService\Logs"/-->
 
   <!-- Enable captcha validation -->
   <add key="enable-captcha" value="false"/>
@@ -114,7 +116,7 @@ MultiFactor SelfService Portal &mdash; веб-сайт, портал самоо�
 
 ## Журналы
 
-Журналы работы портала находятся в папке ```Logs```. Если их нет, удостоверьтесь, что папка доступна для записи локальному пользователю ```IIS AppPool\DefaultAppPool```.
+Журналы работы портала находятся в папке ```App_Data\Logs```, которую IIS не отдаёт по HTTP. Другую папку можно задать параметром ```logging-path``` (абсолютный путь или путь относительно папки портала). Не размещайте журналы, сертификаты и другие служебные файлы в публикуемых папках сайта. Если журналов нет, удостоверьтесь, что папка доступна для записи локальному пользователю ```IIS AppPool\DefaultAppPool```.
 
 ## Доступ к порталу
 

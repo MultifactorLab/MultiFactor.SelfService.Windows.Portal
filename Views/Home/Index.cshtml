@@ -16,7 +16,7 @@
     <div class="apps-header">
         <div class="apps-header-top">
             <strong class="apps-logo">
-                <img src="~/@Configuration.Current.LogoUrl" alt="" />
+                <img src="@Url.CompanyLogoUrl()" alt="" />
             </strong>
             <div class="apps-header-actions">
                 @Html.ActionLink(Resources.Home.Configure2FA, "Index", "Configure2Fa", new { }, new { target = "_blank", @class = "btn-header" })
@@ -72,7 +72,7 @@ else
 {
     <div class="login">
         <div class="login-header-plate">
-            <img src="~/@Configuration.Current.LogoUrl" alt="logo" class="login-header-logo" />
+            <img src="@Url.CompanyLogoUrl()" alt="logo" class="login-header-logo" />
             <span class="login-header-title">@Resources.Home.Ssp</span>
         </div>
          @if (Configuration.Current.NotifyOnPasswordExpirationDaysLeft > 0

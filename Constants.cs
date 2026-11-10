@@ -24,6 +24,10 @@ namespace MultiFactor.SelfService.Windows.Portal
         public const string LoadedLdapAttributes = "LoadedLdapAttributes";
 
         public static readonly string WORKING_DIRECTORY = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+        // IIS never serves App_Data over HTTP
+        public const string APP_DATA_DIRECTORY = "App_Data";
+        public const string LOG_DIRECTORY = "Logs";
+        public static readonly string DEFAULT_LOG_DIRECTORY = Path.Combine(WORKING_DIRECTORY, APP_DATA_DIRECTORY, LOG_DIRECTORY);
 
         public static class Configuration
         {
@@ -47,6 +51,7 @@ namespace MultiFactor.SelfService.Windows.Portal
                 public const string ENABLE_EXCHANGE_ACTIVE_SYNC_DEVICES_MANAGEMENT = "enable-exchange-active-sync-devices-management";
                 public const string USE_UPN_AS_IDENTITY = "use-upn-as-identity";
                 public const string LOGGING_FORMAT = "logging-format";
+                public const string LOGGING_PATH = "logging-path";
                 public const string NOTIFY_PASSWORD_EXPIRATION_DAYS_LEFT = "notify-on-password-expiration-days-left";
                 public const string PRE_AUTHN_MODE = "pre-authentication-method";
                 public const string PrivacyMode = "privacy-mode";

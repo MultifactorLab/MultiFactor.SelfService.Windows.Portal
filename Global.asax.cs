@@ -54,7 +54,7 @@ namespace MultiFactor.SelfService.Windows.Portal
 
             BundleTable.EnableOptimizations = true;
 
-            var path = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+            var path = Configuration.GetLogDirectory();
 
             //create logging
             var levelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
@@ -65,12 +65,12 @@ namespace MultiFactor.SelfService.Windows.Portal
             if (formatter != null)
             {
                 loggerConfiguration
-                    .WriteTo.File(formatter, $"{path}\\Logs\\log-.txt", rollingInterval: RollingInterval.Day);
+                    .WriteTo.File(formatter, Path.Combine(path, "log-.txt"), rollingInterval: RollingInterval.Day);
             }
             else
             {
                 loggerConfiguration
-                    .WriteTo.File($"{path}\\Logs\\log-.txt", rollingInterval: RollingInterval.Day);
+                    .WriteTo.File(Path.Combine(path, "log-.txt"), rollingInterval: RollingInterval.Day);
             }
 
             ConfigureSyslog(loggerConfiguration, out var syslogInfoMessage);

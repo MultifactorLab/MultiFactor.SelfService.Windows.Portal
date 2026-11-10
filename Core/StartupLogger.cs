@@ -9,7 +9,6 @@ namespace MultiFactor.SelfService.Windows.Portal.Core
 {
     public class StartupLogger
     {
-        private const string LogDirectory = "logs";
         private const string StartupLogFile = "startup.log";
         private const long FileSizeLimitBytes = 1024 * 1024 * 20;
 
@@ -21,14 +20,22 @@ namespace MultiFactor.SelfService.Windows.Portal.Core
         {
             SelfLog.Enable(Console.WriteLine);
 
-            var baseDir = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
-            var dir = Path.Combine(baseDir, LogDirectory);
-            if (!Directory.Exists(dir))
+            string logDir;
+            try
             {
-                Directory.CreateDirectory(dir);
+                logDir = Configuration.GetLogDirectory();
+            }
+            catch
+            {
+                logDir = Constants.DEFAULT_LOG_DIRECTORY;
             }
 
-            var path = Path.Combine(dir, StartupLogFile);
+            if (!Directory.Exists(logDir))
+            {
+                Directory.CreateDirectory(logDir);
+            }
+
+            var path = Path.Combine(logDir, StartupLogFile);
             var loggerConfig = new LoggerConfiguration()
                 .WriteTo.File(path: path,
                     LogEventLevel.Verbose,

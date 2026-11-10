@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -546,6 +547,21 @@ namespace MultiFactor.SelfService.Windows.Portal
         public static string GetLogFormat()
         {
             return PortalSettings?[ConfigurationConstants.General.LOGGING_FORMAT];
+        }
+
+        /// <summary>
+        /// Log files directory. Defaults to App_Data\Logs, which is never served by IIS.
+        /// A relative path is resolved against the application directory.
+        /// </summary>
+        public static string GetLogDirectory()
+        {
+            var loggingPath = PortalSettings?[ConfigurationConstants.General.LOGGING_PATH];
+            if (string.IsNullOrWhiteSpace(loggingPath))
+            {
+                return Constants.DEFAULT_LOG_DIRECTORY;
+            }
+
+            return Path.Combine(Constants.WORKING_DIRECTORY, System.Environment.ExpandEnvironmentVariables(loggingPath.Trim()));
         }
     }
 
