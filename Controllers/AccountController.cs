@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.Mvc;
@@ -20,6 +21,7 @@ using MultiFactor.SelfService.Windows.Portal.Exceptions;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorApi.Dto;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi.Dto;
 using MultiFactor.SelfService.Windows.Portal.Integrations.MultiFactorIdpApi;
+using UrlHelper =  MultiFactor.SelfService.Windows.Portal.Helpers.UrlHelper;
 
 namespace MultiFactor.SelfService.Windows.Portal.Controllers
 {
@@ -316,7 +318,14 @@ namespace MultiFactor.SelfService.Windows.Portal.Controllers
         [HttpGet]
         public async Task<ActionResult> ByPassSsoSession(string callbackUrl, string accessToken)
         {
-            var page = new BypassPageDto(callbackUrl, accessToken);
+            if (!UrlHelper.TryReadHttpsUrl(callbackUrl, out var uri))
+            {
+                return new HttpStatusCodeResult(
+                    HttpStatusCode.BadRequest,
+                    "callbackUrl must be an absolute https:// URL");
+            }
+            
+            var page = new BypassPageDto(uri.AbsoluteUri, accessToken);
             return View(page);
         }
 
